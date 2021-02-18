@@ -1,4 +1,4 @@
-﻿using KSAGrinder.Pages;
+﻿using Microsoft.Win32;
 
 using System;
 using System.Collections.Generic;
@@ -15,18 +15,26 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace KSAGrinder
+namespace KSAGrinder.Pages
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for FileInput.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class FileInput : Page
     {
-        public MainWindow()
+        public FileInput()
         {
             InitializeComponent();
+        }
 
-            Main.Content = new FileInput();
+        private void BtnSelect_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Please select a provided file.";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                
+            }
         }
     }
 }

@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KSAGrinder", "KSAGrinder\KSAGrinder.csproj", "{D15B0955-693C-45BA-9302-D8B8C7A8DF30}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KSAGrinder", "KSAGrinder\KSAGrinder.csproj", "{1DDE3589-F446-49A6-BC00-5DA332689DF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableXmlFormatter", "TimetableXmlFormatter\TimetableXmlFormatter.csproj", "{AB666D01-95CD-44CA-AD55-9932868E53AC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D15B0955-693C-45BA-9302-D8B8C7A8DF30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D15B0955-693C-45BA-9302-D8B8C7A8DF30}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D15B0955-693C-45BA-9302-D8B8C7A8DF30}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D15B0955-693C-45BA-9302-D8B8C7A8DF30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DDE3589-F446-49A6-BC00-5DA332689DF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DDE3589-F446-49A6-BC00-5DA332689DF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DDE3589-F446-49A6-BC00-5DA332689DF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DDE3589-F446-49A6-BC00-5DA332689DF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB666D01-95CD-44CA-AD55-9932868E53AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB666D01-95CD-44CA-AD55-9932868E53AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB666D01-95CD-44CA-AD55-9932868E53AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB666D01-95CD-44CA-AD55-9932868E53AC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
