@@ -6,38 +6,29 @@
         xmlns:local="clr-namespace:TimetableXmlFormatter"
         mc:Ignorable="d"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        Title="MainWindow" Height="400" Width="400">
+        Title="Timetable Xml Formatter" Height="197.333" Width="400">
     <Grid x:Name="grid">
         <Grid.RowDefinitions>
-            <RowDefinition Height="5*"/>
+            <RowDefinition Height="3*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Row="0">
             <DockPanel Margin="5">
-                <Button DockPanel.Dock="Right" MinWidth="100" Content="Select.."/>
+                <Button x:Name="BtnClass" DockPanel.Dock="Right" MinWidth="100" Content="Select.." Click="BtnClass_Click"/>
                 <Label Content="All Classes" MinWidth="100" HorizontalContentAlignment="Center"/>
-                <TextBox x:Name="BtnClass" IsReadOnly="True" Focusable="False" DockPanel.Dock="Left" HorizontalAlignment="Stretch" Margin="0,0,5,0"/>
+                <TextBox x:Name="TxtClass" IsReadOnly="True" Focusable="False" DockPanel.Dock="Left" HorizontalAlignment="Stretch" Margin="0,0,5,0"/>
             </DockPanel>
             <DockPanel Margin="5">
-                <Button DockPanel.Dock="Right" MinWidth="100" Content="Select.."/>
-                <Label Content="Timetable 1" MinWidth="100" HorizontalContentAlignment="Center"/>
-                <TextBox x:Name="BtnTT1" IsReadOnly="True" Focusable="False" DockPanel.Dock="Left" HorizontalAlignment="Stretch" Margin="0,0,5,0"/>
-            </DockPanel>
-            <DockPanel Margin="5">
-                <Button DockPanel.Dock="Right" MinWidth="100" Content="Select.."/>
-                <Label Content="Timetable 23" MinWidth="100" HorizontalContentAlignment="Center"/>
-                <TextBox x:Name="BtnTT2" IsReadOnly="True" Focusable="False" DockPanel.Dock="Left" HorizontalAlignment="Stretch" Margin="0,0,5,0"/>
-            </DockPanel>
-            <DockPanel Margin="5">
-                <Button DockPanel.Dock="Right" MinWidth="100" Content="Select.."/>
+                <Button x:Name="BtnCS1" DockPanel.Dock="Right" MinWidth="100" Content="Select.." Click="BtnCS1_Click"/>
                 <Label Content="Class by Std 1" MinWidth="100" HorizontalContentAlignment="Center"/>
-                <TextBox x:Name="BtnCS1" IsReadOnly="True" Focusable="False" DockPanel.Dock="Left" HorizontalAlignment="Stretch" Margin="0,0,5,0"/>
+                <TextBox x:Name="TxtCS1" IsReadOnly="True" Focusable="False" DockPanel.Dock="Left" HorizontalAlignment="Stretch" Margin="0,0,5,0"/>
             </DockPanel>
             <DockPanel Margin="5">
-                <Button DockPanel.Dock="Right" MinWidth="100" Content="Select.."/>
+                <Button x:Name="BtnCS2" DockPanel.Dock="Right" MinWidth="100" Content="Select.." Click="BtnCS2_Click"/>
                 <Label Content="Class by Std 2" MinWidth="100" HorizontalContentAlignment="Center"/>
-                <TextBox x:Name="BtnCS23" IsReadOnly="True" Focusable="False" DockPanel.Dock="Left" HorizontalAlignment="Stretch" Margin="0,0,5,0"/>
+                <TextBox x:Name="TxtCS2" IsReadOnly="True" Focusable="False" DockPanel.Dock="Left" HorizontalAlignment="Stretch" Margin="0,0,5,0"/>
             </DockPanel>
         </StackPanel>
+        <Button x:Name="BtnGen" Content="Generate" Grid.Row="1" Margin="5" Click="BtnGen_Click"/>
     </Grid>
 </Window>
