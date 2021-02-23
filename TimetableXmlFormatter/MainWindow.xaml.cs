@@ -89,20 +89,22 @@ namespace TimetableXmlFormatter
              * 
              * <분반 테이블>
              * 교과목코드, 분반 번호, 담당교원, 요일/시간, 신청수, 비고
+             * 
+             * <학생 테이블>
+             * 학번, 이름, 듣는 과목/분반 (코드 배열)
              */
-            #region Generating Lecture Table & Class Table
 
-            // TODO: make this not hard-coded (indices)
+            #region Generate Lecture & Class Table
+
+            // TODO: make thses not hard-coded (indices)
             var lectureColumns = new (string Name, Type Type, int Index)[]
             {
-                ("Code", typeof(string), 3),
+                ("Code", typeof(string), 3), // this must be first
+                ("Name", typeof(string), 6), // this must be second
                 ("Group", typeof(string), 4),
-                ("Name", typeof(string), 6),
                 ("Credit", typeof(int), 12),
                 ("Hours", typeof(int), 13),
             };
-
-            // TODO: make this not hard-coded (indices)
             var classColumns = new (string Name, Type Type, int Index)[]
             {
                 ("Code", typeof(string), 3),
@@ -113,19 +115,15 @@ namespace TimetableXmlFormatter
                 ("Note", typeof(string), 14)
             };
 
-            DataTable lectureTable = new DataTable("Lectures");
+            DataTable lectureTable = new DataTable("Lecture");
             foreach (var (name, type, _) in lectureColumns)
-            {
                 lectureTable.Columns.Add(name, type);
-            }
 
-            DataTable classTable = new DataTable("Classes");
+            DataTable classTable = new DataTable("Class");
             foreach (var (name, type, _) in classColumns)
-            {
                 classTable.Columns.Add(name, type);
-            }
 
-            var classes = new HashSet<string>();
+            var lectures = new Dictionary<string, string>(); // lecture name => code
             using (FileStream fs = new FileStream(classCSVpath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 using (StreamReader sr = new StreamReader(fs))
@@ -135,9 +133,10 @@ namespace TimetableXmlFormatter
                     {
                         string[] values = sr.ReadLine().Split(',');
                         string code = values[lectureColumns[0].Index];
-                        if (!classes.Contains(code)) // if the lecture is read first time
+                        string name = values[lectureColumns[1].Index];
+                        if (!lectures.ContainsValue(code)) // if the lecture is read first time
                         {
-                            classes.Add(code);
+                            lectures.Add(name, code);
                             object[] lectureData = new object[lectureColumns.Length];
                             for (int i = 0; i < lectureData.Length; ++i)
                             {
@@ -164,14 +163,69 @@ namespace TimetableXmlFormatter
 
             #endregion
 
+            #region Generate Student Table
+
+            DataTable studentTable = new DataTable("Student");
+            studentTable.Columns.AddRange(new DataColumn[]
+            {
+                new DataColumn("Number", typeof(string)),
+                new DataColumn("Name", typeof(string)),
+                new DataColumn("Applied", typeof((string Code, int Number)[])),
+            });
+
+            void ProcessStudentFile(string path)
+            {
+                // indices of the first occurences of lecture names (on stdCSVpath1)
+                var firstIndex = new Dictionary<int, string>(); // (index, lecture name)
+                using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    using (StreamReader sr = new StreamReader(fs))
+                    {
+                        string[] firstRow = sr.ReadLine().Split(',');
+                        for (int i = 1; i < firstRow.Length; ++i)
+                        {
+                            string lectureName = GetUntilOrEntire(firstRow[i], "(");
+                            if (firstIndex.ContainsValue(lectureName)) continue;
+                            else firstIndex.Add(i, lectureName);
+                        }
+                        sr.ReadLine();
+                        while (!sr.EndOfStream)
+                        {
+                            string[] line = sr.ReadLine().Split(',');
+                            if (line[0].Length == 0 || line[0][0] < '0' || line[0][0] > '9') continue;
+                            string number = GetUntilOrEntire(line[0], "(");
+                            string name = GetUntilOrEntire(line[0].Substring(number.Length + 1), ")");
+                            var applied = new List<(string Code, int Number)>();
+                            for (int i = 1; i < line.Length; ++i)
+                            {
+                                if (line[i] != "1" || !firstRow[i].Contains("_")) continue;
+                                string[] @class = firstRow[i].Split('_');
+                                string code = lectures[@class[0].Substring(0, @class[0].LastIndexOf('('))];
+                                int classNum = Int32.Parse(@class[1]);
+                                applied.Add((code, classNum));
+                            }
+                            studentTable.Rows.Add(number, name, applied.ToArray());
+                        }
+                    }
+                }
+            }
+
+            ProcessStudentFile(stdCSVpath1);
+            ProcessStudentFile(stdCSVpath2);
+
+            #endregion
+
             DataSet ds = new DataSet("Status");
             ds.Tables.AddRange(new DataTable[]
             {
                 lectureTable,
-                classTable
+                classTable,
+                studentTable
             });
-            File.WriteAllText(@"C:\Users\HANU\Desktop\xml.xml", ds.GetXml());
-            MessageBox.Show("done");
+
+            string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "data.xml");
+            File.WriteAllText(savePath, ds.GetXml());
+            MessageBox.Show("Done");
             return ds;
         }
 
@@ -182,10 +236,23 @@ namespace TimetableXmlFormatter
             for (int i = 0; i < times.Length; ++i)
             {
                 DayOfWeek day = KoreanDayToEnum[times[i].Substring(0, 1)];
-                int hour = Int32.Parse(times[i].Substring(times[i].Length - 1));
+                int hour = int.Parse(times[i].Substring(times[i].Length - 1));
                 result[i] = (day, hour);
             }
             return result;
+        }
+
+        private static string GetUntilOrEntire(string text, string stopAt)
+        {
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                int charLocation = text.IndexOf(stopAt, StringComparison.Ordinal);
+                if (charLocation > 0)
+                {
+                    return text.Substring(0, charLocation);
+                }
+            }
+            return text;
         }
     }    
 }
