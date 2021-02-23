@@ -219,8 +219,10 @@ namespace TimetableXmlFormatter
                 studentTable
             });
 
-            string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "data.xml");
-            File.WriteAllText(savePath, ds.GetXml());
+            string xmlPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "data.xml");
+            string schPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "data.xsd");
+            ds.WriteXml(xmlPath, XmlWriteMode.IgnoreSchema);
+            ds.WriteXmlSchema(schPath);
             MessageBox.Show("Done");
             return ds;
         }
