@@ -169,6 +169,8 @@ namespace TimetableXmlFormatter
                 new DataColumn("Applied", typeof((string Code, int Number)[])),
             });
 
+            StringBuilder sb = new StringBuilder();
+
             void ProcessStudentFile(string path)
             {
                 // indices of the first occurences of lecture names (on stdCSVpath1)
@@ -208,6 +210,8 @@ namespace TimetableXmlFormatter
 
             ProcessStudentFile(stdCSVpath1);
             ProcessStudentFile(stdCSVpath2);
+
+            File.WriteAllText(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "결과.txt"), sb.ToString());
 
             #endregion
 
