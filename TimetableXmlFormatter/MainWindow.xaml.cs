@@ -69,13 +69,9 @@ namespace TimetableXmlFormatter
         {
             TextBox[] txts = new TextBox[] { TxtClass, TxtCS1, TxtCS2 };
             if (txts.Any((txt) => String.IsNullOrEmpty(txt.Text)))
-            {
                 MessageBox.Show("Please fill in the all blanks.");
-            }
             else
-            {
                 GenerateDataSet(TxtClass.Text, TxtCS1.Text, TxtCS2.Text);
-            }
         }
 
         /// <summary>

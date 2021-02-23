@@ -29,11 +29,16 @@ namespace KSAGrinder.Pages
 
         private void BtnSelect_Click(object sender, RoutedEventArgs e)
         {
+            SelectFile();
+        }
+
+        private void SelectFile()
+        {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Title = "Please select a provided file.";
             if (openFileDialog.ShowDialog() == true)
             {
-                
+
             }
         }
     }
