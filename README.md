@@ -8,7 +8,7 @@ This includes a developer tool for formatting information provided by the Office
   * Addition and removal of classes; and a visual representation of them
   * Find all possibilities of scheduling that can be constructed by replacing each class number with another
   * Mark ones that cannot be added into the current schedule
-* Find all possibilities of trading options to make the most favorable schedule
+* Find all trading options to make the most favorable schedule (classes and their numbers, current and targeting ones, must be specified)
 
 ## How to use?
 TBA
