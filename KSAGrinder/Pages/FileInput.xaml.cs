@@ -54,23 +54,47 @@ namespace KSAGrinder.Pages
             result = null;
             if (ofd.ShowDialog() == true)
             {
-                ZipArchive arch = ZipFile.OpenRead(ofd.FileName);
-                if (arch.Entries.Count != 2) return false;
-                var f = (from entry in arch.Entries select entry.Name).ToArray();
-                if (!(f[0].EndsWith(".xml", StringComparison.OrdinalIgnoreCase) && f[1].EndsWith(".xsd", StringComparison.OrdinalIgnoreCase) ||
-                    f[1].EndsWith(".xml", StringComparison.OrdinalIgnoreCase) && f[0].EndsWith(".xsd", StringComparison.OrdinalIgnoreCase)))
-                    return false;
-                result = new DataSet();
-                int xmlIdx = Array.FindIndex(f, (s) => s.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
-                int xsdIdx = 1 - xmlIdx;
-                using (StreamReader sr = new StreamReader(arch.Entries[xsdIdx].Open()))
-                    result.ReadXmlSchema(sr);
-                using (StreamReader sr = new StreamReader(arch.Entries[xmlIdx].Open()))
-                    result.ReadXml(sr);
-                arch.Dispose();
-                return true;
+                return TryUnzip(ofd.FileName, out result);
             }
             return false;
+        }
+
+        private bool TryUnzip(string fileName, out DataSet result)
+        {
+            ZipArchive arch = ZipFile.OpenRead(fileName);
+            result = null;
+            if (arch.Entries.Count != 2) return false;
+            var f = (from entry in arch.Entries select entry.Name).ToArray();
+            if (!(f[0].EndsWith(".xml", StringComparison.OrdinalIgnoreCase) && f[1].EndsWith(".xsd", StringComparison.OrdinalIgnoreCase) ||
+                f[1].EndsWith(".xml", StringComparison.OrdinalIgnoreCase) && f[0].EndsWith(".xsd", StringComparison.OrdinalIgnoreCase)))
+                return false;
+            result = new DataSet();
+            int xmlIdx = Array.FindIndex(f, (s) => s.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
+            int xsdIdx = 1 - xmlIdx;
+            using (StreamReader sr = new StreamReader(arch.Entries[xsdIdx].Open()))
+                result.ReadXmlSchema(sr);
+            using (StreamReader sr = new StreamReader(arch.Entries[xmlIdx].Open()))
+                result.ReadXml(sr);
+            arch.Dispose();
+            return true;
+        }
+
+        private void Page_Drop(Object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                // Note that you can have more than one file.
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                if (TryUnzip(files[0], out DataSet result))
+                {
+                    _main.Main.Navigate(new MainPage());
+                }
+                else
+                {
+                    MessageBox.Show("Failed to load the file!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
     }
 }

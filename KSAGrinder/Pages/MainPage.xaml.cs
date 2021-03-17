@@ -24,5 +24,6 @@ namespace KSAGrinder.Pages
         {
             InitializeComponent();
         }
+
     }
 }
