@@ -24,8 +24,6 @@ namespace KSAGrinder.Pages
     /// </summary>
     public partial class MainPage : Page, INotifyPropertyChanged
     {
-        //public ConvertItemToIndex ConvertItemToIndex { get; private set; }
-
         public struct StructHour
         {
             public string Monday { get; set; }
@@ -41,29 +39,25 @@ namespace KSAGrinder.Pages
 
         public ObservableCollection<StructHour> HourCollection { get; private set; } = new ObservableCollection<StructHour>();
 
-        private readonly DataSet _data;
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MainPage(DataSet data)
         {
             InitializeComponent();
             ConvertItemToIndex.DG = Timetable;
-
-            _data = data;
             Timetable.DataContext = HourCollection;
             Timetable.Loaded += Timetable_Loaded;
             InitializeHourCollection();
 
-            this.SizeChanged += MainPage_SizeChanged;
-
-            //ConvertItemToIndex = new ConvertItemToIndex(Timetable);
+            SizeChanged += MainPage_SizeChanged;
         }
 
         private void MainPage_SizeChanged(Object sender, SizeChangedEventArgs e)
         {
         }
 
+        public const int N_RowToShow = 10;
+        // Adjust eight of rows to show at most {N_RowToShow} classes
         private void Timetable_Loaded(object sender, RoutedEventArgs e)
         {
             double columnHeight = double.NaN;
@@ -75,9 +69,10 @@ namespace KSAGrinder.Pages
                     break;
                 }
             }
-            Timetable.RowHeight = (Timetable.ActualHeight - columnHeight) / 10.0;
+            Timetable.RowHeight = (Timetable.ActualHeight - columnHeight) / N_RowToShow;
         }
 
+        // Initialize Hour Collection (Currently for test)
         private void InitializeHourCollection()
         {
             HourCollection.Clear();
@@ -95,6 +90,10 @@ namespace KSAGrinder.Pages
             }
         }
     }
+    
+    /// <summary>
+    /// For row headers of "Timetable"
+    /// </summary>
     public class ConvertItemToIndex : IValueConverter
     {
         public static DataGrid DG;
@@ -103,10 +102,7 @@ namespace KSAGrinder.Pages
         {
             try
             {
-                //MainPage page = (MainPage)Application.Current.MainWindow.FindName("Mainpage");
-                //DataGrid dg = (DataGrid)page.FindName("Timetable");
                 CollectionView cv = DG.Items;
-                //Get the index of the item from the CollectionView
                 int rowindex = cv.IndexOf(value)+1;
 
                 Label label = new Label();
