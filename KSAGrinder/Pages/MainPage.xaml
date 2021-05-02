@@ -4,10 +4,48 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:KSAGrinder.Pages"
+      xmlns:sys="clr-namespace:System;assembly=mscorlib" 
+      DataContext="{Binding RelativeSource={RelativeSource Self}}"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="MainPage">
+    <Page.Resources>
+        <Style x:Key="DataGridStyle1" TargetType="{x:Type DataGrid}">
+            <Setter Property="ColumnHeaderStyle" Value="{DynamicResource ColumnHeaderStyle1}"/>
+        </Style>
+        <Style x:Key="ColumnHeaderStyle1" TargetType="DataGridColumnHeader">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="LightGray"/>
+        </Style>
+        <local:ConvertItemToIndex x:Key="IndexConverter"/>
+        <Style x:Key="RowHeaderStyle1" TargetType="{x:Type DataGridRowHeader}">
+            <Setter Property="Content" Value="{Binding Converter={StaticResource IndexConverter}}" />
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="LightGray"/>
+        </Style>
+    </Page.Resources>
+
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition MinWidth="500" Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <DataGrid Name="Timetable" Grid.RowSpan="2" Grid.Column="0" ColumnWidth="*"
+                  Style="{DynamicResource DataGridStyle1}" RowHeaderStyle="{StaticResource RowHeaderStyle1}"
+                  ItemsSource="{Binding}" AutoGenerateColumns="True"
+                  Margin="10" AlternatingRowBackground = "#F0F0F0" SelectionUnit="Cell"
+                  CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False"
+                  CanUserResizeRows="False" CanUserAddRows="False" IsReadOnly="True"
+                  HorizontalScrollBarVisibility="Disabled"/>
+
     </Grid>
 </Page>

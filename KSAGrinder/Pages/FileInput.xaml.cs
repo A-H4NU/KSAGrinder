@@ -38,7 +38,7 @@ namespace KSAGrinder.Pages
         {
             if (TrySelectFile(out DataSet result))
             {
-                _main.Main.Navigate(new MainPage());
+                _main.Main.Navigate(new MainPage(result));
             }
             else
             {
@@ -88,7 +88,7 @@ namespace KSAGrinder.Pages
 
                 if (TryUnzip(files[0], out DataSet result))
                 {
-                    _main.Main.Navigate(new MainPage());
+                    _main.Main.Navigate(new MainPage(result));
                 }
                 else
                 {

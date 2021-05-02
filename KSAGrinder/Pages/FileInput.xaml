@@ -9,11 +9,10 @@
       Title="FileInput">
 
     <Grid x:Name="grid">
-
+        <WrapPanel Background="Transparent" Drop="Page_Drop" AllowDrop="True"/>
         <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Grid.Row="1" Drop="Page_Drop" AllowDrop="True">
             <Label Content="Select or drag and drop a provided file." FontSize="20"/>
             <Button x:Name="BtnSelect" MaxWidth="100" Height="25" Content="Select.." Click="BtnSelect_Click"/>
         </WrapPanel>
-        <WrapPanel Background="Transparent" Drop="Page_Drop" AllowDrop="True"/>
     </Grid>
 </Page>
