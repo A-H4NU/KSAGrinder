@@ -52,19 +52,6 @@ namespace KSAGrinder.Pages
             }
         }
 
-        private bool TrySelectFile(out DataSet result)
-        {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Title = "Please select a provided file.";
-            ofd.Filter = "ZIP files (*.zip)|*.zip";
-            result = null;
-            if (ofd.ShowDialog() == true)
-            {
-                return TryUnzip(ofd.FileName, out result);
-            }
-            return false;
-        }
-
         private bool TryUnzip(string fileName, out DataSet result)
         {
             ZipArchive arch = ZipFile.OpenRead(fileName);
