@@ -1,21 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace KSAGrinder.Pages
 {
@@ -57,7 +47,7 @@ namespace KSAGrinder.Pages
         private void MainPage_SizeChanged(Object sender, SizeChangedEventArgs e)
         {
             double headerHeight = double.NaN;
-            foreach (var setter in Timetable.ColumnHeaderStyle.Setters)
+            foreach (SetterBase setter in Timetable.ColumnHeaderStyle.Setters)
             {
                 if (setter is Setter s && s.Property.Name == "Height")
                 {
@@ -110,9 +100,11 @@ namespace KSAGrinder.Pages
                 CollectionView cv = DG.Items;
                 int rowindex = cv.IndexOf(value)+1;
 
-                Label label = new Label();
-                label.Content = rowindex.ToString();
-                label.HorizontalAlignment = HorizontalAlignment.Center;
+                Label label = new Label
+                {
+                    Content = rowindex.ToString(),
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
                 return label;
             }
             catch (Exception e)
@@ -121,9 +113,6 @@ namespace KSAGrinder.Pages
             }
         }
 
-        public Object ConvertBack(Object value, Type targetType, Object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+        public Object ConvertBack(Object value, Type targetType, Object parameter, CultureInfo culture) => throw new NotImplementedException();
     }
 }

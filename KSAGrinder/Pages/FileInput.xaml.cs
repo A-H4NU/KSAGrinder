@@ -1,23 +1,12 @@
 ﻿using Microsoft.Win32;
 
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace KSAGrinder.Pages
 {
@@ -37,9 +26,11 @@ namespace KSAGrinder.Pages
 
         private void BtnSelect_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Title = "Please select a provided file.";
-            ofd.Filter = "ZIP files (*.zip)|*.zip";
+            var ofd = new OpenFileDialog
+            {
+                Title = "Please select a provided file.",
+                Filter = "ZIP files (*.zip)|*.zip"
+            };
             if (ofd.ShowDialog() == true)
             {
                 if (TryUnzip(ofd.FileName, out DataSet result))
@@ -57,18 +48,31 @@ namespace KSAGrinder.Pages
         {
             ZipArchive arch = ZipFile.OpenRead(fileName);
             result = null;
-            if (arch.Entries.Count != 2) return false;
-            var f = (from entry in arch.Entries select entry.Name).ToArray();
+            if (arch.Entries.Count != 2)
+            {
+                return false;
+            }
+
+            String[] f = (from entry in arch.Entries select entry.Name).ToArray();
             if (!(f[0].EndsWith(".xml", StringComparison.OrdinalIgnoreCase) && f[1].EndsWith(".xsd", StringComparison.OrdinalIgnoreCase) ||
                 f[1].EndsWith(".xml", StringComparison.OrdinalIgnoreCase) && f[0].EndsWith(".xsd", StringComparison.OrdinalIgnoreCase)))
+            {
                 return false;
+            }
+
             result = new DataSet();
             int xmlIdx = Array.FindIndex(f, (s) => s.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
             int xsdIdx = 1 - xmlIdx;
-            using (StreamReader sr = new StreamReader(arch.Entries[xsdIdx].Open()))
+            using (var sr = new StreamReader(arch.Entries[xsdIdx].Open()))
+            {
                 result.ReadXmlSchema(sr);
-            using (StreamReader sr = new StreamReader(arch.Entries[xmlIdx].Open()))
+            }
+
+            using (var sr = new StreamReader(arch.Entries[xmlIdx].Open()))
+            {
                 result.ReadXml(sr);
+            }
+
             arch.Dispose();
             return true;
         }
