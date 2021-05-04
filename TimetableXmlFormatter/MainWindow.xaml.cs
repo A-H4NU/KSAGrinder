@@ -114,10 +114,12 @@ namespace TimetableXmlFormatter
             DataTable lectureTable = new DataTable("Lecture");
             foreach (var (name, type, _) in lectureColumns)
                 lectureTable.Columns.Add(name, type);
+            lectureTable.PrimaryKey = new DataColumn[] { lectureTable.Columns["Code"] };
 
             DataTable classTable = new DataTable("Class");
             foreach (var (name, type, _) in classColumns)
                 classTable.Columns.Add(name, type);
+            classTable.PrimaryKey = new DataColumn[] { classTable.Columns["Code"] };
 
             var lectures = new Dictionary<string, string>(); // lecture name => code
             using (FileStream fs = new FileStream(classCSVpath, FileMode.Open, FileAccess.Read, FileShare.Read))
