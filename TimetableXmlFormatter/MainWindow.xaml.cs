@@ -6,16 +6,8 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace TimetableXmlFormatter
 {
@@ -37,25 +29,31 @@ namespace TimetableXmlFormatter
             { "일", DayOfWeek.Sunday },
         };
 
-        public MainWindow()
-        {
-            InitializeComponent();
-        }
+        public MainWindow() => InitializeComponent();
 
         private string GetCsvFile()
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+            var ofd = new OpenFileDialog
+            {
+                Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*"
+            };
             if (ofd.ShowDialog() == true)
+            {
                 return ofd.FileName;
+            }
+
             return null;
         }
 
         private void SelectFileWithButton(Button button)
         {
             string filename = GetCsvFile();
-            if (filename == null) return;
-            DockPanel panel = button.Parent as DockPanel;
+            if (filename == null)
+            {
+                return;
+            }
+
+            var panel = button.Parent as DockPanel;
             TextBox txt = panel.Children.OfType<TextBox>().First();
             txt.Text = filename;
             txt.ScrollToHorizontalOffset(Double.MaxValue);
@@ -69,9 +67,11 @@ namespace TimetableXmlFormatter
 
         private void BtnGen_Click(object sender, RoutedEventArgs e)
         {
-            TextBox[] txts = new TextBox[] { TxtClass, TxtCS1, TxtCS2 };
+            var txts = new TextBox[] { TxtClass, TxtCS1, TxtCS2 };
             if (txts.Any((txt) => String.IsNullOrEmpty(txt.Text)))
+            {
                 MessageBox.Show("Please fill in the all blanks.");
+            }
             else
             {
                 GenerateDataSet(TxtClass.Text, TxtCS1.Text, TxtCS2.Text);
@@ -81,8 +81,8 @@ namespace TimetableXmlFormatter
         private Dictionary<string, string> GenerateTranslationDictionary(string transPath)
         {
             var dict = new Dictionary<string, string>();
-            using (FileStream fs = new FileStream(transPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (StreamReader sr = new StreamReader(fs))
+            using (var fs = new FileStream(transPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var sr = new StreamReader(fs))
             {
                 while (!sr.EndOfStream)
                 {
@@ -135,18 +135,23 @@ namespace TimetableXmlFormatter
                 ("Note", typeof(string), 14)
             };
 
-            DataTable lectureTable = new DataTable("Lecture");
-            foreach (var (name, type, _) in lectureColumns)
+            var lectureTable = new DataTable("Lecture");
+            foreach ((String name, Type type, Int32 _) in lectureColumns)
+            {
                 lectureTable.Columns.Add(name, type);
+            }
+
             lectureTable.PrimaryKey = new DataColumn[] { lectureTable.Columns["Code"] };
 
-            DataTable classTable = new DataTable("Class");
-            foreach (var (name, type, _) in classColumns)
+            var classTable = new DataTable("Class");
+            foreach ((String name, Type type, Int32 _) in classColumns)
+            {
                 classTable.Columns.Add(name, type);
+            }
 
             var lectures = new Dictionary<string, string>(); // lecture name => code
-            using (FileStream fs = new FileStream(classCSVpath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (StreamReader sr = new StreamReader(fs))
+            using (var fs = new FileStream(classCSVpath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var sr = new StreamReader(fs))
             {
                 sr.ReadLine(); // skip column headers
                 while (!sr.EndOfStream)
@@ -171,9 +176,19 @@ namespace TimetableXmlFormatter
                         string value = values[classColumns[i].Index];
                         Type type = classColumns[i].Type;
                         object datum;
-                        if (type == typeof(string)) datum = value;
-                        else if (type == typeof(int)) datum = Int32.Parse(value);
-                        else datum = ConvertToTimes(value);
+                        if (type == typeof(string))
+                        {
+                            datum = value;
+                        }
+                        else if (type == typeof(int))
+                        {
+                            datum = Int32.Parse(value);
+                        }
+                        else
+                        {
+                            datum = ConvertToTimes(value);
+                        }
+
                         classData[i] = datum;
                     }
                     classTable.Rows.Add(classData);
@@ -184,7 +199,7 @@ namespace TimetableXmlFormatter
 
             #region Generate Student Table
 
-            DataTable studentTable = new DataTable("Student");
+            var studentTable = new DataTable("Student");
             studentTable.Columns.AddRange(new DataColumn[]
             {
                 new DataColumn("Number", typeof(string)),
@@ -192,34 +207,48 @@ namespace TimetableXmlFormatter
                 new DataColumn("Applied", typeof((string Code, int Number)[])),
             });
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             void ProcessStudentFile(string path)
             {
                 // indices of the first occurences of lecture names (on stdCSVpath1)
                 var firstIndex = new Dictionary<int, string>(); // (index, lecture name)
-                using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    using (StreamReader sr = new StreamReader(fs))
+                    using (var sr = new StreamReader(fs))
                     {
                         string[] firstRow = sr.ReadLine().Split(',');
                         for (int i = 1; i < firstRow.Length; ++i)
                         {
                             string lectureName = GetUntilOrEntire(firstRow[i], "(");
-                            if (firstIndex.ContainsValue(lectureName)) continue;
-                            else firstIndex.Add(i, lectureName);
+                            if (firstIndex.ContainsValue(lectureName))
+                            {
+                                continue;
+                            }
+                            else
+                            {
+                                firstIndex.Add(i, lectureName);
+                            }
                         }
                         sr.ReadLine();
                         while (!sr.EndOfStream)
                         {
                             string[] line = sr.ReadLine().Split(',');
-                            if (line[0].Length == 0 || line[0][0] < '0' || line[0][0] > '9') continue;
+                            if (line[0].Length == 0 || line[0][0] < '0' || line[0][0] > '9')
+                            {
+                                continue;
+                            }
+
                             string number = GetUntilOrEntire(line[0], "(");
                             string name = GetUntilOrEntire(line[0].Substring(number.Length + 1), ")");
                             var applied = new List<(string Code, int Number)>();
                             for (int i = 1; i < line.Length; ++i)
                             {
-                                if (line[i] != "1" || !firstRow[i].Contains("_")) continue;
+                                if (line[i] != "1" || !firstRow[i].Contains("_"))
+                                {
+                                    continue;
+                                }
+
                                 string[] @class = firstRow[i].Split('_');
                                 string code = lectures[@class[0].Substring(0, @class[0].LastIndexOf('('))];
                                 int classNum = Int32.Parse(@class[1]);
@@ -238,7 +267,7 @@ namespace TimetableXmlFormatter
 
             #endregion
 
-            DataSet ds = new DataSet("Status");
+            var ds = new DataSet("Status");
             ds.Tables.AddRange(new DataTable[]
             {
                 lectureTable,
