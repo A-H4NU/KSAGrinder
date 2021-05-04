@@ -35,13 +35,6 @@ namespace KSAGrinder.Pages
             _main = main;
         }
 
-        public ObservableCollection<string> Languages { get; private set; }
-            = new ObservableCollection<string>()
-            {
-                "English",
-                "한국어"
-            };
-
         private void BtnSelect_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();

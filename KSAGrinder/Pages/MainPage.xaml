@@ -55,6 +55,5 @@
                   CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False"
                   CanUserResizeRows="False" CanUserAddRows="False" IsReadOnly="True"
                   HorizontalScrollBarVisibility="Disabled"/>
-
     </Grid>
 </Page>
