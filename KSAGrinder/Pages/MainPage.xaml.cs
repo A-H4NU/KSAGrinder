@@ -41,6 +41,8 @@ namespace KSAGrinder.Pages
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public const double MinRowHeight = 50.0;
+
         public MainPage(DataSet data)
         {
             InitializeComponent();
@@ -54,25 +56,28 @@ namespace KSAGrinder.Pages
 
         private void MainPage_SizeChanged(Object sender, SizeChangedEventArgs e)
         {
-        }
-
-        public const int N_RowToShow = 10;
-        // Adjust eight of rows to show at most {N_RowToShow} classes
-        private void Timetable_Loaded(object sender, RoutedEventArgs e)
-        {
-            double columnHeight = double.NaN;
+            double headerHeight = double.NaN;
             foreach (var setter in Timetable.ColumnHeaderStyle.Setters)
             {
                 if (setter is Setter s && s.Property.Name == "Height")
                 {
-                    columnHeight = (double)s.Value;
+                    headerHeight = (double)s.Value;
                     break;
                 }
             }
-            Timetable.RowHeight = (Timetable.ActualHeight - columnHeight) / N_RowToShow;
+            double n_rowToShow = Math.Floor((Timetable.ActualHeight - headerHeight) / MinRowHeight);
+            Timetable.RowHeight = (Timetable.ActualHeight - headerHeight) / n_rowToShow;
         }
 
-        // Initialize Hour Collection (Currently for test)
+        private void Timetable_Loaded(object sender, RoutedEventArgs e)
+        {
+            Style dataGridElementStyle = (Style)Resources["TextBoxStyle"];
+            foreach (DataGridTextColumn column in Timetable.Columns)
+            {
+                column.ElementStyle = dataGridElementStyle;
+            }
+        }
+
         private void InitializeHourCollection()
         {
             HourCollection.Clear();
@@ -81,11 +86,11 @@ namespace KSAGrinder.Pages
                 HourCollection.Add(new StructHour()
                 {
                     Hour = i + 1,
-                    Monday = "Test",
-                    Tuesday = "Test",
-                    Wednesday = "Test",
-                    Thursday = "Test",
-                    Friday = "Test",
+                    Monday = String.Empty,
+                    Tuesday = String.Empty,
+                    Wednesday = String.Empty,
+                    Thursday = String.Empty,
+                    Friday = String.Empty,
                 });
             }
         }

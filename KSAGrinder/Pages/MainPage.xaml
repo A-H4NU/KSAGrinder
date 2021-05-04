@@ -7,24 +7,32 @@
       xmlns:sys="clr-namespace:System;assembly=mscorlib" 
       DataContext="{Binding RelativeSource={RelativeSource Self}}"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="720" d:DesignWidth="1280"
       Title="MainPage">
     <Page.Resources>
-        <Style x:Key="DataGridStyle1" TargetType="{x:Type DataGrid}">
-            <Setter Property="ColumnHeaderStyle" Value="{DynamicResource ColumnHeaderStyle1}"/>
+        <Style x:Key="DataGridStyle" TargetType="{x:Type DataGrid}">
+            <Setter Property="ColumnHeaderStyle" Value="{DynamicResource ColumnHeaderStyle}"/>
         </Style>
-        <Style x:Key="ColumnHeaderStyle1" TargetType="DataGridColumnHeader">
+        <Style x:Key="ColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
             <Setter Property="Height" Value="30"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="Background" Value="LightGray"/>
         </Style>
         <local:ConvertItemToIndex x:Key="IndexConverter"/>
-        <Style x:Key="RowHeaderStyle1" TargetType="{x:Type DataGridRowHeader}">
+        <Style x:Key="RowHeaderStyle" TargetType="{x:Type DataGridRowHeader}">
             <Setter Property="Content" Value="{Binding Converter={StaticResource IndexConverter}}" />
             <Setter Property="Width" Value="30"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Background" Value="LightGray"/>
+        </Style>
+        <Style x:Key="DataGridCellStyle" TargetType="{x:Type DataGridCell}">
+            <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+            <Setter Property="TextBlock.HorizontalAlignment" Value="Stretch"/>
+        </Style>
+        <!-- Used in MainPage.xaml.cs -->
+        <Style x:Key="TextBoxStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
     </Page.Resources>
 
@@ -34,14 +42,14 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MinWidth="500" Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition MinWidth="600" Width="3*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
 
         <DataGrid Name="Timetable" Grid.RowSpan="2" Grid.Column="0" ColumnWidth="*"
-                  Style="{DynamicResource DataGridStyle1}" RowHeaderStyle="{StaticResource RowHeaderStyle1}"
-                  ItemsSource="{Binding}" AutoGenerateColumns="True"
+                  Style="{DynamicResource DataGridStyle}" RowHeaderStyle="{StaticResource RowHeaderStyle}"
+                  CellStyle="{DynamicResource DataGridCellStyle}" ItemsSource="{Binding}" AutoGenerateColumns="True"
                   Margin="10" AlternatingRowBackground = "#F0F0F0" SelectionUnit="Cell"
                   CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False"
                   CanUserResizeRows="False" CanUserAddRows="False" IsReadOnly="True"
