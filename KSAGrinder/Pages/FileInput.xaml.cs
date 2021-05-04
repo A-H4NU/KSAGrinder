@@ -36,13 +36,19 @@ namespace KSAGrinder.Pages
 
         private void BtnSelect_Click(object sender, RoutedEventArgs e)
         {
-            if (TrySelectFile(out DataSet result))
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "Please select a provided file.";
+            ofd.Filter = "ZIP files (*.zip)|*.zip";
+            if (ofd.ShowDialog() == true)
             {
-                _main.Main.Navigate(new MainPage(result));
-            }
-            else
-            {
-                MessageBox.Show("Failed to load the file!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                if (TryUnzip(ofd.FileName, out DataSet result))
+                {
+                    _main.Main.Navigate(new MainPage(result));
+                }
+                else
+                {
+                    MessageBox.Show("Failed to load the file!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
