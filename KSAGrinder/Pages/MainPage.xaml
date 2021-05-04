@@ -33,6 +33,7 @@
         <!-- Used in MainPage.xaml.cs -->
         <Style x:Key="TextBoxStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
     </Page.Resources>
 

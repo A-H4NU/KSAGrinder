@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
 using System.IO.Compression;
@@ -33,6 +34,13 @@ namespace KSAGrinder.Pages
 
             _main = main;
         }
+
+        public ObservableCollection<string> Languages { get; private set; }
+            = new ObservableCollection<string>()
+            {
+                "English",
+                "한국어"
+            };
 
         private void BtnSelect_Click(object sender, RoutedEventArgs e)
         {
@@ -88,6 +96,11 @@ namespace KSAGrinder.Pages
                     MessageBox.Show("Failed to load the file!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        private void CmbLang_SelectionChanged(Object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }
