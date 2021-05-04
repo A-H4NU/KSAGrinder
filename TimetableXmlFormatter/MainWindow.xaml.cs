@@ -24,6 +24,8 @@ namespace TimetableXmlFormatter
     /// </summary>
     public partial class MainWindow : Window
     {
+        public const string ECEndsWith = "(EC)";
+
         public static readonly Dictionary<string, DayOfWeek> KoreanDayToEnum = new Dictionary<string, DayOfWeek>()
         {
             { "월", DayOfWeek.Monday },
@@ -71,7 +73,29 @@ namespace TimetableXmlFormatter
             if (txts.Any((txt) => String.IsNullOrEmpty(txt.Text)))
                 MessageBox.Show("Please fill in the all blanks.");
             else
+            {
                 GenerateDataSet(TxtClass.Text, TxtCS1.Text, TxtCS2.Text);
+            }
+        }
+
+        private Dictionary<string, string> GenerateTranslationDictionary(string transPath)
+        {
+            var dict = new Dictionary<string, string>();
+            using (FileStream fs = new FileStream(transPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (StreamReader sr = new StreamReader(fs))
+            {
+                while (!sr.EndOfStream)
+                {
+                    string[] line = sr.ReadLine().Split(new char[] { '>' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (line.Length == 2)
+                    {
+                        string kr = line[0].Substring(0, line[0].Length - 1);
+                        string en = line[1].Substring(1, line[1].Length - 1);
+                        dict.Add(kr, en);
+                    }
+                }
+            }
+            return dict;
         }
 
         /// <summary>
@@ -119,43 +143,40 @@ namespace TimetableXmlFormatter
             DataTable classTable = new DataTable("Class");
             foreach (var (name, type, _) in classColumns)
                 classTable.Columns.Add(name, type);
-            classTable.PrimaryKey = new DataColumn[] { classTable.Columns["Code"] };
 
             var lectures = new Dictionary<string, string>(); // lecture name => code
             using (FileStream fs = new FileStream(classCSVpath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (StreamReader sr = new StreamReader(fs))
             {
-                using (StreamReader sr = new StreamReader(fs))
+                sr.ReadLine(); // skip column headers
+                while (!sr.EndOfStream)
                 {
-                    sr.ReadLine();
-                    while (!sr.EndOfStream)
+                    string[] values = sr.ReadLine().Split(',');
+                    string code = values[lectureColumns[0].Index];
+                    string name = values[lectureColumns[1].Index];
+                    if (!lectures.ContainsValue(code)) // if the lecture is read first time
                     {
-                        string[] values = sr.ReadLine().Split(',');
-                        string code = values[lectureColumns[0].Index];
-                        string name = values[lectureColumns[1].Index];
-                        if (!lectures.ContainsValue(code)) // if the lecture is read first time
+                        lectures.Add(name, code);
+                        object[] lectureData = new object[lectureColumns.Length];
+                        for (int i = 0; i < lectureData.Length; ++i)
                         {
-                            lectures.Add(name, code);
-                            object[] lectureData = new object[lectureColumns.Length];
-                            for (int i = 0; i < lectureData.Length; ++i)
-                            {
-                                string value = values[lectureColumns[i].Index];
-                                lectureData[i] = lectureColumns[i].Type == typeof(string) ? (object)value : Int32.Parse(value);
-                            }
-                            lectureTable.Rows.Add(lectureData);
+                            string value = values[lectureColumns[i].Index];
+                            lectureData[i] = lectureColumns[i].Type == typeof(string) ? (object)value : Int32.Parse(value);
                         }
-                        object[] classData = new object[classColumns.Length];
-                        for (int i = 0; i < classData.Length; ++i)
-                        {
-                            string value = values[classColumns[i].Index];
-                            object datum = null;
-                            Type type = classColumns[i].Type;
-                            if (type == typeof(string)) datum = value;
-                            else if (type == typeof(int)) datum = Int32.Parse(value);
-                            else datum = ConvertToTimes(value);
-                            classData[i] = datum;
-                        }
-                        classTable.Rows.Add(classData);
+                        lectureTable.Rows.Add(lectureData);
                     }
+                    object[] classData = new object[classColumns.Length];
+                    for (int i = 0; i < classData.Length; ++i)
+                    {
+                        string value = values[classColumns[i].Index];
+                        Type type = classColumns[i].Type;
+                        object datum;
+                        if (type == typeof(string)) datum = value;
+                        else if (type == typeof(int)) datum = Int32.Parse(value);
+                        else datum = ConvertToTimes(value);
+                        classData[i] = datum;
+                    }
+                    classTable.Rows.Add(classData);
                 }
             }
 
@@ -225,8 +246,9 @@ namespace TimetableXmlFormatter
                 studentTable
             });
 
-            string xmlPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "data.xml");
-            string schPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "data.xsd");
+            string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string xmlPath = System.IO.Path.Combine(desktop, "data.xml");
+            string schPath = System.IO.Path.Combine(desktop, "data.xsd");
             ds.WriteXml(xmlPath, XmlWriteMode.IgnoreSchema);
             ds.WriteXmlSchema(schPath);
             MessageBox.Show("Done");
