@@ -35,6 +35,7 @@
         <!-- Used in MainPage.xaml.cs -->
         <Style x:Key="TextBoxStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
     </Page.Resources>
@@ -50,7 +51,20 @@
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
         <DockPanel x:Name="TimetablePanel" Grid.RowSpan="2" Margin="10">
-            <Label Content="Timetable" FontSize="15" DockPanel.Dock="Top" HorizontalContentAlignment="Center" Margin="0,0,0,5"/>
+            <Grid DockPanel.Dock="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="1" Content="Timetable" FontSize="15" HorizontalContentAlignment="Center" Margin="0,0,0,5"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,5">
+                    <Button x:Name="BtnLoadID" Content="Load from ID" Padding="5,0,5,0" Click="BtnLoadID_Click"/>
+                    <Button x:Name="BtnLoadFile" Content="Load from File" Padding="5,0,5,0" Margin="10,0,0,0" Click="BtnLoadFile_Click"/>
+                </StackPanel>
+            </Grid>
+            
+            
             <DataGrid x:Name="Timetable" ColumnWidth="*"
                   Style="{DynamicResource DataGridStyle}" RowHeaderStyle="{StaticResource RowHeaderStyle}"
                   CellStyle="{DynamicResource DataGridCellStyle}" ItemsSource="{Binding}" AutoGenerateColumns="True"

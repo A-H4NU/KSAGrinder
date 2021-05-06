@@ -1,8 +1,12 @@
-﻿using System;
+﻿using KSAGrinder.Windows;
+
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Globalization;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -14,7 +18,7 @@ namespace KSAGrinder.Pages
     /// </summary>
     public partial class MainPage : Page, INotifyPropertyChanged
     {
-        public struct StructHour
+        public struct HourStruct
         {
             public string Monday { get; set; }
             public string Tuesday { get; set; }
@@ -25,16 +29,20 @@ namespace KSAGrinder.Pages
             public int Hour;
         }
 
-        public string TestStr { get; set; } = "Test";
+        private readonly DataSet _data;
 
-        public ObservableCollection<StructHour> HourCollection { get; private set; } = new ObservableCollection<StructHour>();
+        public ObservableCollection<HourStruct> HourCollection { get; private set; } = new ObservableCollection<HourStruct>();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public const double MinRowHeight = 50.0;
+        public const double MaxRowHeight = 50.0;
+
+        public const int NRow = 14;
 
         public MainPage(DataSet data)
         {
+            _data = data;
+
             InitializeComponent();
             ConvertItemToIndex.DG = Timetable;
             Timetable.DataContext = HourCollection;
@@ -55,8 +63,15 @@ namespace KSAGrinder.Pages
                     break;
                 }
             }
-            double n_rowToShow = Math.Floor((Timetable.ActualHeight - headerHeight) / MinRowHeight);
-            Timetable.RowHeight = (Timetable.ActualHeight - headerHeight) / n_rowToShow;
+            double n_rowToShow = Math.Min(NRow, Math.Floor((Timetable.ActualHeight - headerHeight) / MaxRowHeight));
+            if (n_rowToShow != 0.0)
+            {
+                Timetable.RowHeight = (Timetable.ActualHeight - headerHeight) / n_rowToShow;
+            }
+            else
+            {
+                Timetable.RowHeight = MaxRowHeight;
+            }
         }
 
         private void Timetable_Loaded(object sender, RoutedEventArgs e)
@@ -71,9 +86,9 @@ namespace KSAGrinder.Pages
         private void InitializeHourCollection()
         {
             HourCollection.Clear();
-            for (int i = 0; i < 14; ++i)
+            for (int i = 0; i < NRow; ++i)
             {
-                HourCollection.Add(new StructHour()
+                HourCollection.Add(new HourStruct()
                 {
                     Hour = i + 1,
                     Monday = String.Empty,
@@ -84,8 +99,78 @@ namespace KSAGrinder.Pages
                 });
             }
         }
+
+        private void BtnLoadID_Click(Object sender, RoutedEventArgs e)
+        {
+            string GetString(DataRow classRow)
+            {
+                var tClass = _data.Tables["Class"];
+                var ccCode = tClass.Columns["Code"];
+                var ccTeacher = tClass.Columns["Teacher"];
+                var ccNumber = tClass.Columns["Number"];
+                var tLecture = _data.Tables["Lecture"];
+                var clName = tLecture.Columns["Name"];
+                DataRow lectureRow = tLecture.Rows.Find(classRow[ccCode]);
+                return $"{lectureRow[clName]}{Environment.NewLine}"
+                     + $"Class #{classRow[ccNumber]}{Environment.NewLine}"
+                     + $"{classRow[ccTeacher]}";
+            }
+
+            var dialog = new LoadFromID(_data);
+            dialog.ShowDialog();
+            if (dialog.Result != null)
+            {
+                DataRow result = dialog.Result;
+                var tStudent = _data.Tables["Student"];
+                var csApplied = tStudent.Columns["Applied"];
+                var tClass = _data.Tables["Class"];
+                var ccCode = tClass.Columns["Code"];
+                var ccNumber = tClass.Columns["Number"];
+                var ccTime = tClass.Columns["Time"];
+                var tLecture = _data.Tables["Lecture"];
+
+                InitializeHourCollection();
+                var hours = new string[NRow, 5];
+                var applied = ((string Code, int Number)[])result[csApplied];
+                foreach (var (code, number) in applied)
+                {
+                    foreach (DataRow row in tClass.Rows)
+                    {
+                        if (!(row[ccCode].Equals(code) && row[ccNumber].Equals(number)))
+                        {
+                            continue;
+                        }
+                        string tableStr = GetString(row);
+                        var times = ((DayOfWeek Day, int Hour)[])row[ccTime];
+                        foreach (var (day, hour) in times)
+                        {
+                            hours[hour - 1, (int)day - 1] = tableStr;
+                        }
+                    }
+                }
+                HourCollection.Clear();
+                int n = hours.GetLength(0);
+                for (int i = 0; i < n; ++i)
+                {
+                    HourCollection.Add(new HourStruct()
+                    {
+                        Hour        = i + 1,
+                        Monday      = hours[i, 0],
+                        Tuesday     = hours[i, 1],
+                        Wednesday   = hours[i, 2],
+                        Thursday    = hours[i, 3],
+                        Friday      = hours[i, 4],
+                    });
+                }
+            }
+        }
+
+        private void BtnLoadFile_Click(Object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
     }
-    
+
     /// <summary>
     /// For row headers of "Timetable"
     /// </summary>

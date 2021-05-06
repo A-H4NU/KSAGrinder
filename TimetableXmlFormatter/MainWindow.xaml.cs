@@ -202,12 +202,13 @@ namespace TimetableXmlFormatter
             var studentTable = new DataTable("Student");
             studentTable.Columns.AddRange(new DataColumn[]
             {
-                new DataColumn("Number", typeof(string)),
+                new DataColumn("ID", typeof(string)),
                 new DataColumn("Name", typeof(string)),
                 new DataColumn("Applied", typeof((string Code, int Number)[])),
             });
+            studentTable.PrimaryKey = new DataColumn[] { studentTable.Columns["ID"] };
 
-            var sb = new StringBuilder();
+            var processedID = new HashSet<string>();
 
             void ProcessStudentFile(string path)
             {
@@ -239,8 +240,15 @@ namespace TimetableXmlFormatter
                                 continue;
                             }
 
-                            string number = GetUntilOrEntire(line[0], "(");
-                            string name = GetUntilOrEntire(line[0].Substring(number.Length + 1), ")");
+                            string id = GetUntilOrEntire(line[0], "(");
+                            string name = GetUntilOrEntire(line[0].Substring(id.Length + 1), ")");
+
+                            if (processedID.Contains(id))
+                            {
+                                continue;
+                            }
+                            processedID.Add(id);
+
                             var applied = new List<(string Code, int Number)>();
                             for (int i = 1; i < line.Length; ++i)
                             {
@@ -254,7 +262,7 @@ namespace TimetableXmlFormatter
                                 int classNum = Int32.Parse(@class[1]);
                                 applied.Add((code, classNum));
                             }
-                            studentTable.Rows.Add(number, name, applied.ToArray());
+                            studentTable.Rows.Add(id, name, applied.ToArray());
                         }
                     }
                 }
@@ -262,8 +270,6 @@ namespace TimetableXmlFormatter
 
             ProcessStudentFile(stdCSVpath1);
             ProcessStudentFile(stdCSVpath2);
-
-            File.WriteAllText(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "결과.txt"), sb.ToString());
 
             #endregion
 
