@@ -12,7 +12,7 @@
     <Grid x:Name="grid">
         <WrapPanel Background="Transparent" Drop="Page_Drop" AllowDrop="True"/>
         <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Drop="Page_Drop" AllowDrop="True">
-            <Label Content="Select or drag and drop a provided file." FontSize="20"/>
+            <Label Content="Select or drag and drop a provided file." FontSize="20" Margin="0,0,0,10"/>
             <Button x:Name="BtnSelect" MaxWidth="100" Height="25" Content="Select.." Click="BtnSelect_Click"/>
         </WrapPanel>
     </Grid>
