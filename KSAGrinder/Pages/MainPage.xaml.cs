@@ -169,6 +169,16 @@ namespace KSAGrinder.Pages
         {
             throw new NotImplementedException();
         }
+
+        private void BtnSave_Click(Object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void BtnSaveAs_Click(Object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>
