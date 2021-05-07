@@ -16,7 +16,7 @@ namespace KSAGrinder.Pages
     /// <summary>
     /// Interaction logic for MainPage.xaml
     /// </summary>
-    public partial class MainPage : Page, INotifyPropertyChanged
+    public partial class MainPage : Page
     {
         public struct HourStruct
         {
@@ -31,9 +31,9 @@ namespace KSAGrinder.Pages
 
         private readonly DataSet _data;
 
-        public ObservableCollection<HourStruct> HourCollection { get; private set; } = new ObservableCollection<HourStruct>();
+        private readonly List<(string Code, int Number)> _classList;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public ObservableCollection<HourStruct> HourCollection { get; private set; } = new ObservableCollection<HourStruct>();
 
         public const double MaxRowHeight = 50.0;
 
@@ -42,6 +42,7 @@ namespace KSAGrinder.Pages
         public MainPage(DataSet data)
         {
             _data = data;
+            _classList = new List<(string Code, int Number)>();
 
             InitializeComponent();
             ConvertItemToIndex.DG = Timetable;
@@ -51,6 +52,76 @@ namespace KSAGrinder.Pages
 
             SizeChanged += MainPage_SizeChanged;
         }
+
+        private void UpdateHourCollection()
+        {
+            var tClass = _data.Tables["Class"];
+            var ccCode = tClass.Columns["Code"];
+            var ccTeacher = tClass.Columns["Teacher"];
+            var ccNumber = tClass.Columns["Number"];
+            var ccTime = tClass.Columns["Time"];
+            var tLecture = _data.Tables["Lecture"];
+            var clName = tLecture.Columns["Name"];
+
+            var hours = new string[NRow, 5];
+            
+            foreach (var (code, number) in _classList)
+            {
+                DataRow classRow = null;
+                foreach (DataRow row in tClass.Rows)
+                {
+                    if ((string)row[ccCode] == code && (int)row[ccNumber] == number)
+                    {
+                        classRow = row;
+                        break;
+                    }
+                }
+                DataRow lectureRow = tLecture.Rows.Find(code);
+
+                var classStr = $"{lectureRow[clName]}{Environment.NewLine}"
+                             + $"Class #{classRow[ccNumber]}{Environment.NewLine}"
+                             + $"{classRow[ccTeacher]}";
+
+                var times = ((DayOfWeek Day, int Hour)[])classRow[ccTime];
+                foreach (var (day, hour) in times)
+                {
+                    hours[hour - 1, (int)day - 1] = classStr;
+                }
+            }
+
+            HourCollection.Clear();
+            for (int i = 0; i < NRow; ++i)
+            {
+                HourCollection.Add(new HourStruct()
+                {
+                    Hour        = i + 1,
+                    Monday      = hours[i, 0],
+                    Tuesday     = hours[i, 1],
+                    Wednesday   = hours[i, 2],
+                    Thursday    = hours[i, 3],
+                    Friday      = hours[i, 4],
+                });
+            }
+        }
+
+        private void InitializeHourCollection()
+        {
+            HourCollection.Clear();
+            for (int i = 0; i < NRow; ++i)
+            {
+                HourCollection.Add(new HourStruct()
+                {
+                    Hour = i + 1,
+                    Monday = String.Empty,
+                    Tuesday = String.Empty,
+                    Wednesday = String.Empty,
+                    Thursday = String.Empty,
+                    Friday = String.Empty,
+                });
+            }
+        }
+
+        #region Events
 
         private void MainPage_SizeChanged(Object sender, SizeChangedEventArgs e)
         {
@@ -83,38 +154,8 @@ namespace KSAGrinder.Pages
             }
         }
 
-        private void InitializeHourCollection()
-        {
-            HourCollection.Clear();
-            for (int i = 0; i < NRow; ++i)
-            {
-                HourCollection.Add(new HourStruct()
-                {
-                    Hour = i + 1,
-                    Monday = String.Empty,
-                    Tuesday = String.Empty,
-                    Wednesday = String.Empty,
-                    Thursday = String.Empty,
-                    Friday = String.Empty,
-                });
-            }
-        }
-
         private void BtnLoadID_Click(Object sender, RoutedEventArgs e)
         {
-            string GetString(DataRow classRow)
-            {
-                var tClass = _data.Tables["Class"];
-                var ccCode = tClass.Columns["Code"];
-                var ccTeacher = tClass.Columns["Teacher"];
-                var ccNumber = tClass.Columns["Number"];
-                var tLecture = _data.Tables["Lecture"];
-                var clName = tLecture.Columns["Name"];
-                DataRow lectureRow = tLecture.Rows.Find(classRow[ccCode]);
-                return $"{lectureRow[clName]}{Environment.NewLine}"
-                     + $"Class #{classRow[ccNumber]}{Environment.NewLine}"
-                     + $"{classRow[ccTeacher]}";
-            }
 
             var dialog = new LoadFromID(_data);
             dialog.ShowDialog();
@@ -127,41 +168,11 @@ namespace KSAGrinder.Pages
                 var ccCode = tClass.Columns["Code"];
                 var ccNumber = tClass.Columns["Number"];
                 var ccTime = tClass.Columns["Time"];
-                var tLecture = _data.Tables["Lecture"];
 
-                InitializeHourCollection();
-                var hours = new string[NRow, 5];
-                var applied = ((string Code, int Number)[])result[csApplied];
-                foreach (var (code, number) in applied)
-                {
-                    foreach (DataRow row in tClass.Rows)
-                    {
-                        if (!(row[ccCode].Equals(code) && row[ccNumber].Equals(number)))
-                        {
-                            continue;
-                        }
-                        string tableStr = GetString(row);
-                        var times = ((DayOfWeek Day, int Hour)[])row[ccTime];
-                        foreach (var (day, hour) in times)
-                        {
-                            hours[hour - 1, (int)day - 1] = tableStr;
-                        }
-                    }
-                }
-                HourCollection.Clear();
-                int n = hours.GetLength(0);
-                for (int i = 0; i < n; ++i)
-                {
-                    HourCollection.Add(new HourStruct()
-                    {
-                        Hour        = i + 1,
-                        Monday      = hours[i, 0],
-                        Tuesday     = hours[i, 1],
-                        Wednesday   = hours[i, 2],
-                        Thursday    = hours[i, 3],
-                        Friday      = hours[i, 4],
-                    });
-                }
+                
+                _classList.Clear();
+                _classList.AddRange(((string Code, int Number)[])result[csApplied]);
+                UpdateHourCollection();
             }
         }
 
@@ -179,6 +190,8 @@ namespace KSAGrinder.Pages
         {
             throw new NotImplementedException();
         }
+
+        #endregion
     }
 
     /// <summary>
