@@ -78,26 +78,6 @@ namespace TimetableXmlFormatter
             }
         }
 
-        private Dictionary<string, string> GenerateTranslationDictionary(string transPath)
-        {
-            var dict = new Dictionary<string, string>();
-            using (var fs = new FileStream(transPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (var sr = new StreamReader(fs))
-            {
-                while (!sr.EndOfStream)
-                {
-                    string[] line = sr.ReadLine().Split(new char[] { '>' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (line.Length == 2)
-                    {
-                        string kr = line[0].Substring(0, line[0].Length - 1);
-                        string en = line[1].Substring(1, line[1].Length - 1);
-                        dict.Add(kr, en);
-                    }
-                }
-            }
-            return dict;
-        }
-
         /// <summary>
         /// Assumed there are CSV files at those paths
         /// </summary>
