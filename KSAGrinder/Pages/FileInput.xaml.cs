@@ -94,10 +94,5 @@ namespace KSAGrinder.Pages
                 }
             }
         }
-
-        private void CmbLang_SelectionChanged(Object sender, SelectionChangedEventArgs e)
-        {
-
-        }
     }
 }
