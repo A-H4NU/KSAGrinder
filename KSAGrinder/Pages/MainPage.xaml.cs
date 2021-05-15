@@ -1,15 +1,21 @@
 ﻿using KSAGrinder.Windows;
 
+using Microsoft.Win32;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Globalization;
-using System.Reflection;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Xml;
 
 namespace KSAGrinder.Pages
 {
@@ -31,7 +37,43 @@ namespace KSAGrinder.Pages
 
         private readonly DataSet _data;
 
+        private readonly string _hash;
+
+        private readonly string _windowTitle;
+
+        private readonly MainWindow _main;
+
         private readonly List<(string Code, int Number)> _classList;
+
+        private string _workingWith = null;
+
+        public static readonly byte[] Key =
+            {
+                0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16
+            };
+
+        private string WorkingWith
+        {
+            get => _workingWith;
+            set
+            {
+                _workingWith = value;
+                _main.Title = $"{_windowTitle} - {_workingWith}";
+            }
+        }
+
+        private bool _modified = false;
+
+        private bool Modified
+        {
+            get => _modified;
+            set
+            {
+                _modified = value;
+                _main.Title = $"{_windowTitle} - {_workingWith}{(_modified ? "*" : "")}";
+            }
+        }
 
         public ObservableCollection<HourStruct> HourCollection { get; private set; } = new ObservableCollection<HourStruct>();
 
@@ -39,9 +81,13 @@ namespace KSAGrinder.Pages
 
         public const int NRow = 14;
 
-        public MainPage(DataSet data)
+        public MainPage(MainWindow main, DataSet data, string hash)
         {
+            _main = main;
             _data = data;
+            _hash = hash;
+            _windowTitle = _main.Title;
+
             _classList = new List<(string Code, int Number)>();
 
             InitializeComponent();
@@ -121,9 +167,127 @@ namespace KSAGrinder.Pages
             }
         }
 
+        private void SaveXmlInBinary(string filePath)
+        {
+            #region Construct XmlDocument 
+
+            var xdoc = new XmlDocument();
+
+            var root = xdoc.CreateElement("Timetable");
+            var attHash = xdoc.CreateAttribute("Hash");
+            attHash.Value = _hash;
+            root.Attributes.Append(attHash);
+            xdoc.AppendChild(root);
+
+            foreach (var (code, number) in _classList)
+            {
+                var node = xdoc.CreateElement("Class");
+                var nCode = xdoc.CreateElement("Code");
+                nCode.InnerText = code;
+                node.AppendChild(nCode);
+                var nNumber = xdoc.CreateElement("Number");
+                nNumber.InnerText = number.ToString();
+                node.AppendChild(nNumber);
+                root.AppendChild(node);
+            }
+
+            string xmlStr = null;
+            using (var sw = new StringWriter())
+            using (var xw = XmlWriter.Create(sw))
+            {
+                xdoc.WriteTo(xw);
+                xw.Flush();
+                xmlStr = sw.GetStringBuilder().ToString();
+            }
+
+            #endregion
+
+            #region Ecrypt and save the XMLDocument in the specified path
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var aes = Aes.Create())
+            {
+                aes.Key = Key;
+
+                byte[] iv = aes.IV;
+                fileStream.Write(iv, 0, iv.Length);
+
+                using (var cryptoStream = new CryptoStream(fileStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                using (var encryptWriter = new StreamWriter(cryptoStream))
+                {
+                    encryptWriter.Write(xmlStr);
+                }
+            }
+
+            #endregion
+        }
+
+        private void LoadXmlInBinary(string filePath)
+        {
+            // Find the first child node with the specified name
+            XmlNode FindByName(XmlNode node, string name, StringComparison comparisonType = StringComparison.OrdinalIgnoreCase)
+            {
+                foreach (XmlNode child in node.ChildNodes)
+                {
+                    if (string.Equals(child.Name, name, comparisonType))
+                    {
+                        return child;
+                    }
+                }
+                return null;
+            }
+
+            XmlDocument xdoc = new XmlDocument();
+            using (var fileStream = new FileStream(filePath, FileMode.Open))
+            using (var aes = Aes.Create())
+            {
+                byte[] iv = new byte[aes.IV.Length];
+                int numBytesToRead = aes.IV.Length;
+                int numBytesRead = 0;
+                while (numBytesToRead > 0)
+                {
+                    int n = fileStream.Read(iv, numBytesRead, numBytesToRead);
+                    if (n == 0) break;
+
+                    numBytesRead += n;
+                    numBytesToRead -= n;
+                }
+
+                using (var cryptoStream = new CryptoStream(fileStream, aes.CreateDecryptor(Key, iv), CryptoStreamMode.Read))
+                using (var decryptReader = new StreamReader(cryptoStream))
+                {
+                    string decrypted = decryptReader.ReadToEnd();
+                    xdoc.LoadXml(decrypted);
+                }
+            }
+
+            var newList = new List<(string Code, int Number)>();
+            XmlElement root = xdoc.DocumentElement;
+            string hash = root.Attributes.GetNamedItem("Hash").Value;
+            if (_hash == hash)
+            {
+                foreach (XmlNode cls in root.ChildNodes)
+                {
+                    var arr = cls.ChildNodes.Cast<XmlNode>().ToArray();
+                    if (arr.Length != 2)
+                    {
+                        throw new Exception("Format error.");
+                    }
+                    newList.Add((FindByName(cls, "Code").InnerText, Int32.Parse(FindByName(cls, "Number").InnerText)));
+                }
+                _classList.Clear();
+                _classList.AddRange(newList);
+                UpdateHourCollection();
+            }
+            else
+            {
+                throw new Exception("The file might be from a different dataset.");
+            }
+        }
+
         #region Events
 
-        private void MainPage_SizeChanged(Object sender, SizeChangedEventArgs e)
+        private void MainPage_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             double headerHeight = double.NaN;
             foreach (SetterBase setter in Timetable.ColumnHeaderStyle.Setters)
@@ -154,9 +318,8 @@ namespace KSAGrinder.Pages
             }
         }
 
-        private void BtnLoadID_Click(Object sender, RoutedEventArgs e)
+        private void BtnLoadID_Click(object sender, RoutedEventArgs e)
         {
-
             var dialog = new LoadFromID(_data);
             dialog.ShowDialog();
             if (dialog.Result != null)
@@ -164,31 +327,88 @@ namespace KSAGrinder.Pages
                 DataRow result = dialog.Result;
                 var tStudent = _data.Tables["Student"];
                 var csApplied = tStudent.Columns["Applied"];
-                var tClass = _data.Tables["Class"];
-                var ccCode = tClass.Columns["Code"];
-                var ccNumber = tClass.Columns["Number"];
-                var ccTime = tClass.Columns["Time"];
 
+                var newList = ((string Code, int Number)[])result[csApplied];
                 
-                _classList.Clear();
-                _classList.AddRange(((string Code, int Number)[])result[csApplied]);
-                UpdateHourCollection();
+                if (!Enumerable.SequenceEqual(newList, _classList))
+                {
+                    _classList.Clear();
+                    _classList.AddRange(newList);
+                    UpdateHourCollection();
+
+                    Modified = true;
+                }
             }
         }
 
-        private void BtnLoadFile_Click(Object sender, RoutedEventArgs e)
+        private void BtnOpen_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            if (Modified)
+            {
+                var result = MessageBox.Show(
+                    "Want to discard the current progress and open a new file?",
+                    "Opening a new file when modifying",
+                    MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+            }
+            try
+            {
+                var ofd = new OpenFileDialog();
+                ofd.Filter = "Binary files (*.bin)|*.bin|All files (*.*)|*.*";
+                if (ofd.ShowDialog() == true)
+                {
+                    LoadXmlInBinary(ofd.FileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Failed to load the file.{Environment.NewLine}{ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
         }
 
-        private void BtnSave_Click(Object sender, RoutedEventArgs e)
+        private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            if (WorkingWith == null)
+            {
+                BtnSaveAs_Click(sender, e);
+                return;
+            }
+            try
+            {
+                SaveXmlInBinary(WorkingWith);
+                Modified = false;
+            }
+            catch
+            {
+                MessageBox.Show("Failed to save!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void BtnSaveAs_Click(Object sender, RoutedEventArgs e)
+        private void BtnSaveAs_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            try
+            {
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.Filter = "Binary files (*.bin)|*.bin";
+                if (sfd.ShowDialog() == true)
+                {
+                    SaveXmlInBinary(sfd.FileName);
+                    WorkingWith = sfd.FileName;
+                    Modified = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Failed to save!{Environment.NewLine}{ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         #endregion

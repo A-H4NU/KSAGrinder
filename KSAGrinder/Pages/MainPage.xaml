@@ -57,10 +57,10 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Label Grid.Column="1" Content="Timetable" FontSize="22" FontWeight="SemiBold" FontStyle="Italic" HorizontalContentAlignment="Center"/>
+                <Label Grid.Column="1" Content="Course Schedule" FontSize="22" FontWeight="SemiBold" FontStyle="Italic" HorizontalContentAlignment="Center"/>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,5">
                     <Button x:Name="BtnLoadID" Content="Load from ID" Height="25" Padding="5,0,5,0" Click="BtnLoadID_Click"/>
-                    <Button x:Name="BtnLoadFile" Content="Load from File" Height="25" Padding="5,0,5,0" Margin="10,0,0,0" Click="BtnLoadFile_Click"/>
+                    <Button x:Name="BtnOpen" Content="Open.." Height="25" Padding="5,0,5,0" Margin="10,0,0,0" Click="BtnOpen_Click"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,5">
                     <Button x:Name="BtnSave" Content="Save" Height="25" Padding="5,0,5,0" Click="BtnSave_Click"/>
