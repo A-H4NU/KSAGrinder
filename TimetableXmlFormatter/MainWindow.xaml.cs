@@ -18,7 +18,7 @@ namespace TimetableXmlFormatter
     {
         public const string ECEndsWith = "(EC)";
 
-        public static readonly Dictionary<string, DayOfWeek> KoreanDayToEnum = new Dictionary<string, DayOfWeek>()
+        private static readonly Dictionary<string, DayOfWeek> KoreanDayToEnum = new Dictionary<string, DayOfWeek>()
         {
             { "월", DayOfWeek.Monday },
             { "화", DayOfWeek.Tuesday },
@@ -28,6 +28,43 @@ namespace TimetableXmlFormatter
             { "토", DayOfWeek.Saturday },
             { "일", DayOfWeek.Sunday },
         };
+
+        private static readonly Dictionary<string, string> Departments = new Dictionary<string, string>()
+        {
+            {"수리정보과학부", "MathCS"},
+            {"물리지구과학부", "Newton"},
+            {"화학생물학부", "ChemBio"},
+            {"인문예술학부", "Human"}
+        };
+
+        private string DepartmentToEng(string department)
+        {
+            double Similarity(string a, string b)
+            {
+                int m = a.Length, n = b.Length;
+                int[,] dist = new int[m+1, n+1];
+                for (int i = 0; i <= m; ++i) dist[i, 0] = i;
+                for (int j = 0; j <= n; ++j) dist[0, j] = j;
+
+                for (int i = 1; i <= m; ++i)
+                {
+                    for (int j = 1; j <= n; ++j)
+                    {
+                        int min = Enumerable.Min(new int[] {
+                            1 + dist[i-1, 0],
+                            1 + dist[i, j-1],
+                            (a[i-1] != b[j-1] ? 1 : 0) + dist[i-1, j-1] });
+                        dist[i, j] = min;
+                    }
+                }
+                return 1 - (double)dist[m, n] / Math.Max(m, n);
+            }
+
+            var similiarities = from s in Departments.Keys select Similarity(s, department);
+            double maxSim = similiarities.Max();
+            int index = similiarities.ToList().IndexOf(maxSim);
+            return Departments.Values.ToList()[index];
+        }
 
         public MainWindow() => InitializeComponent();
 
@@ -101,7 +138,7 @@ namespace TimetableXmlFormatter
             {
                 ("Code", typeof(string), 3), // this must be first
                 ("Name", typeof(string), 6), // this must be second
-                ("Group", typeof(string), 4),
+                ("Department", typeof(string), 4),
                 ("Credit", typeof(int), 12),
                 ("Hours", typeof(int), 13),
             };
@@ -142,11 +179,13 @@ namespace TimetableXmlFormatter
                     if (!lectures.ContainsValue(code)) // if the lecture is read first time
                     {
                         lectures.Add(name, code);
-                        object[] lectureData = new object[lectureColumns.Length];
+                        string[] lectureData = new string[lectureColumns.Length];
                         for (int i = 0; i < lectureData.Length; ++i)
                         {
                             string value = values[lectureColumns[i].Index];
-                            lectureData[i] = lectureColumns[i].Type == typeof(string) ? (object)value : Int32.Parse(value);
+                            if (lectureColumns[i].Name == "Department")
+                                value = DepartmentToEng(value);
+                            lectureData[i] = value; // lectureColumns[i].Type == typeof(string) ? value : Int32.Parse(value);
                         }
                         lectureTable.Rows.Add(lectureData);
                     }
@@ -295,5 +334,5 @@ namespace TimetableXmlFormatter
             }
             return text;
         }
-    }    
+    }
 }
