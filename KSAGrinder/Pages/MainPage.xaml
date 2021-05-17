@@ -10,17 +10,20 @@
       d:DesignHeight="720" d:DesignWidth="1280"
       Title="MainPage" Background="White">
     <Page.Resources>
-        <Style x:Key="DataGridStyle" TargetType="{x:Type DataGrid}">
-            <Setter Property="ColumnHeaderStyle" Value="{DynamicResource ColumnHeaderStyle}"/>
+        <!-- Timetable Styles -->
+        <Style x:Key="TimetableDataGridStyle" TargetType="{x:Type DataGrid}">
+            <Setter Property="ColumnHeaderStyle" Value="{DynamicResource TimetableColumnHeaderStyle}"/>
+            <Setter Property="RowHeaderStyle" Value="{DynamicResource TimetableRowHeaderStyle}"/>
+            <Setter Property="CellStyle" Value="{DynamicResource TimetableDataGridCellStyle}"/>
         </Style>
-        <Style x:Key="ColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
+        <Style x:Key="TimetableColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
             <Setter Property="Height" Value="30"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="Background" Value="LightGray"/>
             <Setter Property="FontSize" Value="15"/>
         </Style>
         <local:ConvertItemToIndex x:Key="IndexConverter"/>
-        <Style x:Key="RowHeaderStyle" TargetType="{x:Type DataGridRowHeader}">
+        <Style x:Key="TimetableRowHeaderStyle" TargetType="{x:Type DataGridRowHeader}">
             <Setter Property="Content" Value="{Binding Converter={StaticResource IndexConverter}}" />
             <Setter Property="Width" Value="30"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
@@ -28,9 +31,20 @@
             <Setter Property="Background" Value="LightGray"/>
             <Setter Property="FontSize" Value="15"/>
         </Style>
-        <Style x:Key="DataGridCellStyle" TargetType="{x:Type DataGridCell}">
+        <Style x:Key="TimetableDataGridCellStyle" TargetType="{x:Type DataGridCell}">
             <Setter Property="TextBlock.TextAlignment" Value="Center"/>
             <Setter Property="TextBlock.HorizontalAlignment" Value="Stretch"/>
+        </Style>
+        <!-- LectureTable Styles -->
+        <Style x:Key="LectureTableDataGridStyle" TargetType="{x:Type DataGrid}">
+            <Setter Property="ColumnHeaderStyle" Value="{DynamicResource LectureTableColumnHeaderStyle}"/>
+            <Setter Property="CellStyle" Value="{DynamicResource TimetableDataGridCellStyle}"/>
+        </Style>
+        <Style x:Key="LectureTableColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <!--"<Setter Property="Background" Value="LightGray"/>-->
+            <Setter Property="FontSize" Value="13"/>
         </Style>
         <!-- Used in MainPage.xaml.cs -->
         <Style x:Key="TextBoxStyle" TargetType="{x:Type TextBlock}">
@@ -67,15 +81,25 @@
                     <Button x:Name="BtnSaveAs" Content="Save As.." Height="25" Padding="5,0,5,0" Margin="10,0,0,0" Click="BtnSaveAs_Click"/>
                 </StackPanel>
             </Grid>
-            
-            
             <DataGrid x:Name="Timetable" ColumnWidth="*"
-                  Style="{DynamicResource DataGridStyle}" RowHeaderStyle="{StaticResource RowHeaderStyle}"
-                  CellStyle="{DynamicResource DataGridCellStyle}" ItemsSource="{Binding}" AutoGenerateColumns="True"
-                  AlternatingRowBackground = "#F0F0F0" SelectionUnit="Cell"
-                  CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False"
-                  CanUserResizeRows="False" CanUserAddRows="False" IsReadOnly="True"
-                  HorizontalScrollBarVisibility="Disabled"/>
+                      Style="{DynamicResource TimetableDataGridStyle}"
+                      ItemsSource="{Binding}" AutoGenerateColumns="True"
+                      AlternatingRowBackground = "#F0F0F0" SelectionUnit="Cell"
+                      CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False"
+                      CanUserResizeRows="False" CanUserAddRows="False" IsReadOnly="True"
+                      HorizontalScrollBarVisibility="Disabled"/>
+        </DockPanel>
+        <DockPanel Margin="10" Grid.Column="1" Grid.Row="0">
+            <DockPanel DockPanel.Dock="Top" Margin="0,15,0,10">
+                <Label Content="Department: " FontSize="13"/>
+                <ComboBox x:Name="CmbDepartment" DockPanel.Dock="Right" FontSize="13" VerticalContentAlignment="Center" SelectedIndex="0"
+                          ItemsSource="{Binding DepartmentCollection}" SelectionChanged="CmbDepartment_SelectionChanged"/>
+            </DockPanel>
+
+            <DataGrid DockPanel.Dock="Bottom" x:Name="LectureTable" ColumnWidth="*"
+                      Style="{DynamicResource LectureTableDataGridStyle}" ItemsSource="{Binding LectureCollection}"
+                      HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
+                      CanUserResizeColumns="False" CanUserAddRows="False" IsReadOnly="True"/>
         </DockPanel>
     </Grid>
 </Page>

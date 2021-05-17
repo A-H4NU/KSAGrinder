@@ -5,13 +5,11 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -33,6 +31,17 @@ namespace KSAGrinder.Pages
             public string Friday { get; set; }
 
             public int Hour;
+        }
+
+        public struct LectureStruct
+        {
+            public string Department { get; set; }
+            public string Name { get; set; }
+        }
+
+        public enum Department
+        {
+            All, MathCS, Newton, ChemBio, Human
         }
 
         private readonly DataSet _data;
@@ -77,6 +86,10 @@ namespace KSAGrinder.Pages
 
         public ObservableCollection<HourStruct> HourCollection { get; private set; } = new ObservableCollection<HourStruct>();
 
+        public ObservableCollection<Department> DepartmentCollection { get; private set; } = new ObservableCollection<Department>();
+
+        public ObservableCollection<LectureStruct> LectureCollection { get; private set; } = new ObservableCollection<LectureStruct>();
+
         public const double MaxRowHeight = 50.0;
 
         public const int NRow = 14;
@@ -94,9 +107,16 @@ namespace KSAGrinder.Pages
             ConvertItemToIndex.DG = Timetable;
             Timetable.DataContext = HourCollection;
             Timetable.Loaded += Timetable_Loaded;
+            LectureTable.Loaded += LectureTable_Loaded;
             InitializeHourCollection();
 
             SizeChanged += MainPage_SizeChanged;
+
+            foreach (Department e in Enum.GetValues(typeof(Department)))
+            {
+                DepartmentCollection.Add(e);
+            }
+            LoadLectures();
         }
 
         private void UpdateHourCollection()
@@ -164,6 +184,27 @@ namespace KSAGrinder.Pages
                     Thursday = String.Empty,
                     Friday = String.Empty,
                 });
+            }
+        }
+
+        private void LoadLectures()
+        {
+            var department = (Department)CmbDepartment.SelectedItem;
+            var departmentStr = department.ToString();
+            var tLecture = _data.Tables["Lecture"];
+            var cDepartment = tLecture.Columns["Department"];
+            var cName = tLecture.Columns["Name"];
+            LectureCollection.Clear();
+            foreach (DataRow row in tLecture.Rows)
+            {
+                if (department == Department.All || departmentStr == (string)row[cDepartment])
+                {
+                    LectureCollection.Add(new LectureStruct()
+                    {
+                        Department = (string)row[cDepartment],
+                        Name = (string)row[cName]
+                    });
+                }
             }
         }
 
@@ -312,10 +353,17 @@ namespace KSAGrinder.Pages
         private void Timetable_Loaded(object sender, RoutedEventArgs e)
         {
             Style dataGridElementStyle = (Style)Resources["TextBoxStyle"];
-            foreach (DataGridTextColumn column in Timetable.Columns)
+            foreach (DataGridTextColumn column in Enumerable.Concat(Timetable.Columns, LectureTable.Columns))
             {
                 column.ElementStyle = dataGridElementStyle;
             }
+        }
+
+        private void LectureTable_Loaded(object sender, RoutedEventArgs e)
+        {
+            LectureTable.Columns[0].Width = new DataGridLength(1, DataGridLengthUnitType.Star);
+            LectureTable.Columns[0].MaxWidth = 90.0;
+            LectureTable.Columns[1].Width = new DataGridLength(2, DataGridLengthUnitType.Star);
         }
 
         private void BtnLoadID_Click(object sender, RoutedEventArgs e)
@@ -412,6 +460,11 @@ namespace KSAGrinder.Pages
         }
 
         #endregion
+
+        private void CmbDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            LoadLectures();
+        }
     }
 
     /// <summary>
@@ -431,7 +484,8 @@ namespace KSAGrinder.Pages
                 Label label = new Label
                 {
                     Content = rowindex.ToString(),
-                    HorizontalAlignment = HorizontalAlignment.Center
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    HorizontalContentAlignment = HorizontalAlignment.Center
                 };
                 return label;
             }
