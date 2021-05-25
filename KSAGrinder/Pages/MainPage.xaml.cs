@@ -1,6 +1,6 @@
-﻿using KSAGrinder.Windows;
+﻿using KoreanText;
 
-using KoreanText;
+using KSAGrinder.Windows;
 
 using Microsoft.Win32;
 
@@ -16,10 +16,9 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Xml;
-using System.Windows.Media;
 using System.Windows.Input;
-using System.Threading;
+using System.Windows.Media;
+using System.Xml;
 
 namespace KSAGrinder.Pages
 {
@@ -52,7 +51,7 @@ namespace KSAGrinder.Pages
         {
             private string GetDetail()
             {
-                StringBuilder sb = new StringBuilder();
+                var sb = new StringBuilder();
                 sb.AppendLine($"< {Name} >");
                 return sb.ToString();
             }
@@ -180,9 +179,9 @@ namespace KSAGrinder.Pages
 
         private DataRow GetClassRow(string code, int number)
         {
-            var tClass = _data.Tables["Class"];
-            var ccCode = tClass.Columns["Code"];
-            var ccNumber = tClass.Columns["Number"];
+            DataTable tClass = _data.Tables["Class"];
+            DataColumn ccCode = tClass.Columns["Code"];
+            DataColumn ccNumber = tClass.Columns["Number"];
 
             DataRow classRow = null;
             foreach (DataRow row in tClass.Rows)
@@ -199,16 +198,16 @@ namespace KSAGrinder.Pages
         private void InitializeClassDictionary()
         {
 
-            var tLecture = _data.Tables["Lecture"];
-            var cName = tLecture.Columns["Name"];
-            var tClass = _data.Tables["Class"];
-            var cCode = tClass.Columns["Code"];
-            var cNumber = tClass.Columns["Number"];
-            var cTeacher = tClass.Columns["Teacher"];
-            var cTime = tClass.Columns["Time"];
-            var cEnroll = tClass.Columns["Enrollment"];
-            var cNote = tClass.Columns["Note"];
-            var tStudent = _data.Tables["Student"];
+            DataTable tLecture = _data.Tables["Lecture"];
+            DataColumn cName = tLecture.Columns["Name"];
+            DataTable tClass = _data.Tables["Class"];
+            DataColumn cCode = tClass.Columns["Code"];
+            DataColumn cNumber = tClass.Columns["Number"];
+            DataColumn cTeacher = tClass.Columns["Teacher"];
+            DataColumn cTime = tClass.Columns["Time"];
+            DataColumn cEnroll = tClass.Columns["Enrollment"];
+            DataColumn cNote = tClass.Columns["Note"];
+            DataTable tStudent = _data.Tables["Student"];
             var applyDict = new Dictionary<(string Code, int Number), List<string>>();
             void AddToApplyDict(string code, int number, string student)
             {
@@ -221,7 +220,7 @@ namespace KSAGrinder.Pages
             {
                 var applied = ((string Code, int Number)[]) student[tStudent.Columns["Applied"]];
                 string idNum = $"{student[tStudent.Columns["ID"]]} {student[tStudent.Columns["Name"]]}";
-                foreach (var (code, number) in applied)
+                foreach ((string code, int number) in applied)
                     AddToApplyDict(code, number, idNum);
             }
             foreach (DataRow row in tClass.Rows)
@@ -248,28 +247,28 @@ namespace KSAGrinder.Pages
 
         private void UpdateHourCollection()
         {
-            var tClass = _data.Tables["Class"];
-            var ccCode = tClass.Columns["Code"];
-            var ccTeacher = tClass.Columns["Teacher"];
-            var ccNumber = tClass.Columns["Number"];
-            var ccTime = tClass.Columns["Time"];
-            var tLecture = _data.Tables["Lecture"];
-            var clName = tLecture.Columns["Name"];
+            DataTable tClass = _data.Tables["Class"];
+            DataColumn ccCode = tClass.Columns["Code"];
+            DataColumn ccTeacher = tClass.Columns["Teacher"];
+            DataColumn ccNumber = tClass.Columns["Number"];
+            DataColumn ccTime = tClass.Columns["Time"];
+            DataTable tLecture = _data.Tables["Lecture"];
+            DataColumn clName = tLecture.Columns["Name"];
 
-            var hours = new string[NRow, 5];
+            string[,] hours = new string[NRow, 5];
 
             CurrentClassCollection.Clear();
-            foreach (var (code, number) in _classList)
+            foreach ((string code, int number) in _classList)
             {
                 DataRow classRow = GetClassRow(code, number);
                 DataRow lectureRow = tLecture.Rows.Find(code);
 
-                var classStr = $"{lectureRow[clName]}{Environment.NewLine}"
+                string classStr = $"{lectureRow[clName]}{Environment.NewLine}"
                              + $"Class #{classRow[ccNumber]}{Environment.NewLine}"
                              + $"{classRow[ccTeacher]}";
 
                 var times = ((DayOfWeek Day, int Hour)[])classRow[ccTime];
-                foreach (var (day, hour) in times)
+                foreach ((DayOfWeek day, int hour) in times)
                 {
                     hours[hour - 1, (int)day - 1] = classStr;
                 }
@@ -323,16 +322,16 @@ namespace KSAGrinder.Pages
                 return result;
             }
             var department = (Department)CmbDepartment.SelectedItem;
-            var departmentStr = department.ToString();
-            var tLecture = _data.Tables["Lecture"];
-            var cDepartment = tLecture.Columns["Department"];
-            var cName = tLecture.Columns["Name"];
-            var cCode = tLecture.Columns["Code"];
+            string departmentStr = department.ToString();
+            DataTable tLecture = _data.Tables["Lecture"];
+            DataColumn cDepartment = tLecture.Columns["Department"];
+            DataColumn cName = tLecture.Columns["Name"];
+            DataColumn cCode = tLecture.Columns["Code"];
             var _newList = new List<Lecture>();
             foreach (DataRow row in tLecture.Rows)
             {
                 string name = (string)row[cName];
-                KoreanString kname = new KoreanString(name);
+                var kname = new KoreanString(name);
                 if (department == Department.All || departmentStr == (string)row[cDepartment])
                 {
                     if (!String.IsNullOrEmpty(TxtSearch.Text)
@@ -352,7 +351,7 @@ namespace KSAGrinder.Pages
             }
             LectureCollection.Clear();
             LectureTable.InvalidateVisual();
-            foreach (var lecture in _newList)
+            foreach (Lecture lecture in _newList)
             {
                 LectureCollection.Add(lecture);
             }
@@ -364,19 +363,19 @@ namespace KSAGrinder.Pages
 
             var xdoc = new XmlDocument();
 
-            var root = xdoc.CreateElement("Timetable");
-            var attHash = xdoc.CreateAttribute("Hash");
+            XmlElement root = xdoc.CreateElement("Timetable");
+            XmlAttribute attHash = xdoc.CreateAttribute("Hash");
             attHash.Value = _hash;
             root.Attributes.Append(attHash);
             xdoc.AppendChild(root);
 
-            foreach (var (code, number) in _classList)
+            foreach ((string code, int number) in _classList)
             {
-                var node = xdoc.CreateElement("Class");
-                var nCode = xdoc.CreateElement("Code");
+                XmlElement node = xdoc.CreateElement("Class");
+                XmlElement nCode = xdoc.CreateElement("Code");
                 nCode.InnerText = code;
                 node.AppendChild(nCode);
-                var nNumber = xdoc.CreateElement("Number");
+                XmlElement nNumber = xdoc.CreateElement("Number");
                 nNumber.InnerText = number.ToString();
                 node.AppendChild(nNumber);
                 root.AppendChild(node);
@@ -428,7 +427,7 @@ namespace KSAGrinder.Pages
                 return null;
             }
 
-            XmlDocument xdoc = new XmlDocument();
+            var xdoc = new XmlDocument();
             using (var fileStream = new FileStream(filePath, FileMode.Open))
             using (var aes = Aes.Create())
             {
@@ -459,7 +458,7 @@ namespace KSAGrinder.Pages
             {
                 foreach (XmlNode cls in root.ChildNodes)
                 {
-                    var arr = cls.ChildNodes.Cast<XmlNode>().ToArray();
+                    XmlNode[] arr = cls.ChildNodes.Cast<XmlNode>().ToArray();
                     if (arr.Length != 2)
                     {
                         throw new Exception("Format error.");
@@ -502,7 +501,7 @@ namespace KSAGrinder.Pages
 
         private void Timetable_Loaded(object sender, RoutedEventArgs e)
         {
-            Style dataGridElementStyle = (Style)Resources["TextBoxStyle"];
+            var dataGridElementStyle = (Style)Resources["TextBoxStyle"];
             foreach (DataGridTextColumn column in Enumerable.Concat(Timetable.Columns, LectureTable.Columns))
             {
                 column.ElementStyle = dataGridElementStyle;
@@ -516,8 +515,8 @@ namespace KSAGrinder.Pages
             if (dialog.Result != null)
             {
                 DataRow result = dialog.Result;
-                var tStudent = _data.Tables["Student"];
-                var csApplied = tStudent.Columns["Applied"];
+                DataTable tStudent = _data.Tables["Student"];
+                DataColumn csApplied = tStudent.Columns["Applied"];
 
                 var newList = ((string Code, int Number)[])result[csApplied];
                 
@@ -536,7 +535,7 @@ namespace KSAGrinder.Pages
         {
             if (Modified)
             {
-                var result = MessageBox.Show(
+                MessageBoxResult result = MessageBox.Show(
                     "Want to discard the current progress and open a new file?",
                     "Opening a new file when modifying",
                     MessageBoxButton.YesNo, MessageBoxImage.Question);
@@ -547,8 +546,10 @@ namespace KSAGrinder.Pages
             }
             try
             {
-                var ofd = new OpenFileDialog();
-                ofd.Filter = "Binary files (*.bin)|*.bin|All files (*.*)|*.*";
+                var ofd = new OpenFileDialog()
+                {
+                    Filter = "Binary files (*.bin)|*.bin|All files (*.*)|*.*"
+                };
                 if (ofd.ShowDialog() == true)
                 {
                     LoadXmlInBinary(ofd.FileName);
@@ -585,8 +586,10 @@ namespace KSAGrinder.Pages
         {
             try
             {
-                SaveFileDialog sfd = new SaveFileDialog();
-                sfd.Filter = "Binary files (*.bin)|*.bin";
+                var sfd = new SaveFileDialog
+                {
+                    Filter = "Binary files (*.bin)|*.bin"
+                };
                 if (sfd.ShowDialog() == true)
                 {
                     SaveXmlInBinary(sfd.FileName);
@@ -602,10 +605,7 @@ namespace KSAGrinder.Pages
             }
         }
 
-        private void CmbDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            LoadLectures();
-        }
+        private void CmbDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e) => LoadLectures();
 
         private void LectureTable_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -615,16 +615,13 @@ namespace KSAGrinder.Pages
             }
             var lecture = (Lecture)LectureTable.SelectedItem;
             ClassCollection.Clear();
-            foreach (var cls in _classDict[lecture.Code])
+            foreach (Class cls in _classDict[lecture.Code])
             {
                 ClassCollection.Add(cls);
             }
         }
 
-        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            LoadLectures();
-        }
+        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e) => LoadLectures();
 
         private void ClassTableMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -638,7 +635,7 @@ namespace KSAGrinder.Pages
                     $"# Enrollment: {cls.Enroll}\n" +
                     $"Note: {cls.Note}\n\n" +
                     $"Who enrolled?\n";
-                foreach (var student in cls.EnrolledList)
+                foreach (string student in cls.EnrolledList)
                     content += $" - {student}\n";
 
                 MessageBox.Show(content, "Detail", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -653,10 +650,12 @@ namespace KSAGrinder.Pages
         {
             if (sender is DataGridRow && (sender as DataGridRow).Item is Class cls)
             {
-                var tuple = (cls.Code, Int32.Parse(cls.Number));
+                (string Code, int) tuple = (cls.Code, Int32.Parse(cls.Number));
                 int lectureIdx = _classList.FindIndex((t) => t.Code == cls.Code);
                 if (_classList.Contains(tuple))
+                {
                     _classList.Remove(tuple);
+                }
                 else if (lectureIdx != -1)
                 {
                     _classList.RemoveAt(lectureIdx);
@@ -725,7 +724,7 @@ namespace KSAGrinder.Pages
                 CollectionView cv = DG.Items;
                 int rowindex = cv.IndexOf(value)+1;
 
-                Label label = new Label
+                var label = new Label
                 {
                     Content = rowindex.ToString(),
                     HorizontalAlignment = HorizontalAlignment.Center,
@@ -783,11 +782,11 @@ namespace KSAGrinder.Pages
                 int idx = ClassDict[c].FindIndex((cls) => cls.Number == n.ToString());
                 return ClassDict[c][idx].Schedule;
             }
-            var schedule = GetSchedule(code, number);
-            foreach (var cls in ClassList)
+            (DayOfWeek Day, int Hour)[] schedule = GetSchedule(code, number);
+            foreach ((string Code, int Number) cls in ClassList)
             {
-                var existingSchedule = GetSchedule(cls.Code, cls.Number);
-                foreach (var time in schedule)
+                (DayOfWeek Day, int Hour)[] existingSchedule = GetSchedule(cls.Code, cls.Number);
+                foreach ((DayOfWeek Day, int Hour) time in schedule)
                 {
                     if (existingSchedule.Contains(time))
                     {

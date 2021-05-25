@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -61,7 +60,7 @@ namespace TimetableXmlFormatter
                 return 1 - (double)dist[m, n] / Math.Max(m, n);
             }
 
-            var similiarities = from s in _departments.Keys select Similarity(s, department);
+            IEnumerable<double> similiarities = from s in _departments.Keys select Similarity(s, department);
             double maxSim = similiarities.Max();
             int index = similiarities.ToList().IndexOf(maxSim);
             return _departments.Values.ToList()[index];
@@ -154,7 +153,7 @@ namespace TimetableXmlFormatter
             };
 
             var lectureTable = new DataTable("Lecture");
-            foreach ((String name, Type type, Int32 _) in lectureColumns)
+            foreach ((string name, Type type, int _) in lectureColumns)
             {
                 lectureTable.Columns.Add(name, type);
             }
@@ -162,7 +161,7 @@ namespace TimetableXmlFormatter
             lectureTable.PrimaryKey = new DataColumn[] { lectureTable.Columns["Code"] };
 
             var classTable = new DataTable("Class");
-            foreach ((String name, Type type, Int32 _) in classColumns)
+            foreach ((string name, Type type, int _) in classColumns)
             {
                 classTable.Columns.Add(name, type);
             }
@@ -325,7 +324,7 @@ namespace TimetableXmlFormatter
 
         private static string GetUntilOrEntire(string text, string stopAt)
         {
-            if (!string.IsNullOrWhiteSpace(text))
+            if (!String.IsNullOrWhiteSpace(text))
             {
                 int charLocation = text.IndexOf(stopAt, StringComparison.Ordinal);
                 if (charLocation > 0)

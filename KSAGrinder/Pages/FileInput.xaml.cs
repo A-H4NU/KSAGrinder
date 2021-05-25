@@ -53,7 +53,7 @@ namespace KSAGrinder.Pages
                 using (FileStream fs = File.OpenRead(fileName))
                 {
                     var sha = SHA256.Create();
-                    var bytes = sha.ComputeHash(fs);
+                    byte[] bytes = sha.ComputeHash(fs);
                     hash = "";
                     foreach (byte b in bytes) hash += b.ToString("x2");
                 }
@@ -64,7 +64,7 @@ namespace KSAGrinder.Pages
                     return false;
                 }
 
-                String[] f = (from entry in arch.Entries select entry.Name).ToArray();
+                string[] f = (from entry in arch.Entries select entry.Name).ToArray();
                 if (!(f[0].EndsWith(".xml", StringComparison.OrdinalIgnoreCase) && f[1].EndsWith(".xsd", StringComparison.OrdinalIgnoreCase) ||
                     f[1].EndsWith(".xml", StringComparison.OrdinalIgnoreCase) && f[0].EndsWith(".xsd", StringComparison.OrdinalIgnoreCase)))
                 {
@@ -93,7 +93,7 @@ namespace KSAGrinder.Pages
             }
         }
 
-        private void Page_Drop(Object sender, DragEventArgs e)
+        private void Page_Drop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
