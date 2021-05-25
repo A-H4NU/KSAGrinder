@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KSAGrinder"
         mc:Ignorable="d"
-        Title="KSAGrinder" Height="720" Width="1280">
+        Title="KSAGrinder" Height="768" Width="1366">
     <Grid>
         <Frame NavigationUIVisibility="Hidden" Name="Main"/>
     </Grid>

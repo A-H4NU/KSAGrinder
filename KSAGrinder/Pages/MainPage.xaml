@@ -10,6 +10,9 @@
       d:DesignHeight="720" d:DesignWidth="1280"
       Title="MainPage" Background="White">
     <Page.Resources>
+        <local:ConvertItemToIndex x:Key="IndexConverter"/>
+        <local:LectureGrayingIfSelected x:Key="GrayingIfSelected"/>
+        <local:BlueIfHasNote x:Key="BlueIfHasNote"/>
         <!-- Timetable Styles -->
         <Style x:Key="TimetableDataGridStyle" TargetType="{x:Type DataGrid}">
             <Setter Property="ColumnHeaderStyle" Value="{DynamicResource TimetableColumnHeaderStyle}"/>
@@ -22,7 +25,6 @@
             <Setter Property="Background" Value="LightGray"/>
             <Setter Property="FontSize" Value="15"/>
         </Style>
-        <local:ConvertItemToIndex x:Key="IndexConverter"/>
         <Style x:Key="TimetableRowHeaderStyle" TargetType="{x:Type DataGridRowHeader}">
             <Setter Property="Content" Value="{Binding Converter={StaticResource IndexConverter}}" />
             <Setter Property="Width" Value="30"/>
@@ -35,6 +37,7 @@
             <Setter Property="TextBlock.TextAlignment" Value="Center"/>
             <Setter Property="TextBlock.HorizontalAlignment" Value="Stretch"/>
         </Style>
+        
         <!-- LectureTable Styles -->
         <Style x:Key="LectureTableDataGridStyle" TargetType="{x:Type DataGrid}">
             <Setter Property="ColumnHeaderStyle" Value="{DynamicResource LectureTableColumnHeaderStyle}"/>
@@ -43,63 +46,136 @@
         <Style x:Key="LectureTableColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
             <Setter Property="Height" Value="25"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <!--"<Setter Property="Background" Value="LightGray"/>-->
             <Setter Property="FontSize" Value="13"/>
         </Style>
+
         <!-- Used in MainPage.xaml.cs -->
         <Style x:Key="TextBoxStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
+        
     </Page.Resources>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition MinWidth="600" Width="3*"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="2*"/>
-        </Grid.ColumnDefinitions>
-        <DockPanel x:Name="TimetablePanel" Grid.RowSpan="2" Margin="10">
-            <Grid DockPanel.Dock="Top">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Label Grid.Column="1" Content="Course Schedule" FontSize="22" FontWeight="SemiBold" FontStyle="Italic" HorizontalContentAlignment="Center"/>
-                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,5">
-                    <Button x:Name="BtnLoadID" Content="Load from ID" Height="25" Padding="5,0,5,0" Click="BtnLoadID_Click"/>
-                    <Button x:Name="BtnOpen" Content="Open.." Height="25" Padding="5,0,5,0" Margin="10,0,0,0" Click="BtnOpen_Click"/>
-                </StackPanel>
-                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,5">
-                    <Button x:Name="BtnSave" Content="Save" Height="25" Padding="5,0,5,0" Click="BtnSave_Click"/>
-                    <Button x:Name="BtnSaveAs" Content="Save As.." Height="25" Padding="5,0,5,0" Margin="10,0,0,0" Click="BtnSaveAs_Click"/>
-                </StackPanel>
-            </Grid>
-            <DataGrid x:Name="Timetable" ColumnWidth="*"
+    <DockPanel>
+        <Menu Padding="5" FontSize="13" DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="Open" Click="BtnOpen_Click"/>
+                <MenuItem Header="Load from ID" Click="BtnLoadID_Click"/>
+                <MenuItem Header="Save" Click="BtnSave_Click"/>
+                <MenuItem Header="Save as.." Click="BtnSaveAs_Click"/>
+            </MenuItem>
+        </Menu>
+        <Grid DockPanel.Dock="Bottom">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="2*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="600" Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+
+            <DockPanel x:Name="TimetablePanel" Grid.RowSpan="2" Margin="10,0,10,10">
+                <Label DockPanel.Dock="Top" Content="Course Schedule" FontSize="22" FontWeight="SemiBold" FontStyle="Italic" HorizontalContentAlignment="Center"/>
+                <DataGrid x:Name="Timetable" ColumnWidth="*"
                       Style="{DynamicResource TimetableDataGridStyle}"
                       ItemsSource="{Binding}" AutoGenerateColumns="True"
-                      AlternatingRowBackground = "#F0F0F0" SelectionUnit="Cell"
+                      AlternatingRowBackground = "#F4F4F4" SelectionUnit="Cell"
                       CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False"
                       CanUserResizeRows="False" CanUserAddRows="False" IsReadOnly="True"
                       HorizontalScrollBarVisibility="Disabled"/>
-        </DockPanel>
-        <DockPanel Margin="10" Grid.Column="1" Grid.Row="0">
-            <DockPanel DockPanel.Dock="Top" Margin="0,15,0,10">
-                <Label Content="Department: " FontSize="13"/>
-                <ComboBox x:Name="CmbDepartment" DockPanel.Dock="Right" FontSize="13" VerticalContentAlignment="Center" SelectedIndex="0"
+            </DockPanel>
+            <DockPanel Margin="10" Grid.Column="1" Grid.Row="0">
+                <DockPanel DockPanel.Dock="Top" Margin="0,15,0,10">
+                    <ComboBox x:Name="CmbDepartment" Width="85.24" DockPanel.Dock="Left" FontSize="13" VerticalContentAlignment="Center" SelectedIndex="0"
                           ItemsSource="{Binding DepartmentCollection}" SelectionChanged="CmbDepartment_SelectionChanged"/>
+                    <Label Content="Search: " FontSize="13" Margin="10,0,0,0"/>
+                    <TextBox x:Name="TxtSearch" VerticalContentAlignment="Center" FontSize="13" TextChanged="TxtSearch_TextChanged"/>
+                </DockPanel>
+                <Grid Grid.Column="1" Grid.Row="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="5*"/>
+                        <RowDefinition Height="3*"/>
+                    </Grid.RowDefinitions>
+
+                    <DataGrid Grid.Row="0" DockPanel.Dock="Top" x:Name="LectureTable" Margin="0,0,0,10" SelectionMode="Single" MinHeight="100"
+                      Style="{DynamicResource LectureTableDataGridStyle}" ItemsSource="{Binding LectureCollection}" AutoGenerateColumns="False"
+                      AlternatingRowBackground = "#F4F4F4" HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
+                      CanUserResizeColumns="False" CanUserAddRows="False" IsReadOnly="True" SelectionChanged="LectureTable_SelectionChanged">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Dep." Width="55" Binding="{Binding Department}"/>
+                            <DataGridTextColumn Header="Lecture Name" Width="*" Binding="{Binding Name}"/>
+                            <DataGridTextColumn Header="# Class" Width="55" Binding="{Binding NumClass}" CanUserSort="False"/>
+                        </DataGrid.Columns>
+                        <DataGrid.RowStyle>
+                            <Style TargetType="{x:Type DataGridRow}">
+                                <Setter Property="Foreground" Value="{Binding Code, Converter={StaticResource GrayingIfSelected}}"/>
+                            </Style>
+                        </DataGrid.RowStyle>
+                    </DataGrid>
+
+                    <DataGrid Grid.Row="1" DockPanel.Dock="Bottom" x:Name="ClassTable"
+                      Style="{DynamicResource LectureTableDataGridStyle}" ItemsSource="{Binding ClassCollection}" AutoGenerateColumns="False"
+                      AlternatingRowBackground = "#F4F4F4" HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
+                      CanUserResizeColumns="False" CanUserAddRows="False" IsReadOnly="True" CanUserSortColumns="False">
+                        <DataGrid.Resources>
+                            <ContextMenu x:Key="RowMenu">
+                                <MenuItem Header="View Detail" Click="ClassTableMenuItem_Click"/>
+                            </ContextMenu>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="No." MaxWidth="30" Binding="{Binding Number}"/>
+                            <DataGridTextColumn Header="Teacher" MaxWidth="55" Binding="{Binding Teacher}"/>
+                            <DataGridTextColumn Header="Schedule" Width="*" Binding="{Binding DayTime}"/>
+                            <DataGridTextColumn Header="Enroll" MinWidth="55" Binding="{Binding Enroll}"/>
+                        </DataGrid.Columns>
+                        <DataGrid.RowStyle>
+                            <Style TargetType="{x:Type DataGridRow}">
+                                <Setter Property="ContextMenu" Value="{StaticResource RowMenu}"/>
+                                <EventSetter Event="MouseLeftButtonDown" Handler="DataGridRow_MouseLeftButtonDown"/>
+                                <Setter Property="Foreground">
+                                    <Setter.Value>
+                                        <MultiBinding Converter="{StaticResource BlueIfHasNote}">
+                                            <Binding Path="Code"/>
+                                            <Binding Path="Number"/>
+                                        </MultiBinding>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.RowStyle>
+                    </DataGrid>
+                </Grid>
             </DockPanel>
 
-            <DataGrid DockPanel.Dock="Bottom" x:Name="LectureTable" ColumnWidth="*"
-                      Style="{DynamicResource LectureTableDataGridStyle}" ItemsSource="{Binding LectureCollection}"
-                      HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
-                      CanUserResizeColumns="False" CanUserAddRows="False" IsReadOnly="True"/>
-        </DockPanel>
-    </Grid>
+            <DataGrid x:Name="CurrentClassTable" Margin="10" Grid.Column="1" Grid.Row="1" AutoGenerateColumns="False"
+                  Style="{DynamicResource LectureTableDataGridStyle}" ItemsSource="{Binding CurrentClassCollection}"
+                  AlternatingRowBackground = "#F4F4F4" HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
+                  CanUserResizeColumns="False" CanUserAddRows="False" CanUserSortColumns="False" >
+                <DataGrid.Columns>
+                    <DataGridCheckBoxColumn Header="Pin"/>
+                    <DataGridTextColumn Header="Name" Width="*" Binding="{Binding Name}" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="No." Width="40" Binding="{Binding Number}" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Teacher" Width="55" Binding="{Binding Teacher}" IsReadOnly="True"/>
+                </DataGrid.Columns>
+                <DataGrid.Resources>
+                </DataGrid.Resources>
+                <DataGrid.RowStyle>
+                    <Style TargetType="{x:Type DataGridRow}">
+                        <EventSetter Event="MouseRightButtonUp" Handler="CurrentClassTableRow_RightClick"/>
+                        <EventSetter Event="KeyDown" Handler="CurrentClassTableRow_KeyDown"/>
+                    </Style>
+                </DataGrid.RowStyle>
+                
+            </DataGrid>
+
+            <DockPanel Margin="10" Grid.Column="1" Grid.Row="0">
+
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+    
 </Page>

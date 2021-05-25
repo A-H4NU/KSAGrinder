@@ -10,8 +10,14 @@
         <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="0,10,0,10">
             <DockPanel HorizontalAlignment="Stretch" Margin="10,0,10,0">
                 <Label DockPanel.Dock="Left" Content="ID: " FontSize="15"/>
-                
-                <TextBox x:Name="TxtID" FontSize="15" HorizontalAlignment="Stretch" Margin="0,2,0,2"/>
+
+                <TextBox x:Name="TxtID" FontSize="15" HorizontalAlignment="Stretch" Margin="0,2,0,2">
+                    <TextBox.Style>
+                        <Style TargetType="{x:Type TextBox}">
+                            <EventSetter Event="KeyDown" Handler="TxtID_KeyDown"/>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
             </DockPanel>
             <Grid Margin="10,5,10,5">
                 <Grid.ColumnDefinitions>

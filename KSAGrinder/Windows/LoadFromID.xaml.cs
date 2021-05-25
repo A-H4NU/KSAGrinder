@@ -29,9 +29,10 @@ namespace KSAGrinder.Windows
             InitializeComponent();
 
             _data = data;
+            TxtID.Focus();
         }
 
-        private void BtnLoad_Click(Object sender, RoutedEventArgs e)
+        private void Return()
         {
             DataTable tableStudent = _data.Tables["Student"];
             DataRow row = tableStudent.Rows.Find(TxtID.Text);
@@ -46,9 +47,16 @@ namespace KSAGrinder.Windows
             }
         }
 
-        private void BtnCancel_Click(Object sender, RoutedEventArgs e)
+        private void BtnLoad_Click(Object sender, RoutedEventArgs e) => Return();
+
+        private void BtnCancel_Click(Object sender, RoutedEventArgs e) => Close();
+
+        private void TxtID_KeyDown(Object sender, KeyEventArgs e)
         {
-            Close();
+            if (e.Key == Key.Enter)
+            {
+                Return();
+            }
         }
     }
 }

@@ -29,12 +29,13 @@ namespace TimetableXmlFormatter
             { "일", DayOfWeek.Sunday },
         };
 
-        private static readonly Dictionary<string, string> Departments = new Dictionary<string, string>()
+        private static readonly Dictionary<string, string> _departments = new Dictionary<string, string>()
         {
             {"수리정보과학부", "MathCS"},
             {"물리지구과학부", "Newton"},
             {"화학생물학부", "ChemBio"},
-            {"인문예술학부", "Human"}
+            {"인문예술학부", "Human"},
+            {"융합교과", "Inter"}
         };
 
         private string DepartmentToEng(string department)
@@ -60,10 +61,10 @@ namespace TimetableXmlFormatter
                 return 1 - (double)dist[m, n] / Math.Max(m, n);
             }
 
-            var similiarities = from s in Departments.Keys select Similarity(s, department);
+            var similiarities = from s in _departments.Keys select Similarity(s, department);
             double maxSim = similiarities.Max();
             int index = similiarities.ToList().IndexOf(maxSim);
-            return Departments.Values.ToList()[index];
+            return _departments.Values.ToList()[index];
         }
 
         public MainWindow() => InitializeComponent();
@@ -185,7 +186,7 @@ namespace TimetableXmlFormatter
                             string value = values[lectureColumns[i].Index];
                             if (lectureColumns[i].Name == "Department")
                                 value = DepartmentToEng(value);
-                            lectureData[i] = value; // lectureColumns[i].Type == typeof(string) ? value : Int32.Parse(value);
+                            lectureData[i] = value;
                         }
                         lectureTable.Rows.Add(lectureData);
                     }
