@@ -169,12 +169,17 @@
                         <EventSetter Event="KeyDown" Handler="CurrentClassTableRow_KeyDown"/>
                     </Style>
                 </DataGrid.RowStyle>
-                
+
             </DataGrid>
 
-            <DockPanel Margin="10" Grid.Column="1" Grid.Row="0">
-
+            <DockPanel Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" Margin="10">
+                <ListView DockPanel.Dock="Top">
+                    <ListViewItem>Hello1</ListViewItem>
+                    <ListViewItem>Hello2</ListViewItem>
+                    <ListViewItem>Hello3</ListViewItem>
+                </ListView>
             </DockPanel>
+
         </Grid>
     </DockPanel>
     
