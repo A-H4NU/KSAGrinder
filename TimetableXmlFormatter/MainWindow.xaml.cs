@@ -15,8 +15,6 @@ namespace TimetableXmlFormatter
     /// </summary>
     public partial class MainWindow : Window
     {
-        public const string ECEndsWith = "(EC)";
-
         private static readonly Dictionary<string, DayOfWeek> KoreanDayToEnum = new Dictionary<string, DayOfWeek>()
         {
             { "월", DayOfWeek.Monday },
@@ -316,7 +314,7 @@ namespace TimetableXmlFormatter
             for (int i = 0; i < times.Length; ++i)
             {
                 DayOfWeek day = KoreanDayToEnum[times[i].Substring(0, 1)];
-                int hour = int.Parse(times[i].Substring(times[i].Length - 1));
+                int hour = Int32.Parse(times[i].Substring(times[i].Length - 1));
                 result[i] = (day, hour);
             }
             return result;

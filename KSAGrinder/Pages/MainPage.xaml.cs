@@ -49,13 +49,6 @@ namespace KSAGrinder.Pages
 
         public struct Class
         {
-            private string GetDetail()
-            {
-                var sb = new StringBuilder();
-                sb.AppendLine($"< {Name} >");
-                return sb.ToString();
-            }
-
             public string Name { get; set; }
             public string Code { get; set; }
             public string Number { get; set; }
@@ -82,7 +75,7 @@ namespace KSAGrinder.Pages
             public List<string> EnrolledList { get; set; }
         }
 
-        public enum Department
+        public enum DepartmentEnum
         {
             All, MathCS, Newton, ChemBio, Human, Inter
         }
@@ -97,7 +90,7 @@ namespace KSAGrinder.Pages
 
         private readonly List<(string Code, int Number)> _classList;
 
-        private string _workingWith = null;
+        private string _workingWith;
 
         public static readonly byte[] CryptKey =
             {
@@ -115,7 +108,7 @@ namespace KSAGrinder.Pages
             }
         }
 
-        private bool _modified = false;
+        private bool _modified;
         
         private bool Modified
         {
@@ -129,7 +122,7 @@ namespace KSAGrinder.Pages
 
         public ObservableCollection<Hour> HourCollection { get; private set; } = new ObservableCollection<Hour>();
 
-        public ObservableCollection<Department> DepartmentCollection { get; private set; } = new ObservableCollection<Department>();
+        public ObservableCollection<DepartmentEnum> DepartmentCollection { get; private set; } = new ObservableCollection<DepartmentEnum>();
 
         public ObservableCollection<Lecture> LectureCollection { get; private set; } = new ObservableCollection<Lecture>();
 
@@ -170,7 +163,7 @@ namespace KSAGrinder.Pages
 
             SizeChanged += MainPage_SizeChanged;
 
-            foreach (Department e in Enum.GetValues(typeof(Department)))
+            foreach (DepartmentEnum e in Enum.GetValues(typeof(DepartmentEnum)))
             {
                 DepartmentCollection.Add(e);
             }
@@ -248,7 +241,6 @@ namespace KSAGrinder.Pages
         private void UpdateHourCollection()
         {
             DataTable tClass = _data.Tables["Class"];
-            DataColumn ccCode = tClass.Columns["Code"];
             DataColumn ccTeacher = tClass.Columns["Teacher"];
             DataColumn ccNumber = tClass.Columns["Number"];
             DataColumn ccTime = tClass.Columns["Time"];
@@ -321,18 +313,18 @@ namespace KSAGrinder.Pages
                 }
                 return result;
             }
-            var department = (Department)CmbDepartment.SelectedItem;
+            var department = (DepartmentEnum)CmbDepartment.SelectedItem;
             string departmentStr = department.ToString();
             DataTable tLecture = _data.Tables["Lecture"];
             DataColumn cDepartment = tLecture.Columns["Department"];
             DataColumn cName = tLecture.Columns["Name"];
             DataColumn cCode = tLecture.Columns["Code"];
-            var _newList = new List<Lecture>();
+            var newList = new List<Lecture>();
             foreach (DataRow row in tLecture.Rows)
             {
                 string name = (string)row[cName];
                 var kname = new KoreanString(name);
-                if (department == Department.All || departmentStr == (string)row[cDepartment])
+                if (department == DepartmentEnum.All || departmentStr == (string)row[cDepartment])
                 {
                     if (!String.IsNullOrEmpty(TxtSearch.Text)
                         && !(name.StartsWith(TxtSearch.Text, StringComparison.OrdinalIgnoreCase)
@@ -340,7 +332,7 @@ namespace KSAGrinder.Pages
                     {
                         continue;
                     }
-                    _newList.Add(new Lecture()
+                    newList.Add(new Lecture()
                     {
                         Department = (string)row[cDepartment],
                         Code = (string)row[cCode],
@@ -351,7 +343,7 @@ namespace KSAGrinder.Pages
             }
             LectureCollection.Clear();
             LectureTable.InvalidateVisual();
-            foreach (Lecture lecture in _newList)
+            foreach (Lecture lecture in newList)
             {
                 LectureCollection.Add(lecture);
             }
@@ -381,7 +373,7 @@ namespace KSAGrinder.Pages
                 root.AppendChild(node);
             }
 
-            string xmlStr = null;
+            string xmlStr;
             using (var sw = new StringWriter())
             using (var xw = XmlWriter.Create(sw))
             {
@@ -416,16 +408,8 @@ namespace KSAGrinder.Pages
         {
             // Find the first child node with the specified name
             XmlNode FindByName(XmlNode node, string name, StringComparison comparisonType = StringComparison.OrdinalIgnoreCase)
-            {
-                foreach (XmlNode child in node.ChildNodes)
-                {
-                    if (string.Equals(child.Name, name, comparisonType))
-                    {
-                        return child;
-                    }
-                }
-                return null;
-            }
+                => node.ChildNodes.Cast<XmlNode>()
+                    .First(child => String.Equals(child.Name, name, comparisonType));
 
             var xdoc = new XmlDocument();
             using (var fileStream = new FileStream(filePath, FileMode.Open))
@@ -479,7 +463,7 @@ namespace KSAGrinder.Pages
 
         private void MainPage_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            double headerHeight = double.NaN;
+            double headerHeight = Double.NaN;
             foreach (SetterBase setter in Timetable.ColumnHeaderStyle.Setters)
             {
                 if (setter is Setter s && s.Property.Name == "Height")
@@ -488,10 +472,10 @@ namespace KSAGrinder.Pages
                     break;
                 }
             }
-            double n_rowToShow = Math.Min(NRow, Math.Floor((Timetable.ActualHeight - headerHeight) / MaxRowHeight));
-            if (n_rowToShow != 0.0)
+            double nRowToShow = Math.Min(NRow, Math.Floor((Timetable.ActualHeight - headerHeight) / MaxRowHeight));
+            if (nRowToShow != 0.0)
             {
-                Timetable.RowHeight = (Timetable.ActualHeight - headerHeight) / n_rowToShow;
+                Timetable.RowHeight = (Timetable.ActualHeight - headerHeight) / nRowToShow;
             }
             else
             {
@@ -502,9 +486,10 @@ namespace KSAGrinder.Pages
         private void Timetable_Loaded(object sender, RoutedEventArgs e)
         {
             var dataGridElementStyle = (Style)Resources["TextBoxStyle"];
-            foreach (DataGridTextColumn column in Enumerable.Concat(Timetable.Columns, LectureTable.Columns))
+            foreach (DataGridColumn column in Timetable.Columns.Concat(LectureTable.Columns))
             {
-                column.ElementStyle = dataGridElementStyle;
+                if (column is DataGridTextColumn textColumn)
+                    textColumn.ElementStyle = dataGridElementStyle;
             }
         }
 
@@ -646,7 +631,7 @@ namespace KSAGrinder.Pages
             }
         }
 
-        private void DataGridRow_MouseLeftButtonDown(Object sender, MouseButtonEventArgs e)
+        private void DataGridRow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (sender is DataGridRow && (sender as DataGridRow).Item is Class cls)
             {
@@ -713,20 +698,20 @@ namespace KSAGrinder.Pages
     /// </summary>
     public class ConvertItemToIndex : IValueConverter
     {
-        private static DataGrid DG;
+        private static DataGrid _dg;
 
-        public static void Initialize(DataGrid dataGrid) => DG = dataGrid;
+        public static void Initialize(DataGrid dataGrid) => _dg = dataGrid;
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             try
             {
-                CollectionView cv = DG.Items;
-                int rowindex = cv.IndexOf(value)+1;
+                CollectionView cv = _dg.Items;
+                int rowIndex = cv.IndexOf(value)+1;
 
                 var label = new Label
                 {
-                    Content = rowindex.ToString(),
+                    Content = rowIndex.ToString(),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     HorizontalContentAlignment = HorizontalAlignment.Center
                 };
@@ -743,15 +728,15 @@ namespace KSAGrinder.Pages
 
     public class LectureGrayingIfSelected : IValueConverter
     {
-        private static List<(string Code, int Number)> ClassList;
+        private static List<(string Code, int Number)> _classList;
 
-        public static void Initialize(List<(string Code, int Number)> classList) => ClassList = classList;
+        public static void Initialize(List<(string Code, int Number)> classList) => _classList = classList;
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is string code)
             {
-                if (ClassList.FindIndex((t) => t.Code == code) != -1)
+                if (_classList.FindIndex((t) => t.Code == code) != -1)
                 {
                     return Brushes.LightGray;
                 }
@@ -764,26 +749,26 @@ namespace KSAGrinder.Pages
 
     public class BlueIfHasNote : IMultiValueConverter
     {
-        private static DataTable ClassTable;
-        private static List<(string Code, int Number)> ClassList;
-        private static Dictionary<string, List<MainPage.Class>> ClassDict;
+        private static DataTable _classTable;
+        private static List<(string Code, int Number)> _classList;
+        private static Dictionary<string, List<MainPage.Class>> _classDict;
 
         public static void Initialize(DataTable classTable, List<(string Code, int Number)> classList, Dictionary<string, List<MainPage.Class>> classDict)
         {
-            ClassTable = classTable;
-            ClassList = classList;
-            ClassDict = classDict;
+            _classTable = classTable;
+            _classList = classList;
+            _classDict = classDict;
         }
 
         private bool DoesOverlapIfAdded(string code, int number)
         {
             (DayOfWeek Day, int Hour)[] GetSchedule(string c, int n)
             {
-                int idx = ClassDict[c].FindIndex((cls) => cls.Number == n.ToString());
-                return ClassDict[c][idx].Schedule;
+                int idx = _classDict[c].FindIndex((cls) => cls.Number == n.ToString());
+                return _classDict[c][idx].Schedule;
             }
             (DayOfWeek Day, int Hour)[] schedule = GetSchedule(code, number);
-            foreach ((string Code, int Number) cls in ClassList)
+            foreach ((string Code, int Number) cls in _classList)
             {
                 (DayOfWeek Day, int Hour)[] existingSchedule = GetSchedule(cls.Code, cls.Number);
                 foreach ((DayOfWeek Day, int Hour) time in schedule)
@@ -802,21 +787,21 @@ namespace KSAGrinder.Pages
             if (value[0] is string code && value[1] is string number)
             {
                 int n = Int32.Parse(number);
-                if (ClassList.FindIndex((t) => t.Code == code && t.Number == n) != -1)
+                if (_classList.FindIndex((t) => t.Code == code && t.Number == n) != -1)
                 {
                     return Brushes.LightGray;
                 }
                 bool overlap = DoesOverlapIfAdded(code, n);
                 DataRow classRow = null;
-                foreach (DataRow row in ClassTable.Rows)
+                foreach (DataRow row in _classTable.Rows)
                 {
-                    if (row[ClassTable.Columns["Code"]].Equals(code) && row[ClassTable.Columns["Number"]].Equals(n))
+                    if (row[_classTable.Columns["Code"]].Equals(code) && row[_classTable.Columns["Number"]].Equals(n))
                     {
                         classRow = row;
                         break;
                     }
                 }
-                bool hasNote = classRow != null && !String.IsNullOrEmpty((string)classRow[ClassTable.Columns["Note"]]);
+                bool hasNote = classRow != null && !String.IsNullOrEmpty((string)classRow[_classTable.Columns["Note"]]);
                 if (overlap && hasNote)
                     return Brushes.PaleVioletRed;
                 if (overlap && !hasNote)

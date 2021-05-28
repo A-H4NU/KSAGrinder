@@ -44,10 +44,11 @@ namespace KSAGrinder.Pages
                 }
             }
         }
-
-        private bool TryUnzip(string fileName, out DataSet result, out string hash)
+        
+        private static bool TryUnzip(string fileName, out DataSet result, out string hash)
         {
             result = null; hash = null;
+            if (fileName == null) return false;
             try
             {
                 using (FileStream fs = File.OpenRead(fileName))
@@ -95,19 +96,18 @@ namespace KSAGrinder.Pages
 
         private void Page_Drop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                // Note that you can have more than one file.
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
+            
+            // Note that you can have more than one file.
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
-                if (TryUnzip(files[0], out DataSet result, out string hash))
-                {
-                    _main.Main.Navigate(new MainPage(_main, result, hash));
-                }
-                else
-                {
-                    MessageBox.Show("Failed to load the file!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+            if (TryUnzip(files[0], out DataSet result, out string hash))
+            {
+                _main.Main.Navigate(new MainPage(_main, result, hash));
+            }
+            else
+            {
+                MessageBox.Show("Failed to load the file!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
