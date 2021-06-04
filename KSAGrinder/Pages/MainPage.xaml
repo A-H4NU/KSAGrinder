@@ -4,15 +4,16 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:KSAGrinder.Pages"
-      xmlns:sys="clr-namespace:System;assembly=mscorlib" 
+      xmlns:sys="clr-namespace:System;assembly=mscorlib"
+      xmlns:valueConverters="clr-namespace:KSAGrinder.ValueConverters"
       DataContext="{Binding RelativeSource={RelativeSource Self}}"
       mc:Ignorable="d" 
       d:DesignHeight="720" d:DesignWidth="1280"
       Title="MainPage" Background="White">
     <Page.Resources>
-        <local:ConvertItemToIndex x:Key="IndexConverter"/>
-        <local:LectureGrayingIfSelected x:Key="GrayingIfSelected"/>
-        <local:BlueIfHasNote x:Key="BlueIfHasNote"/>
+        <valueConverters:ConvertItemToIndex x:Key="IndexConverter"/>
+        <valueConverters:LectureGrayingIfSelected x:Key="GrayingIfSelected"/>
+        <valueConverters:BlueIfHasNote x:Key="BlueIfHasNote"/>
         <!-- Timetable Styles -->
         <Style x:Key="TimetableDataGridStyle" TargetType="{x:Type DataGrid}">
             <Setter Property="ColumnHeaderStyle" Value="{DynamicResource TimetableColumnHeaderStyle}"/>
@@ -173,11 +174,12 @@
             </DataGrid>
 
             <DockPanel Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" Margin="10">
-                <ListView DockPanel.Dock="Top">
-                    <ListViewItem>Hello1</ListViewItem>
-                    <ListViewItem>Hello2</ListViewItem>
-                    <ListViewItem>Hello3</ListViewItem>
-                </ListView>
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                    <Label Content="Preference"/>
+                    <ComboBox />
+                </DockPanel>
+                <Button DockPanel.Dock="Top" x:Name="BtnGenerate" Content="Generate" Margin="0,0,0,10"/>
+                <DataGrid/>
             </DockPanel>
 
         </Grid>

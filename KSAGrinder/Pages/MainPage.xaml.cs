@@ -1,5 +1,7 @@
 ﻿using KoreanText;
 
+using KSAGrinder.Components;
+using KSAGrinder.ValueConverters;
 using KSAGrinder.Windows;
 
 using Microsoft.Win32;
@@ -8,16 +10,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Xml;
 
 namespace KSAGrinder.Pages
@@ -27,59 +25,6 @@ namespace KSAGrinder.Pages
     /// </summary>
     public partial class MainPage : Page
     {
-        public struct Hour
-        {
-            public string Monday { get; set; }
-            public string Tuesday { get; set; }
-            public string Wednesday { get; set; }
-            public string Thursday { get; set; }
-            public string Friday { get; set; }
-
-            public int __hour__;
-        }
-
-        public struct Lecture
-        {
-            public string Code { get; set; }
-            public string Department { get; set; }
-            public string Name { get; set; }
-
-            public string NumClass { get; set; }
-        }
-
-        public struct Class
-        {
-            public string Name { get; set; }
-            public string Code { get; set; }
-            public string Number { get; set; }
-            public string Teacher { get; set; }
-
-            public (DayOfWeek Day, int Hour)[] Schedule { get; set; }
-            public string DayTime
-            {
-                get
-                {
-                    var sb = new StringBuilder();
-                    for (int i = 0; i < Schedule.Length; ++i)
-                    {
-                        if (i != 0) sb.Append(" ");
-                        sb.Append(Schedule[i].Day.ToString().Substring(0, 3).ToUpper());
-                        sb.Append(Schedule[i].Hour);
-                    }
-                    return sb.ToString();
-                }
-            }
-            public string Enroll { get; set; }
-            public string Note { get; set; }
-
-            public List<string> EnrolledList { get; set; }
-        }
-
-        public enum DepartmentEnum
-        {
-            All, MathCS, Newton, ChemBio, Human, Inter
-        }
-
         private readonly DataSet _data;
 
         private readonly string _hash;
@@ -92,6 +37,9 @@ namespace KSAGrinder.Pages
 
         private string _workingWith;
 
+        /// <summary>
+        /// Key for en(de)crypting save files
+        /// </summary>
         public static readonly byte[] CryptKey =
             {
                 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
@@ -691,127 +639,5 @@ namespace KSAGrinder.Pages
                 }
             }
         }
-    }
-
-    /// <summary>
-    /// For row headers of "Timetable"
-    /// </summary>
-    public class ConvertItemToIndex : IValueConverter
-    {
-        private static DataGrid _dg;
-
-        public static void Initialize(DataGrid dataGrid) => _dg = dataGrid;
-
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            try
-            {
-                CollectionView cv = _dg.Items;
-                int rowIndex = cv.IndexOf(value)+1;
-
-                var label = new Label
-                {
-                    Content = rowIndex.ToString(),
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    HorizontalContentAlignment = HorizontalAlignment.Center
-                };
-                return label;
-            }
-            catch (Exception e)
-            {
-                throw new NotImplementedException(e.Message);
-            }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
-    }
-
-    public class LectureGrayingIfSelected : IValueConverter
-    {
-        private static List<(string Code, int Number)> _classList;
-
-        public static void Initialize(List<(string Code, int Number)> classList) => _classList = classList;
-
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is string code)
-            {
-                if (_classList.FindIndex((t) => t.Code == code) != -1)
-                {
-                    return Brushes.LightGray;
-                }
-            }
-            return Brushes.Black;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
-    }
-
-    public class BlueIfHasNote : IMultiValueConverter
-    {
-        private static DataTable _classTable;
-        private static List<(string Code, int Number)> _classList;
-        private static Dictionary<string, List<MainPage.Class>> _classDict;
-
-        public static void Initialize(DataTable classTable, List<(string Code, int Number)> classList, Dictionary<string, List<MainPage.Class>> classDict)
-        {
-            _classTable = classTable;
-            _classList = classList;
-            _classDict = classDict;
-        }
-
-        private bool DoesOverlapIfAdded(string code, int number)
-        {
-            (DayOfWeek Day, int Hour)[] GetSchedule(string c, int n)
-            {
-                int idx = _classDict[c].FindIndex((cls) => cls.Number == n.ToString());
-                return _classDict[c][idx].Schedule;
-            }
-            (DayOfWeek Day, int Hour)[] schedule = GetSchedule(code, number);
-            foreach ((string Code, int Number) cls in _classList)
-            {
-                (DayOfWeek Day, int Hour)[] existingSchedule = GetSchedule(cls.Code, cls.Number);
-                foreach ((DayOfWeek Day, int Hour) time in schedule)
-                {
-                    if (existingSchedule.Contains(time))
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value[0] is string code && value[1] is string number)
-            {
-                int n = Int32.Parse(number);
-                if (_classList.FindIndex((t) => t.Code == code && t.Number == n) != -1)
-                {
-                    return Brushes.LightGray;
-                }
-                bool overlap = DoesOverlapIfAdded(code, n);
-                DataRow classRow = null;
-                foreach (DataRow row in _classTable.Rows)
-                {
-                    if (row[_classTable.Columns["Code"]].Equals(code) && row[_classTable.Columns["Number"]].Equals(n))
-                    {
-                        classRow = row;
-                        break;
-                    }
-                }
-                bool hasNote = classRow != null && !String.IsNullOrEmpty((string)classRow[_classTable.Columns["Note"]]);
-                if (overlap && hasNote)
-                    return Brushes.PaleVioletRed;
-                if (overlap && !hasNote)
-                    return Brushes.Red;
-                if (!overlap && hasNote)
-                    return Brushes.Blue;
-            }
-            return Brushes.Black;
-        }
-
-        public object[] ConvertBack(object value, Type[] targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
     }
 }

@@ -69,6 +69,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Components\Class.cs" />
+    <Compile Include="Components\DepartmentEnum.cs" />
+    <Compile Include="Components\Lecture.cs" />
+    <Compile Include="Components\Hour.cs" />
+    <Compile Include="ValueConverters\BlueIfHasNote.cs" />
+    <Compile Include="ValueConverters\ConvertItemToIndex.cs" />
+    <Compile Include="ValueConverters\LectureGrayingIfSelected.cs" />
     <Compile Include="Windows\LoadFromID.xaml.cs">
       <DependentUpon>LoadFromID.xaml</DependentUpon>
     </Compile>
