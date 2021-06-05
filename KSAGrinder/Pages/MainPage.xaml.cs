@@ -1,6 +1,7 @@
 ﻿using KoreanText;
 
 using KSAGrinder.Components;
+using KSAGrinder.Extensions;
 using KSAGrinder.ValueConverters;
 using KSAGrinder.Windows;
 
@@ -9,9 +10,11 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,7 +36,7 @@ namespace KSAGrinder.Pages
 
         private readonly MainWindow _main;
 
-        private readonly List<(string Code, int Number)> _classList;
+        private readonly Schedule _currentSchedule;
 
         private string _workingWith;
 
@@ -68,15 +71,23 @@ namespace KSAGrinder.Pages
             }
         }
 
-        public ObservableCollection<Hour> HourCollection { get; private set; } = new ObservableCollection<Hour>();
+        #region Observable Collections
 
-        public ObservableCollection<DepartmentEnum> DepartmentCollection { get; private set; } = new ObservableCollection<DepartmentEnum>();
+        public ObservableCollection<Hour> HourCollection { get; } = new ObservableCollection<Hour>();
 
-        public ObservableCollection<Lecture> LectureCollection { get; private set; } = new ObservableCollection<Lecture>();
+        public ObservableCollection<Department> DepartmentCollection { get; } = new ObservableCollection<Department>();
 
-        public ObservableCollection<Class> ClassCollection { get; private set; } = new ObservableCollection<Class>();
+        public ObservableCollection<Lecture> LectureCollection { get;} = new ObservableCollection<Lecture>();
 
-        public ObservableCollection<Class> CurrentClassCollection { get; private set; } = new ObservableCollection<Class>();
+        public ObservableCollection<Class> ClassCollection { get; } = new ObservableCollection<Class>();
+
+        public ObservableCollection<Class> CurrentClassCollection { get; } = new ObservableCollection<Class>();
+
+        public ObservableCollection<string> PreferenceCollection { get; } = new ObservableCollection<string>();
+
+        public ObservableCollection<Schedule> ScheduleCollection { get; } = new ObservableCollection<Schedule>();
+
+        #endregion
 
         /// <summary>
         /// correspond a code to a list of classes
@@ -94,13 +105,13 @@ namespace KSAGrinder.Pages
             _hash = hash;
             _windowTitle = _main.Title;
 
-            _classList = new List<(string Code, int Number)>();
+            _currentSchedule = new Schedule();
 
             InitializeComponent();
 
             ConvertItemToIndex.Initialize(Timetable);
-            LectureGrayingIfSelected.Initialize(_classList);
-            BlueIfHasNote.Initialize(_data.Tables["Class"], _classList, _classDict);
+            LectureGrayingIfSelected.Initialize(_currentSchedule);
+            BlueIfHasNote.Initialize(_data.Tables["Class"], _currentSchedule, _classDict);
 
             Timetable.DataContext = HourCollection;
 
@@ -111,9 +122,24 @@ namespace KSAGrinder.Pages
 
             SizeChanged += MainPage_SizeChanged;
 
-            foreach (DepartmentEnum e in Enum.GetValues(typeof(DepartmentEnum)))
+            foreach (Department e in Enum.GetValues(typeof(Department)))
             {
                 DepartmentCollection.Add(e);
+            }
+            foreach (Preference e in Enum.GetValues(typeof(Preference)))
+            {
+                try
+                {
+                    FieldInfo fInfo = typeof(Preference).GetField(e.ToString());
+                    if (fInfo.GetCustomAttributes(typeof(DescriptionAttribute)) is DescriptionAttribute[] attributes && attributes.Any())
+                    {
+                        PreferenceCollection.Add(attributes.First().Description);
+                    }
+                }
+                catch
+                {
+                    PreferenceCollection.Add(e.ToString());
+                }
             }
             LoadLectures();
         }
@@ -130,7 +156,7 @@ namespace KSAGrinder.Pages
                 if ((string)row[ccCode] == code && (int)row[ccNumber] == number)
                 {
                     classRow = row;
-                    break;
+                    break; ;
                 }
             }
             return classRow;
@@ -172,11 +198,12 @@ namespace KSAGrinder.Pages
                 {
                     _classDict[code] = new List<Class>();
                 }
+                
                 _classDict[code].Add(new Class()
                 {
                     Code = code,
                     Name = tLecture.Rows.Find(code)[cName].ToString(),
-                    Number = row[cNumber].ToString(),
+                    Number = Int32.Parse(row[cNumber].ToString()),
                     Teacher = row[cTeacher].ToString(),
                     Enroll = row[cEnroll].ToString(),
                     Schedule = ((DayOfWeek Day, int Hour)[])row[cTime],
@@ -198,8 +225,10 @@ namespace KSAGrinder.Pages
             string[,] hours = new string[NRow, 5];
 
             CurrentClassCollection.Clear();
-            foreach ((string code, int number) in _classList)
+            foreach (Class @class in _currentSchedule)
             {
+                string code = @class.Code;
+                int number = @class.Number;
                 DataRow classRow = GetClassRow(code, number);
                 DataRow lectureRow = tLecture.Rows.Find(code);
 
@@ -212,7 +241,7 @@ namespace KSAGrinder.Pages
                 {
                     hours[hour - 1, (int)day - 1] = classStr;
                 }
-                int idx = _classDict[code].FindIndex((c) => c.Number == number.ToString());
+                int idx = _classDict[code].FindIndex((c) => c.Number == number);
                 CurrentClassCollection.Add(_classDict[code][idx]);
             }
 
@@ -261,7 +290,7 @@ namespace KSAGrinder.Pages
                 }
                 return result;
             }
-            var department = (DepartmentEnum)CmbDepartment.SelectedItem;
+            var department = (Department)CmbDepartment.SelectedItem;
             string departmentStr = department.ToString();
             DataTable tLecture = _data.Tables["Lecture"];
             DataColumn cDepartment = tLecture.Columns["Department"];
@@ -272,7 +301,7 @@ namespace KSAGrinder.Pages
             {
                 string name = (string)row[cName];
                 var kname = new KoreanString(name);
-                if (department == DepartmentEnum.All || departmentStr == (string)row[cDepartment])
+                if (department == Department.All || departmentStr == (string)row[cDepartment])
                 {
                     if (!String.IsNullOrEmpty(TxtSearch.Text)
                         && !(name.StartsWith(TxtSearch.Text, StringComparison.OrdinalIgnoreCase)
@@ -309,8 +338,10 @@ namespace KSAGrinder.Pages
             root.Attributes.Append(attHash);
             xdoc.AppendChild(root);
 
-            foreach ((string code, int number) in _classList)
+            foreach (Class cls in _currentSchedule)
             {
+                string code = cls.Code;
+                int number = cls.Number;
                 XmlElement node = xdoc.CreateElement("Class");
                 XmlElement nCode = xdoc.CreateElement("Code");
                 nCode.InnerText = code;
@@ -383,7 +414,7 @@ namespace KSAGrinder.Pages
                 }
             }
 
-            var newList = new List<(string Code, int Number)>();
+            var newList = new List<Class>();
             XmlElement root = xdoc.DocumentElement;
             string hash = root.Attributes.GetNamedItem("Hash").Value;
             if (_hash == hash)
@@ -395,15 +426,15 @@ namespace KSAGrinder.Pages
                     {
                         throw new Exception("Format error.");
                     }
-                    newList.Add((FindByName(cls, "Code").InnerText, Int32.Parse(FindByName(cls, "Number").InnerText)));
+                    newList.Add(_classDict[FindByName(cls, "Code").InnerText][Int32.Parse(FindByName(cls, "Number").InnerText)-1]);
                 }
-                _classList.Clear();
-                _classList.AddRange(newList);
+                _currentSchedule.Clear();
+                _currentSchedule.AddRange(newList);
                 UpdateHourCollection();
             }
             else
             {
-                throw new Exception("The file might be from a different dataset.");
+                throw new Exception("다른 데이터셋에서 만든 파일입니다.");
             }
         }
 
@@ -451,12 +482,13 @@ namespace KSAGrinder.Pages
                 DataTable tStudent = _data.Tables["Student"];
                 DataColumn csApplied = tStudent.Columns["Applied"];
 
-                var newList = ((string Code, int Number)[])result[csApplied];
-                
-                if (!Enumerable.SequenceEqual(newList, _classList))
+                IEnumerable<Class> newList = from tuple in ((string Code, int Number)[])result[csApplied]
+                                             select _classDict[tuple.Code][tuple.Number - 1];
+
+                if (!Enumerable.SequenceEqual(newList, _currentSchedule))
                 {
-                    _classList.Clear();
-                    _classList.AddRange(newList);
+                    _currentSchedule.Clear();
+                    _currentSchedule.AddRange(newList);
                     UpdateHourCollection();
 
                     Modified = true;
@@ -469,8 +501,8 @@ namespace KSAGrinder.Pages
             if (Modified)
             {
                 MessageBoxResult result = MessageBox.Show(
-                    "Want to discard the current progress and open a new file?",
-                    "Opening a new file when modifying",
+                    "현재 진행 상황을 폐기하고 새 파일을 여시겠습니까?",
+                    "편집 중 새 파일 열기",
                     MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result != MessageBoxResult.Yes)
                 {
@@ -486,12 +518,13 @@ namespace KSAGrinder.Pages
                 if (ofd.ShowDialog() == true)
                 {
                     LoadXmlInBinary(ofd.FileName);
+                    WorkingWith = ofd.FileName;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Failed to load the file.{Environment.NewLine}{ex.Message}", "Error",
+                    $"파일을 불러오는 데 실패했습니다!{Environment.NewLine}{ex.Message}", "에러",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -511,7 +544,7 @@ namespace KSAGrinder.Pages
             }
             catch
             {
-                MessageBox.Show("Failed to save!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("저장하는 데 실패했습니다!", "에러", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -533,7 +566,7 @@ namespace KSAGrinder.Pages
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Failed to save!{Environment.NewLine}{ex.Message}", "Error", 
+                    $"저장하는 데 실패했습니다!{Environment.NewLine}{ex.Message}", "에러", 
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -562,20 +595,20 @@ namespace KSAGrinder.Pages
             {
                 string content =
                     $"< {cls.Name} #{cls.Number} >\n\n" +
-                    $"Code: {cls.Code}\n" +
-                    $"Teacher: {cls.Teacher}\n" +
-                    $"Schedule: {cls.DayTime}\n" +
-                    $"# Enrollment: {cls.Enroll}\n" +
-                    $"Note: {cls.Note}\n\n" +
-                    $"Who enrolled?\n";
+                    $"교과목코드: {cls.Code}\n" +
+                    $"선생님: {cls.Teacher}\n" +
+                    $"요일/시간: {cls.DayTime}\n" +
+                    $"신청자 수: {cls.Enroll}\n" +
+                    $"비고: {cls.Note}\n\n" +
+                    $"신청한 사람\n";
                 foreach (string student in cls.EnrolledList)
                     content += $" - {student}\n";
 
-                MessageBox.Show(content, "Detail", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(content, "세부 정보", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show("Cannot show the detail", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("디테일을 불러오는 데 실패했습니다!", "에러", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -583,20 +616,27 @@ namespace KSAGrinder.Pages
         {
             if (sender is DataGridRow && (sender as DataGridRow).Item is Class cls)
             {
-                (string Code, int) tuple = (cls.Code, Int32.Parse(cls.Number));
-                int lectureIdx = _classList.FindIndex((t) => t.Code == cls.Code);
-                if (_classList.Contains(tuple))
+                Class @class = null;
+                foreach (Class c in _currentSchedule)
                 {
-                    _classList.Remove(tuple);
+                    if (c.Code == cls.Code)
+                    {
+                        @class = c;
+                        break;
+                    }
                 }
-                else if (lectureIdx != -1)
+                if (_currentSchedule.Contains(cls))
                 {
-                    _classList.RemoveAt(lectureIdx);
-                    _classList.Add(tuple);
+                    _currentSchedule.Remove(cls);
+                }
+                else if (@class != null)
+                {
+                    _currentSchedule.Remove(@class);
+                    _currentSchedule.Add(cls);
                 }
                 else
                 {
-                    _classList.Add(tuple);
+                    _currentSchedule.Add(cls);
                 }
                 UpdateHourCollection();
 
@@ -604,6 +644,8 @@ namespace KSAGrinder.Pages
                 int firstIdx = LectureCollection.ToList().FindIndex((l) => l.Code == cls.Code);
                 LectureTable.SelectedIndex = firstIdx;
                 LoadLectures();
+
+                Modified = true;
             }
         }
 
@@ -611,33 +653,92 @@ namespace KSAGrinder.Pages
         {
             if (CurrentClassTable.SelectedItem is Class cls)
             {
-                _classList.Remove((cls.Code, Int32.Parse(cls.Number)));
+                _currentSchedule.Remove(cls);
                 UpdateHourCollection();
 
                 LectureTable_SelectionChanged(this, null);
                 int firstIdx = LectureCollection.ToList().FindIndex((l) => l.Code == cls.Code);
                 LectureTable.SelectedIndex = firstIdx;
                 LoadLectures();
+
+                Modified = true;
+            }
+        }
+
+        private void CurrentClassTableRow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete && CurrentClassTable.SelectedItem is Class cls)
+            {
+                _currentSchedule.Remove(cls);
+                UpdateHourCollection();
+
+                LectureTable_SelectionChanged(this, null);
+                int firstIdx = LectureCollection.ToList().FindIndex((l) => l.Code == cls.Code);
+                LectureTable.SelectedIndex = firstIdx;
+                LoadLectures();
+
+                Modified = true;
+            }
+        }
+
+        private void BtnGenerate_Click(object sender, RoutedEventArgs e)
+        {
+            Class[] classList = _currentSchedule.ToArray();
+            var sequences = new List<IEnumerable<int>>(_currentSchedule.Count);
+            foreach (Class @class in _currentSchedule)
+                sequences.Add(Enumerable.Range(0, _classDict[@class.Code].Count));
+            IEnumerable<int[]> validCombinations =
+                sequences.CartesianProduct()
+                .Select(i => i.ToArray())
+                .Where(
+                    combination =>
+                    {
+                        var schedule = new HashSet<(DayOfWeek, int)>();
+                        for (int i = 0; i < _currentSchedule.Count; ++i)
+                        {
+                            foreach ((DayOfWeek Day, int Hour) hour in _classDict[classList[i].Code][combination[i]].Schedule)
+                            {
+                                if (schedule.Contains(hour))
+                                {
+                                    return false;
+                                }
+                                _=schedule.Add(hour);
+                            }
+                        }
+                        return true;
+                    });
+            var newSchedules = new List<Schedule>();
+            foreach (int[] combination in validCombinations)
+            {
+                var schedule = new Schedule();
+                for (int i = 0; i < _currentSchedule.Count; ++i)
+                {
+                    schedule.Add(_classDict[classList[i].Code][combination[i]]);
+                }
+                newSchedules.Add(schedule);
+            }
+            switch ((Preference)CmbPreference.SelectedIndex)
+            {
+                case Preference.Empty1:
+                    newSchedules.Sort((a, b) => -Math.Sign(a.Evaluate1Empty - b.Evaluate1Empty));
+                    break;
+                case Preference.Empty4:
+                    newSchedules.Sort((a, b) => -Math.Sign(a.Evaluate4Empty - b.Evaluate4Empty));
+                    break;
+                case Preference.Empty5:
+                    newSchedules.Sort((a, b) => -Math.Sign(a.Evaluate5Empty - b.Evaluate5Empty));
+                    break;
+                case Preference.Compact:
+                    newSchedules.Sort((a, b) => -Math.Sign(a.EvaluateCompact - b.EvaluateCompact));
+                    break;
+            }
+            ScheduleCollection.Clear();
+            foreach (Schedule schedule in newSchedules)
+            {
+                ScheduleCollection.Add(schedule);
             }
         }
 
         #endregion
-
-        private void CurrentClassTableRow_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Delete)
-            {
-                if (CurrentClassTable.SelectedItem is Class cls)
-                {
-                    _classList.Remove((cls.Code, Int32.Parse(cls.Number)));
-                    UpdateHourCollection();
-
-                    LectureTable_SelectionChanged(this, null);
-                    int firstIdx = LectureCollection.ToList().FindIndex((l) => l.Code == cls.Code);
-                    LectureTable.SelectedIndex = firstIdx;
-                    LoadLectures();
-                }
-            }
-        }
     }
 }

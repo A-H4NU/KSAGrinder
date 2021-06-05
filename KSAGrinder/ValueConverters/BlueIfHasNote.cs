@@ -14,13 +14,13 @@ namespace KSAGrinder.ValueConverters
     public class BlueIfHasNote : IMultiValueConverter
     {
         private static DataTable _classTable;
-        private static List<(string Code, int Number)> _classList;
+        private static Schedule _schedule;
         private static Dictionary<string, List<Class>> _classDict;
 
-        public static void Initialize(DataTable classTable, List<(string Code, int Number)> classList, Dictionary<string, List<Class>> classDict)
+        public static void Initialize(DataTable classTable, Schedule schedule, Dictionary<string, List<Class>> classDict)
         {
             _classTable = classTable;
-            _classList = classList;
+            _schedule = schedule;
             _classDict = classDict;
         }
 
@@ -28,11 +28,11 @@ namespace KSAGrinder.ValueConverters
         {
             (DayOfWeek Day, int Hour)[] GetSchedule(string c, int n)
             {
-                int idx = _classDict[c].FindIndex((cls) => cls.Number == n.ToString());
+                int idx = _classDict[c].FindIndex((cls) => cls.Number == n);
                 return _classDict[c][idx].Schedule;
             }
             (DayOfWeek Day, int Hour)[] schedule = GetSchedule(code, number);
-            foreach ((string Code, int Number) cls in _classList)
+            foreach (Class cls in _schedule)
             {
                 (DayOfWeek Day, int Hour)[] existingSchedule = GetSchedule(cls.Code, cls.Number);
                 foreach ((DayOfWeek Day, int Hour) time in schedule)
@@ -48,18 +48,19 @@ namespace KSAGrinder.ValueConverters
 
         public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value[0] is string code && value[1] is string number)
+            if (value[0] is string code && value[1] is int number)
             {
-                int n = Int32.Parse(number);
-                if (_classList.FindIndex((t) => t.Code == code && t.Number == n) != -1)
+                IEnumerator<Class> enumerator = _schedule.GetEnumerator();
+                while (enumerator.MoveNext())
                 {
-                    return Brushes.LightGray;
+                    if (enumerator.Current.Code == code && enumerator.Current.Number == number)
+                        return Brushes.LightGray;
                 }
-                bool overlap = DoesOverlapIfAdded(code, n);
+                bool overlap = DoesOverlapIfAdded(code, number);
                 DataRow classRow = null;
                 foreach (DataRow row in _classTable.Rows)
                 {
-                    if (row[_classTable.Columns["Code"]].Equals(code) && row[_classTable.Columns["Number"]].Equals(n))
+                    if (row[_classTable.Columns["Code"]].Equals(code) && row[_classTable.Columns["Number"]].Equals(number))
                     {
                         classRow = row;
                         break;

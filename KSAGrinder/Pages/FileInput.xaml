@@ -12,8 +12,8 @@
     <Grid x:Name="grid">
         <WrapPanel Background="Transparent" Drop="Page_Drop" AllowDrop="True"/>
         <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Drop="Page_Drop" AllowDrop="True">
-            <Label Content="Select or drag and drop a provided file." FontSize="20" Margin="0,0,0,10"/>
-            <Button x:Name="BtnSelect" MaxWidth="100" Height="25" Content="Select.." Click="BtnSelect_Click"/>
+            <Label Content="제공된 파일을 선택하거나 드래그 앤 드롭하세요." FontSize="20" Margin="0,0,0,10"/>
+            <Button x:Name="BtnSelect" MaxWidth="100" Height="25" Content="선택" Click="BtnSelect_Click"/>
         </WrapPanel>
     </Grid>
 </Page>

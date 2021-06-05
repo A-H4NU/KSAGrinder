@@ -14,6 +14,8 @@
         <valueConverters:ConvertItemToIndex x:Key="IndexConverter"/>
         <valueConverters:LectureGrayingIfSelected x:Key="GrayingIfSelected"/>
         <valueConverters:BlueIfHasNote x:Key="BlueIfHasNote"/>
+        <valueConverters:ScoreToColor x:Key="ScoreToColor"/>
+
         <!-- Timetable Styles -->
         <Style x:Key="TimetableDataGridStyle" TargetType="{x:Type DataGrid}">
             <Setter Property="ColumnHeaderStyle" Value="{DynamicResource TimetableColumnHeaderStyle}"/>
@@ -61,11 +63,11 @@
 
     <DockPanel>
         <Menu Padding="5" FontSize="13" DockPanel.Dock="Top">
-            <MenuItem Header="File">
-                <MenuItem Header="Open" Click="BtnOpen_Click"/>
-                <MenuItem Header="Load from ID" Click="BtnLoadID_Click"/>
-                <MenuItem Header="Save" Click="BtnSave_Click"/>
-                <MenuItem Header="Save as.." Click="BtnSaveAs_Click"/>
+            <MenuItem Header="파일">
+                <MenuItem Header="열기" Click="BtnOpen_Click"/>
+                <MenuItem Header="학번에서 불러오기" Click="BtnLoadID_Click"/>
+                <MenuItem Header="저장" Click="BtnSave_Click"/>
+                <MenuItem Header="다른 이름으로 저장" Click="BtnSaveAs_Click"/>
             </MenuItem>
         </Menu>
         <Grid DockPanel.Dock="Bottom">
@@ -81,20 +83,21 @@
 
 
             <DockPanel x:Name="TimetablePanel" Grid.RowSpan="2" Margin="10,0,10,10">
-                <Label DockPanel.Dock="Top" Content="Course Schedule" FontSize="22" FontWeight="SemiBold" FontStyle="Italic" HorizontalContentAlignment="Center"/>
+                <Label DockPanel.Dock="Top" Content="시간표" FontSize="22" FontWeight="SemiBold" FontStyle="Italic" HorizontalContentAlignment="Center"/>
                 <DataGrid x:Name="Timetable" ColumnWidth="*"
                       Style="{DynamicResource TimetableDataGridStyle}"
                       ItemsSource="{Binding}" AutoGenerateColumns="True"
                       AlternatingRowBackground = "#F4F4F4" SelectionUnit="Cell"
                       CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False"
                       CanUserResizeRows="False" CanUserAddRows="False" IsReadOnly="True"
-                      HorizontalScrollBarVisibility="Disabled"/>
+                      HorizontalScrollBarVisibility="Disabled">
+                </DataGrid>
             </DockPanel>
             <DockPanel Margin="10" Grid.Column="1" Grid.Row="0">
                 <DockPanel DockPanel.Dock="Top" Margin="0,15,0,10">
                     <ComboBox x:Name="CmbDepartment" Width="85.24" DockPanel.Dock="Left" FontSize="13" VerticalContentAlignment="Center" SelectedIndex="0"
                           ItemsSource="{Binding DepartmentCollection}" SelectionChanged="CmbDepartment_SelectionChanged"/>
-                    <Label Content="Search: " FontSize="13" Margin="10,0,0,0"/>
+                    <Label Content="검색: " FontSize="13" Margin="10,0,0,0"/>
                     <TextBox x:Name="TxtSearch" VerticalContentAlignment="Center" FontSize="13" TextChanged="TxtSearch_TextChanged"/>
                 </DockPanel>
                 <Grid Grid.Column="1" Grid.Row="0">
@@ -108,9 +111,9 @@
                       AlternatingRowBackground = "#F4F4F4" HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
                       CanUserResizeColumns="False" CanUserAddRows="False" IsReadOnly="True" SelectionChanged="LectureTable_SelectionChanged">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Dep." Width="55" Binding="{Binding Department}"/>
-                            <DataGridTextColumn Header="Lecture Name" Width="*" Binding="{Binding Name}"/>
-                            <DataGridTextColumn Header="# Class" Width="55" Binding="{Binding NumClass}" CanUserSort="False"/>
+                            <DataGridTextColumn Header="학부" Width="55" Binding="{Binding Department}"/>
+                            <DataGridTextColumn Header="강의명" Width="*" Binding="{Binding Name}"/>
+                            <DataGridTextColumn Header="분반 수" Width="55" Binding="{Binding NumClass}" CanUserSort="False"/>
                         </DataGrid.Columns>
                         <DataGrid.RowStyle>
                             <Style TargetType="{x:Type DataGridRow}">
@@ -125,14 +128,14 @@
                       CanUserResizeColumns="False" CanUserAddRows="False" IsReadOnly="True" CanUserSortColumns="False">
                         <DataGrid.Resources>
                             <ContextMenu x:Key="RowMenu">
-                                <MenuItem Header="View Detail" Click="ClassTableMenuItem_Click"/>
+                                <MenuItem Header="세부 정보 보기" Click="ClassTableMenuItem_Click"/>
                             </ContextMenu>
                         </DataGrid.Resources>
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="No." MaxWidth="30" Binding="{Binding Number}"/>
-                            <DataGridTextColumn Header="Teacher" MaxWidth="55" Binding="{Binding Teacher}"/>
-                            <DataGridTextColumn Header="Schedule" Width="*" Binding="{Binding DayTime}"/>
-                            <DataGridTextColumn Header="Enroll" MinWidth="55" Binding="{Binding Enroll}"/>
+                            <DataGridTextColumn Header="선생님" MaxWidth="70" Binding="{Binding Teacher}"/>
+                            <DataGridTextColumn Header="요일/시간" Width="*" Binding="{Binding DayTime}"/>
+                            <DataGridTextColumn Header="신청자" MinWidth="55" Binding="{Binding Enroll}"/>
                         </DataGrid.Columns>
                         <DataGrid.RowStyle>
                             <Style TargetType="{x:Type DataGridRow}">
@@ -157,10 +160,10 @@
                   AlternatingRowBackground = "#F4F4F4" HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
                   CanUserResizeColumns="False" CanUserAddRows="False" CanUserSortColumns="False" >
                 <DataGrid.Columns>
-                    <DataGridCheckBoxColumn Header="Pin"/>
-                    <DataGridTextColumn Header="Name" Width="*" Binding="{Binding Name}" IsReadOnly="True"/>
+                    <DataGridCheckBoxColumn Header="고정" Width="40"/>
+                    <DataGridTextColumn Header="강의명" Width="*" Binding="{Binding Name}" IsReadOnly="True"/>
                     <DataGridTextColumn Header="No." Width="40" Binding="{Binding Number}" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Teacher" Width="55" Binding="{Binding Teacher}" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="선생님" Width="55" Binding="{Binding Teacher}" IsReadOnly="True"/>
                 </DataGrid.Columns>
                 <DataGrid.Resources>
                 </DataGrid.Resources>
@@ -175,11 +178,54 @@
 
             <DockPanel Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" Margin="10">
                 <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
-                    <Label Content="Preference"/>
-                    <ComboBox />
+                    <Label Content="선호: " FontSize="13"/>
+                    <ComboBox x:Name="CmbPreference" ItemsSource="{Binding PreferenceCollection}"
+                              SelectedIndex="0" VerticalContentAlignment="Center" FontSize="13"/>
                 </DockPanel>
-                <Button DockPanel.Dock="Top" x:Name="BtnGenerate" Content="Generate" Margin="0,0,0,10"/>
-                <DataGrid/>
+                <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="BtnGenerate" Grid.Column="0" Content="조합" Height="25" Margin="0,0,5,0" Click="BtnGenerate_Click"/>
+                    <Button x:Name="BtnTrade" Grid.Column="1" Content="트레이드 생성" Height="25" Margin="5,0,0,0"/>
+                </Grid>
+                
+                <DataGrid ItemsSource="{Binding ScheduleCollection}" AutoGenerateColumns="False" IsReadOnly="True" Style="{StaticResource LectureTableDataGridStyle}" Margin="0,0,0,10"
+                          ColumnHeaderStyle="{StaticResource LectureTableColumnHeaderStyle}" CellStyle="{StaticResource TimetableDataGridCellStyle}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="*" Header="1공강" Binding="{Binding Evaluate1Empty}">
+                            <DataGridTextColumn.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="Background" Value="{Binding Evaluate1Empty, Converter={StaticResource ScoreToColor}}"/>
+                                </Style>
+                            </DataGridTextColumn.CellStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Width="*" Header="4공강" Binding="{Binding Evaluate4Empty}">
+
+                            <DataGridTextColumn.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="Background" Value="{Binding Evaluate4Empty, Converter={StaticResource ScoreToColor}}"/>
+                                </Style>
+                            </DataGridTextColumn.CellStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Width="*" Header="5공강" Binding="{Binding Evaluate5Empty}">
+
+                            <DataGridTextColumn.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="Background" Value="{Binding Evaluate5Empty, Converter={StaticResource ScoreToColor}}"/>
+                                </Style>
+                            </DataGridTextColumn.CellStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Width="*" Header="면학 종료" Binding="{Binding EvaluateCompact}">
+                            <DataGridTextColumn.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="Background" Value="{Binding EvaluateCompact, Converter={StaticResource ScoreToColor}}"/>
+                                </Style>
+                            </DataGridTextColumn.CellStyle>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
             </DockPanel>
 
         </Grid>

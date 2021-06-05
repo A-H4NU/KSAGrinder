@@ -1,6 +1,6 @@
 ﻿namespace KSAGrinder.Components
 {
-    public enum DepartmentEnum
+    public enum Department
     {
         All, MathCS, Newton, ChemBio, Human, Inter
     }

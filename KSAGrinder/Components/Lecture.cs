@@ -1,6 +1,6 @@
 ﻿namespace KSAGrinder.Components
 {
-    public struct Lecture
+    public class Lecture
     {
         public string Code { get; set; }
         public string Department { get; set; }

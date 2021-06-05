@@ -1,4 +1,6 @@
-﻿using System;
+﻿using KSAGrinder.Components;
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Data;
@@ -8,17 +10,19 @@ namespace KSAGrinder.ValueConverters
 {
     public class LectureGrayingIfSelected : IValueConverter
     {
-        private static List<(string Code, int Number)> _classList;
+        private static Schedule _schedule;
 
-        public static void Initialize(List<(string Code, int Number)> classList) => _classList = classList;
+        public static void Initialize(Schedule schedule) => _schedule = schedule;
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is string code)
             {
-                if (_classList.FindIndex((t) => t.Code == code) != -1)
+                IEnumerator<Class> enumerator = _schedule.GetEnumerator();
+                while (enumerator.MoveNext())
                 {
-                    return Brushes.LightGray;
+                    if (enumerator.Current.Code == code)
+                        return Brushes.LightGray;
                 }
             }
             return Brushes.Black;

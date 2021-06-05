@@ -29,7 +29,7 @@ namespace KSAGrinder.Pages
         {
             var ofd = new OpenFileDialog
             {
-                Title = "Please select a provided file.",
+                Title = "제공된 파일을 선택하세요.",
                 Filter = "ZIP files (*.zip)|*.zip"
             };
             if (ofd.ShowDialog() == true)
@@ -40,7 +40,7 @@ namespace KSAGrinder.Pages
                 }
                 else
                 {
-                    MessageBox.Show("Failed to load the file!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("파일을 불러오든 데 실패했습니다!", "에러", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -107,7 +107,7 @@ namespace KSAGrinder.Pages
             }
             else
             {
-                MessageBox.Show("Failed to load the file!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("파일을 불러오든 데 실패했습니다!", "에러", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿namespace KSAGrinder.Components
 {
-    public struct Hour
+    public class Hour
     {
         public string Monday { get; set; }
         public string Tuesday { get; set; }
