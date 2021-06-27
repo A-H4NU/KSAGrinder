@@ -9,14 +9,14 @@ namespace KSAGrinder.ValueConverters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            Color green = Colors.LightGreen;
-            Color red = Colors.Coral;
+            Color light = Colors.LightGreen;
+            Color dark = Colors.DarkGreen;
             if (value is double score)
             {
                 var newColor = Color.FromRgb(
-                    (byte)(green.R * score + red.R * (1 - score)),
-                    (byte)(green.G * score + red.G * (1 - score)),
-                    (byte)(green.B * score + red.B * (1 - score)));
+                    (byte)((light.R * score + dark.R * (100 - score))/100),
+                    (byte)((light.G * score + dark.G * (100 - score))/100),
+                    (byte)((light.B * score + dark.B * (100 - score))/100));
                 return new SolidColorBrush(newColor);
             }
             return null;

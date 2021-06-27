@@ -15,21 +15,19 @@ namespace KSAGrinder.ValueConverters
     {
         private static DataTable _classTable;
         private static Schedule _schedule;
-        private static Dictionary<string, List<Class>> _classDict;
 
-        public static void Initialize(DataTable classTable, Schedule schedule, Dictionary<string, List<Class>> classDict)
+        public static void Initialize(DataTable classTable, Schedule schedule)
         {
             _classTable = classTable;
             _schedule = schedule;
-            _classDict = classDict;
         }
 
         private bool DoesOverlapIfAdded(string code, int number)
         {
             (DayOfWeek Day, int Hour)[] GetSchedule(string c, int n)
             {
-                int idx = _classDict[c].FindIndex((cls) => cls.Number == n);
-                return _classDict[c][idx].Schedule;
+                int idx = DataManager.ClassDict(c).FindIndex((cls) => cls.Number == n);
+                return DataManager.ClassDict(c)[idx].Schedule;
             }
             (DayOfWeek Day, int Hour)[] schedule = GetSchedule(code, number);
             foreach (Class cls in _schedule)

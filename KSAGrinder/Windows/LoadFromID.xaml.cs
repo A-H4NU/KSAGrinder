@@ -11,7 +11,9 @@ namespace KSAGrinder.Windows
     {
         private readonly DataSet _data;
 
-        public DataRow Result { get; private set; } = null;
+        public string ResultID { get; private set; } = null;
+
+        public DataRow ResultRow { get; private set; } = null;
 
         public LoadFromID(DataSet data)
         {
@@ -27,7 +29,8 @@ namespace KSAGrinder.Windows
             DataRow row = tableStudent.Rows.Find(TxtID.Text);
             if (row != null)
             {
-                Result = row;
+                ResultRow = row;
+                ResultID = TxtID.Text;
                 Close();
             }
             else

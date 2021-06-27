@@ -64,10 +64,11 @@
     <DockPanel>
         <Menu Padding="5" FontSize="13" DockPanel.Dock="Top">
             <MenuItem Header="파일">
-                <MenuItem Header="열기" Click="BtnOpen_Click"/>
-                <MenuItem Header="학번에서 불러오기" Click="BtnLoadID_Click"/>
-                <MenuItem Header="저장" Click="BtnSave_Click"/>
-                <MenuItem Header="다른 이름으로 저장" Click="BtnSaveAs_Click"/>
+                <MenuItem Header="새 시간표 (Ctrl+N)" Click="MenuNewSchedule_Click"/>
+                <MenuItem Header="열기 (Ctrl+O)" Click="MenuOpen_Click"/>
+                <MenuItem Header="학번에서 불러오기" Click="MenuLoadID_Click"/>
+                <MenuItem Header="저장 (Ctrl+S)" Click="MenuSave_Click"/>
+                <MenuItem Header="다른 이름으로 저장" Click="MenuSaveAs_Click"/>
             </MenuItem>
         </Menu>
         <Grid DockPanel.Dock="Bottom">
@@ -135,12 +136,12 @@
                             <DataGridTextColumn Header="No." MaxWidth="30" Binding="{Binding Number}"/>
                             <DataGridTextColumn Header="선생님" MaxWidth="70" Binding="{Binding Teacher}"/>
                             <DataGridTextColumn Header="요일/시간" Width="*" Binding="{Binding DayTime}"/>
-                            <DataGridTextColumn Header="신청자" MinWidth="55" Binding="{Binding Enroll}"/>
+                            <DataGridTextColumn Header="신청인원" MinWidth="65" Binding="{Binding Enroll}"/>
                         </DataGrid.Columns>
                         <DataGrid.RowStyle>
                             <Style TargetType="{x:Type DataGridRow}">
                                 <Setter Property="ContextMenu" Value="{StaticResource RowMenu}"/>
-                                <EventSetter Event="MouseLeftButtonDown" Handler="DataGridRow_MouseLeftButtonDown"/>
+                                <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
                                 <Setter Property="Foreground">
                                     <Setter.Value>
                                         <MultiBinding Converter="{StaticResource BlueIfHasNote}">
@@ -188,11 +189,13 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Button x:Name="BtnGenerate" Grid.Column="0" Content="조합" Height="25" Margin="0,0,5,0" Click="BtnGenerate_Click"/>
-                    <Button x:Name="BtnTrade" Grid.Column="1" Content="트레이드 생성" Height="25" Margin="5,0,0,0"/>
+                    <Button x:Name="BtnTrade" Grid.Column="1" Content="트레이드 생성" Height="25" Margin="5,0,0,0" Click="BtnTrade_Click"/>
                 </Grid>
                 
-                <DataGrid ItemsSource="{Binding ScheduleCollection}" AutoGenerateColumns="False" IsReadOnly="True" Style="{StaticResource LectureTableDataGridStyle}" Margin="0,0,0,10"
-                          ColumnHeaderStyle="{StaticResource LectureTableColumnHeaderStyle}" CellStyle="{StaticResource TimetableDataGridCellStyle}">
+                <DataGrid x:Name="SchedulesTable" ItemsSource="{Binding ScheduleCollection}" AutoGenerateColumns="False" IsReadOnly="True"
+                          Style="{StaticResource LectureTableDataGridStyle}" Margin="0,0,0,10"
+                          ColumnHeaderStyle="{StaticResource LectureTableColumnHeaderStyle}" CellStyle="{StaticResource TimetableDataGridCellStyle}"
+                          HeadersVisibility="Column" CanUserReorderColumns="False" >
                     <DataGrid.Columns>
                         <DataGridTextColumn Width="*" Header="1공강" Binding="{Binding Evaluate1Empty}">
                             <DataGridTextColumn.CellStyle>
@@ -202,7 +205,6 @@
                             </DataGridTextColumn.CellStyle>
                         </DataGridTextColumn>
                         <DataGridTextColumn Width="*" Header="4공강" Binding="{Binding Evaluate4Empty}">
-
                             <DataGridTextColumn.CellStyle>
                                 <Style TargetType="DataGridCell">
                                     <Setter Property="Background" Value="{Binding Evaluate4Empty, Converter={StaticResource ScoreToColor}}"/>
@@ -225,6 +227,11 @@
                             </DataGridTextColumn.CellStyle>
                         </DataGridTextColumn>
                     </DataGrid.Columns>
+                    <DataGrid.RowStyle>
+                        <Style TargetType="{x:Type DataGridRow}">
+                            <EventSetter Event="MouseDoubleClick" Handler="SchedulesTableRow_MouseDoubleClick"/>
+                        </Style>
+                    </DataGrid.RowStyle>
                 </DataGrid>
             </DockPanel>
 

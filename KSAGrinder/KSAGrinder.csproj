@@ -70,12 +70,17 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Components\Class.cs" />
+    <Compile Include="Components\DataManager.cs" />
     <Compile Include="Components\Department.cs" />
     <Compile Include="Components\Lecture.cs" />
     <Compile Include="Components\Hour.cs" />
     <Compile Include="Components\Preference.cs" />
     <Compile Include="Components\Schedule.cs" />
+    <Compile Include="Components\Trade.cs" />
+    <Compile Include="Exceptions\DifferentDataSetException.cs" />
+    <Compile Include="Exceptions\NoDataException.cs" />
     <Compile Include="Extensions\CartesianProductExtension.cs" />
+    <Compile Include="Extensions\DataGridExtension.cs" />
     <Compile Include="ValueConverters\BlueIfHasNote.cs" />
     <Compile Include="ValueConverters\ConvertItemToIndex.cs" />
     <Compile Include="ValueConverters\LectureGrayingIfSelected.cs" />

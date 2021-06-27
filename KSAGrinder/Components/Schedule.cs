@@ -8,6 +8,10 @@ namespace KSAGrinder.Components
     {
         private readonly List<Class> _classList = new List<Class>();
 
+        public Schedule() { }
+
+        public Schedule(IEnumerable<Class> classes) => _classList.AddRange(classes);
+
         public int Count => _classList.Count;
 
         public bool IsReadOnly => false;
@@ -24,18 +28,27 @@ namespace KSAGrinder.Components
         /// <summary>
         /// Checks whether the schedule has overlapping classes
         /// </summary>
-        public bool IsValid()
+        public bool IsValid
         {
-            var schedule = new HashSet<(DayOfWeek, int)>();
-            foreach (Class @class in _classList)
+            get
             {
-                foreach ((DayOfWeek, int) hour in @class.Schedule)
+                var schedule = new HashSet<(DayOfWeek, int)>();
+                foreach (Class @class in _classList)
                 {
-                    if (!schedule.Add(hour))
-                        return false;
+                    foreach ((DayOfWeek, int) hour in @class.Schedule)
+                    {
+                        if (!schedule.Add(hour))
+                            return false;
+                    }
                 }
+                return true;
             }
-            return true;
+        }
+
+        public void CopyTo(Schedule schedule)
+        {
+            schedule._classList.Clear();
+            schedule.AddRange(_classList);
         }
 
         private double EvaluateNEmpty(int n)
@@ -48,12 +61,12 @@ namespace KSAGrinder.Components
                     schedule.Add(hour);
                 }
             }
-            double score = 1.0;
+            double score = 100.0;
             for (DayOfWeek day = DayOfWeek.Monday; day <= DayOfWeek.Friday; day++)
             {
                 if (schedule.Contains((day, n)))
                 {
-                    score -= 0.2;
+                    score -= 20.0;
                 }
             }
             return Math.Round(score, 2);
@@ -62,7 +75,6 @@ namespace KSAGrinder.Components
         public double Evaluate1Empty => EvaluateNEmpty(1);
         public double Evaluate4Empty => EvaluateNEmpty(4);
         public double Evaluate5Empty => EvaluateNEmpty(5);
-
         public double EvaluateCompact
         {
             get
@@ -81,7 +93,7 @@ namespace KSAGrinder.Components
                 double score = 0.0;
                 foreach (int lastHour in lastClass.Values)
                 {
-                    score += (14 - lastHour) / (14.0 * 5);
+                    score += 100.0 * (14 - lastHour) / (14.0 * 5);
                 }
                 return Math.Round(score, 2);
             }
