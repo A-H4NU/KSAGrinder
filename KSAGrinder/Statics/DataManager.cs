@@ -1,9 +1,11 @@
-﻿using System;
+﻿using KSAGrinder.Components;
+
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
-namespace KSAGrinder.Components
+namespace KSAGrinder.Statics
 {
     public static class DataManager
     {
@@ -38,7 +40,9 @@ namespace KSAGrinder.Components
             return classRow;
         }
 
-        public static IEnumerable<Class> GetScheduleFromID(string id)
+        public static Class GetClass(string code, int number) => _classDict[code][number - 1];
+
+        public static IEnumerable<Class> GetScheduleFromStudentID(string id)
         {
             DataRow row = Data.Tables["Student"].Rows.Find(id);
             if (row == null) return null;
@@ -47,6 +51,15 @@ namespace KSAGrinder.Components
 
             return from tuple in ((string Code, int Number)[])row[csApplied]
                    select _classDict[tuple.Code][tuple.Number - 1];
+        }
+
+        public static string GetNameFromStudentID(string id)
+        {
+            DataRow row = Data.Tables["Student"].Rows.Find(id);
+            if (row == null) return null;
+            DataTable tStudent = Data.Tables["Student"];
+            DataColumn cName = tStudent.Columns["Name"];
+            return row[cName].ToString();
         }
 
         public static List<Class> ClassDict(string lectureCode) => _classDict[lectureCode];
@@ -61,9 +74,10 @@ namespace KSAGrinder.Components
             DataColumn cNumber = tClass.Columns["Number"];
             DataColumn cTeacher = tClass.Columns["Teacher"];
             DataColumn cTime = tClass.Columns["Time"];
-            DataColumn cEnroll = tClass.Columns["Enrollment"];
             DataColumn cNote = tClass.Columns["Note"];
             DataTable tStudent = Data.Tables["Student"];
+            DataColumn cApplied = tStudent.Columns["Applied"];
+            DataColumn cID = tStudent.Columns["ID"];
             var applyDict = new Dictionary<(string Code, int Number), List<string>>();
             void AddToApplyDict(string code, int number, string student)
             {
@@ -74,8 +88,8 @@ namespace KSAGrinder.Components
             }
             foreach (DataRow student in tStudent.Rows)
             {
-                var applied = ((string Code, int Number)[])student[tStudent.Columns["Applied"]];
-                string idNum = $"{student[tStudent.Columns["ID"]]} {student[tStudent.Columns["Name"]]}";
+                var applied = ((string Code, int Number)[])student[cApplied];
+                string idNum = student[cID].ToString();
                 foreach ((string code, int number) in applied)
                     AddToApplyDict(code, number, idNum);
             }
@@ -94,7 +108,6 @@ namespace KSAGrinder.Components
                     Name = tLecture.Rows.Find(code)[cName].ToString(),
                     Number = Int32.Parse(row[cNumber].ToString()),
                     Teacher = row[cTeacher].ToString(),
-                    Enroll = row[cEnroll].ToString(),
                     Schedule = ((DayOfWeek Day, int Hour)[])row[cTime],
                     Note = row[cNote].ToString(),
                     EnrolledList = applyDict[(code, (int)row[cNumber])]

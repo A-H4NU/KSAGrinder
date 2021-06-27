@@ -1,7 +1,7 @@
 ﻿using KSAGrinder.Components;
+using KSAGrinder.Statics;
 
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
@@ -48,12 +48,12 @@ namespace KSAGrinder.ValueConverters
         {
             if (value[0] is string code && value[1] is int number)
             {
-                IEnumerator<Class> enumerator = _schedule.GetEnumerator();
-                while (enumerator.MoveNext())
+                foreach (Class @class in _schedule)
                 {
-                    if (enumerator.Current.Code == code && enumerator.Current.Number == number)
+                    if (@class.Code == code && @class.Number == number)
                         return Brushes.LightGray;
                 }
+
                 bool overlap = DoesOverlapIfAdded(code, number);
                 DataRow classRow = null;
                 foreach (DataRow row in _classTable.Rows)
@@ -64,6 +64,7 @@ namespace KSAGrinder.ValueConverters
                         break;
                     }
                 }
+
                 bool hasNote = classRow != null && !String.IsNullOrEmpty((string)classRow[_classTable.Columns["Note"]]);
                 if (overlap && hasNote)
                     return Brushes.PaleVioletRed;

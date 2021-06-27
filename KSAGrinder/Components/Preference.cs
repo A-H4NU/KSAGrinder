@@ -14,6 +14,9 @@ namespace KSAGrinder.Components
         Empty5,
 
         [Description("수업 빨리 끝남")]
-        Compact
+        Compact,
+
+        [Description("분반 이동 적음")]
+        LowClassMoves
     }
 }

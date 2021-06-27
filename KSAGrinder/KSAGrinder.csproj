@@ -70,7 +70,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Components\Class.cs" />
-    <Compile Include="Components\DataManager.cs" />
+    <Compile Include="Statics\DataManager.cs" />
     <Compile Include="Components\Department.cs" />
     <Compile Include="Components\Lecture.cs" />
     <Compile Include="Components\Hour.cs" />

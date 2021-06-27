@@ -226,6 +226,13 @@
                                 </Style>
                             </DataGridTextColumn.CellStyle>
                         </DataGridTextColumn>
+                        <DataGridTextColumn Width="*" Header="분반 이동" Binding="{Binding EvaluateLowNumMoves}">
+                            <DataGridTextColumn.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="Background" Value="{Binding EvaluateLowNumMoves, Converter={StaticResource ScoreToColor}}"/>
+                                </Style>
+                            </DataGridTextColumn.CellStyle>
+                        </DataGridTextColumn>
                     </DataGrid.Columns>
                     <DataGrid.RowStyle>
                         <Style TargetType="{x:Type DataGridRow}">

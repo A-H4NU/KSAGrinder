@@ -1,12 +1,17 @@
-﻿using System;
+﻿using KSAGrinder.Statics;
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace KSAGrinder.Components
 {
     public class Schedule : ICollection<Class>
     {
         private readonly List<Class> _classList = new List<Class>();
+
+        public static string OriginalScheduleID { get; set; }
 
         public Schedule() { }
 
@@ -97,6 +102,44 @@ namespace KSAGrinder.Components
                 }
                 return Math.Round(score, 2);
             }
+        }
+
+        public double EvaluateLowNumMoves
+        {
+            get
+            {
+                IEnumerable<Class> original = DataManager.GetScheduleFromStudentID(OriginalScheduleID);
+                if (original == null) return 0;
+                int count = 0;
+                foreach (Class cls1 in original)
+                {
+                    foreach (Class cls2 in _classList)
+                    {
+                        if (cls1.Code == cls2.Code)
+                        {
+                            if (cls1.Number != cls2.Number)
+                                ++count;
+                            break;
+                        }
+                    }
+                }
+                return Math.Round((1 - (double)count / original.Count()) * 100, 2);
+            }
+        }
+
+        public static bool CheckValid(IEnumerator<Class> enumerator)
+        {
+            var schedule = new HashSet<(DayOfWeek, int)>();
+            while (enumerator.MoveNext())
+            {
+                Class current = enumerator.Current;
+                foreach ((DayOfWeek, int) hour in current.Schedule)
+                {
+                    if (!schedule.Add(hour))
+                        return false;
+                }
+            }
+            return true;
         }
     }
 }
