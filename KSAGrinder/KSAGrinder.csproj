@@ -70,6 +70,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Components\Class.cs" />
+    <Compile Include="Extensions\EnumeratorExtension.cs" />
     <Compile Include="Statics\DataManager.cs" />
     <Compile Include="Components\Department.cs" />
     <Compile Include="Components\Lecture.cs" />
@@ -79,7 +80,7 @@
     <Compile Include="Components\Trade.cs" />
     <Compile Include="Exceptions\DifferentDataSetException.cs" />
     <Compile Include="Exceptions\NoDataException.cs" />
-    <Compile Include="Extensions\CartesianProductExtension.cs" />
+    <Compile Include="Extensions\CombinatoryExtension.cs" />
     <Compile Include="Extensions\DataGridExtension.cs" />
     <Compile Include="ValueConverters\BlueIfHasNote.cs" />
     <Compile Include="ValueConverters\ConvertItemToIndex.cs" />

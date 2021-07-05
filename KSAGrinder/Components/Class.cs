@@ -40,5 +40,7 @@ namespace KSAGrinder.Components
         public int Enroll => EnrolledList.Count;
         public string Note { get; set; }
         public List<string> EnrolledList { get; set; }
+
+        public override string ToString() => $"{Code} {Name} {Number}";
     }
 }

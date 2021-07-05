@@ -1,4 +1,5 @@
-﻿using KSAGrinder.Statics;
+﻿using KSAGrinder.Extensions;
+using KSAGrinder.Statics;
 
 using System;
 using System.Collections;
@@ -16,6 +17,14 @@ namespace KSAGrinder.Components
         public Schedule() { }
 
         public Schedule(IEnumerable<Class> classes) => _classList.AddRange(classes);
+
+        public Schedule(IEnumerator<Class> classes)
+        {
+            while (classes.MoveNext())
+            {
+                _classList.Add(classes.Current);
+            }
+        }
 
         public int Count => _classList.Count;
 
@@ -140,6 +149,82 @@ namespace KSAGrinder.Components
                 }
             }
             return true;
+        }
+
+        private static bool CheckValidAndGenerateSchedule(IEnumerator<Class> enumerator, out Schedule result)
+        {
+            var schedule = new HashSet<(DayOfWeek, int)>();
+            result = null;
+            var classes = new List<Class>();
+            while (enumerator.MoveNext())
+            {
+                Class current = enumerator.Current;
+                foreach ((DayOfWeek, int) hour in current.Schedule)
+                {
+                    if (!schedule.Add(hour))
+                        return false;
+                }
+                classes.Add(current);
+            }
+            result = new Schedule(classes);
+            return true;
+        }
+
+        public IEnumerator<Schedule> CombinationsOfSchedule(IEnumerable<string> pinnedLectures = null, int maxMove = -1, bool onlyValid = true)
+        {
+            if (pinnedLectures == null) pinnedLectures = Enumerable.Empty<string>();
+            if (maxMove == 0)
+            {
+                yield return this;
+                yield break;
+            }
+            if (maxMove < 0) maxMove = _classList.Count;
+
+            var codeToIndex = new Dictionary<string, int>();
+            for (int i = 0; i < _classList.Count; ++i) codeToIndex[_classList[i].Code] = i;
+            IEnumerable<string> notPinnedLectures = _classList.Select(@class => @class.Code).Except(pinnedLectures);
+            int[] currentNumbersNotPinned = notPinnedLectures.Select(code => _classList[codeToIndex[code]].Number).ToArray();
+
+            IEnumerator<Class> GenerateScheduleFromCombination(IEnumerable<int> combinationOfClassNums)
+            {
+                int[] combination = combinationOfClassNums.ToArray();
+                int combinationIndex = 0;
+                for (int i = 0; i < _classList.Count; ++i)
+                {
+                    if (notPinnedLectures.Contains(_classList[i].Code))
+                    {
+                        yield return DataManager.GetClass(_classList[i].Code, combination[combinationIndex]);
+                        ++combinationIndex;
+                    }
+                    else
+                    {
+                        yield return _classList[i];
+                    }
+                }
+            }
+
+            IEnumerator<IEnumerable<int>> combinationsOfClassNums = notPinnedLectures.Select(code => Enumerable.Range(1, DataManager.ClassDict(code).Count)).CartesianProduct();
+            while (combinationsOfClassNums.MoveNext())
+            {
+                int[] combination = combinationsOfClassNums.Current.ToArray();
+                int numDifference = 0;
+                for (int i = 0; i < combination.Length; ++i)
+                {
+                    if (currentNumbersNotPinned[i] != combination[i])
+                    {
+                        ++numDifference;
+                        if (numDifference > maxMove) break;
+                    }
+                }
+                if (numDifference > maxMove) break;
+
+                IEnumerator<Class> classes = GenerateScheduleFromCombination(combination);
+
+                Schedule newSchedule = null;
+                if (onlyValid && !CheckValidAndGenerateSchedule(classes, out newSchedule))
+                    continue;
+                yield return newSchedule;
+            }
         }
     }
 }

@@ -511,6 +511,7 @@ namespace KSAGrinder.Pages
                     _currentSchedule.Clear();
                     _currentSchedule.AddRange(newList);
                     UpdateHourCollection();
+                    InvalidateStyles();
 
                     Modified = true;
                     OriginalScheduleID = dialog.ResultID;
@@ -651,61 +652,17 @@ namespace KSAGrinder.Pages
 
         private void BtnGenerate_Click(object sender, RoutedEventArgs e)
         {
-            var notPinned = new List<Class>();
-            var pinned = new List<Class>();
+            var notPinned = new List<string>();
+            var pinned = new List<string>();
             for (int i = 0; i < _currentSchedule.Count; ++i)
             {
                 var @class = (Class)CurrentClassTable.Items[i];
                 if (((CheckBox)CurrentClassTable.GetCell(i, 0).Content).IsChecked == true)
-                    pinned.Add(@class);
+                    pinned.Add(@class.Code);
                 else
-                    notPinned.Add(@class);
+                    notPinned.Add(@class.Code);
             }
-            int n_notPinned = notPinned.Count;
-            var sequences = new List<IEnumerable<int>>(n_notPinned);
-            foreach (Class @class in notPinned)
-                sequences.Add(Enumerable.Range(1, DataManager.ClassDict(@class.Code).Count));
-
-            IEnumerable<int[]> validCombinations =
-                sequences.CartesianProduct()
-                .Select(i => i.ToArray())
-                .Where(
-                    combination =>
-                    {
-                        var schedule = new HashSet<(DayOfWeek, int)>();
-                        for (int i = 0; i < n_notPinned; ++i)
-                        {
-                            foreach ((DayOfWeek, int) hour in DataManager.GetClass(notPinned[i].Code, combination[i]).Schedule)
-                            {
-                                if (!schedule.Add(hour))
-                                    return false;
-                            }
-                        }
-                        foreach (Class pinnedClass in pinned)
-                        {
-                            foreach ((DayOfWeek, int) hour in pinnedClass.Schedule)
-                            {
-                                if (!schedule.Add(hour))
-                                    return false;
-                            }
-                        }
-                        return true;
-                    }
-                );
-
-            var newSchedules = new List<Schedule>();
-            foreach (int[] combination in validCombinations)
-            {
-                var classes = _currentSchedule.ToList();
-                for (int i = 0; i < n_notPinned; ++i)
-                {
-                    int index = classes.FindIndex(c => c.Code == notPinned[i].Code);
-                    Class @class = DataManager.GetClass(notPinned[i].Code, combination[i]);
-                    classes.RemoveAt(index);
-                    classes.Insert(index, @class);
-                }
-                newSchedules.Add(new Schedule(classes));
-            }
+            var newSchedules = _currentSchedule.CombinationsOfSchedule(pinned, onlyValid: true).AsEnumerable().ToList();
             switch ((Preference)CmbPreference.SelectedIndex)
             {
                 case Preference.Empty1:
@@ -726,7 +683,6 @@ namespace KSAGrinder.Pages
             {
                 ScheduleCollection.Add(schedule);
             }
-            
         }
 
         private void BtnTrade_Click(object sender, RoutedEventArgs e)
@@ -736,9 +692,14 @@ namespace KSAGrinder.Pages
                 // TODO: Implement this
                 MessageBox.Show("");
             }
-            IEnumerable<Class> originalSchedule = DataManager.GetScheduleFromStudentID(OriginalScheduleID);
-            IEnumerable<IEnumerable<Trade>> r = Trade.GenerateTrades(OriginalScheduleID, originalSchedule, _currentSchedule, 1);
-            MessageBox.Show(r.Count().ToString());
+            //IEnumerable<Class> originalSchedule = DataManager.GetScheduleFromStudentID(OriginalScheduleID);
+            //IEnumerable<IEnumerable<Trade>> r = Trade.GenerateTrades(OriginalScheduleID, originalSchedule, _currentSchedule, 1);
+            //if (r == null)
+            //{
+            //    MessageBox.Show("There are no trades possible");
+            //    return;
+            //}
+            //MessageBox.Show(r.Count().ToString());
         }
 
         private void DataGridRow_MouseDoubleClick(object sender, MouseButtonEventArgs e)

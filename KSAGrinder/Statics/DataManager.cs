@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace KSAGrinder.Statics
 {
-    public static class DataManager
+    internal static class DataManager
     {
         public static DataSet Data { get; private set; }
 
