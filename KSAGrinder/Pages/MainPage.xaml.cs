@@ -138,6 +138,8 @@ namespace KSAGrinder.Pages
 
             SizeChanged += MainPage_SizeChanged;
 
+            _main.Closing += MainWindow_Closing;
+
             foreach (Department e in Enum.GetValues(typeof(Department)))
             {
                 DepartmentCollection.Add(e);
@@ -432,6 +434,32 @@ namespace KSAGrinder.Pages
             Modified = true;
         }
 
+        private bool TrySaveDialog()
+        {
+            try
+            {
+                var sfd = new SaveFileDialog
+                {
+                    Filter = "바이너리 파일 (*.bin)|*.bin"
+                };
+                if (sfd.ShowDialog() == true)
+                {
+                    SaveXmlInBinary(sfd.FileName);
+                    WorkingWith = sfd.FileName;
+                    Modified = false;
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"저장하는 데 실패했습니다!{Environment.NewLine}{ex.Message}", "에러",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+        }
+
         #region Events
 
         private void MainPage_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -555,7 +583,7 @@ namespace KSAGrinder.Pages
         {
             if (String.IsNullOrWhiteSpace(WorkingWith))
             {
-                MenuSaveAs_Click(sender, e);
+                TrySaveDialog();
                 return;
             }
             try
@@ -569,28 +597,7 @@ namespace KSAGrinder.Pages
             }
         }
 
-        private void MenuSaveAs_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var sfd = new SaveFileDialog
-                {
-                    Filter = "바이너리 파일 (*.bin)|*.bin"
-                };
-                if (sfd.ShowDialog() == true)
-                {
-                    SaveXmlInBinary(sfd.FileName);
-                    WorkingWith = sfd.FileName;
-                    Modified = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"저장하는 데 실패했습니다!{Environment.NewLine}{ex.Message}", "에러", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
+        private void MenuSaveAs_Click(object sender, RoutedEventArgs e) => TrySaveDialog();
 
         private void CmbDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e) => LoadLectures();
 
@@ -756,6 +763,33 @@ namespace KSAGrinder.Pages
                 InvalidateStyles();
 
                 Modified = true;
+            }
+        }
+
+        private void MainWindow_Closing(object sender, CancelEventArgs e)
+        {
+            if (Modified)
+            {
+                MessageBoxResult result = MessageBox.Show(
+                    "현재 진행 상황을 저장하고 종료하시겠습니까?",
+                    "종료",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Question,
+                    MessageBoxResult.Cancel);
+                switch (result)
+                {
+                    case MessageBoxResult.No:
+                        break;
+                    case MessageBoxResult.Yes:
+                        if (String.IsNullOrWhiteSpace(WorkingWith) && !TrySaveDialog())
+                            e.Cancel = true;
+                        else
+                            MenuSave_Click(this, null);
+                        break;
+                    case MessageBoxResult.Cancel:
+                        e.Cancel = true;
+                        break;
+                }
             }
         }
 
