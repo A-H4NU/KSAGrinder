@@ -599,6 +599,8 @@ namespace KSAGrinder.Pages
 
         private void MenuSaveAs_Click(object sender, RoutedEventArgs e) => TrySaveDialog();
 
+        private void MenuClose_Click(object sender, RoutedEventArgs e) => _main.Close();
+
         private void CmbDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e) => LoadLectures();
 
         private void LectureTable_SelectionChanged(object sender, SelectionChangedEventArgs e)

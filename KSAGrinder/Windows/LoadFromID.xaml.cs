@@ -35,7 +35,11 @@ namespace KSAGrinder.Windows
             }
             else
             {
-                MessageBox.Show($"There is no student with ID {TxtID.Text}.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(
+                    $"학번이 {TxtID.Text}인 학생을 찾을 수 없습니다.",
+                    "학번에서 불러오기",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
             }
         }
 

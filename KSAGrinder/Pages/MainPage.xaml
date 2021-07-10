@@ -69,6 +69,7 @@
                 <MenuItem Header="학번에서 불러오기" Click="MenuLoadID_Click"/>
                 <MenuItem Header="저장 (Ctrl+S)" Click="MenuSave_Click"/>
                 <MenuItem Header="다른 이름으로 저장" Click="MenuSaveAs_Click"/>
+                <MenuItem Header="종료 (Alt+F4)" Click="MenuClose_Click"/>
             </MenuItem>
         </Menu>
         <Grid DockPanel.Dock="Bottom">
