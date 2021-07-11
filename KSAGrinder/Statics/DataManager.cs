@@ -102,16 +102,15 @@ namespace KSAGrinder.Statics
                     _classDict[code] = new List<Class>();
                 }
 
-                _classDict[code].Add(new Class()
-                {
-                    Code = code,
-                    Name = tLecture.Rows.Find(code)[cName].ToString(),
-                    Number = Int32.Parse(row[cNumber].ToString()),
-                    Teacher = row[cTeacher].ToString(),
-                    Schedule = ((DayOfWeek Day, int Hour)[])row[cTime],
-                    Note = row[cNote].ToString(),
-                    EnrolledList = applyDict[(code, (int)row[cNumber])]
-                });
+                _classDict[code].Add(new Class(
+                    name:           tLecture.Rows.Find(code)[cName].ToString(),
+                    code:           code,
+                    number:         Int32.Parse(row[cNumber].ToString()),
+                    teacher:        row[cTeacher].ToString(),
+                    schedule:       ((DayOfWeek Day, int Hour)[])row[cTime],
+                    note:           row[cNote].ToString(),
+                    enrolledList:   applyDict[(code, (int)row[cNumber])]
+                ));
             }
         }
     }

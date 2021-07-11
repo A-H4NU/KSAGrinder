@@ -273,13 +273,12 @@ namespace KSAGrinder.Pages
                     {
                         continue;
                     }
-                    newList.Add(new Lecture()
-                    {
-                        Department = (string)row[cDepartment],
-                        Code = (string)row[cCode],
-                        Name = name,
-                        NumClass = DataManager.ClassDict((string)row[cCode]).Count.ToString()
-                    });
+                    newList.Add(new Lecture(
+                        code:       (string)row[cCode],
+                        department: (string)row[cDepartment],
+                        name:       name,
+                        numClass:   DataManager.ClassDict((string)row[cCode]).Count
+                    ));
                 }
             }
             LectureCollection.Clear();
@@ -715,7 +714,7 @@ namespace KSAGrinder.Pages
         {
             if (sender is DataGridRow && (sender as DataGridRow).Item is Class cls)
             {
-                Class @class = null;
+                Class? @class = null;
                 foreach (Class c in _currentSchedule)
                 {
                     if (c.Code == cls.Code)
@@ -730,7 +729,7 @@ namespace KSAGrinder.Pages
                 }
                 else if (@class != null)
                 {
-                    _currentSchedule.Remove(@class);
+                    _currentSchedule.Remove(@class.Value);
                     _currentSchedule.Add(cls);
                 }
                 else

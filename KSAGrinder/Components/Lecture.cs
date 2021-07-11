@@ -1,11 +1,18 @@
 ﻿namespace KSAGrinder.Components
 {
-    public class Lecture
+    public readonly struct Lecture
     {
-        public string Code { get; set; }
-        public string Department { get; set; }
-        public string Name { get; set; }
+        public Lecture(string code, string department, string name, int numClass)
+        {
+            Code = code;
+            Department = department;
+            Name = name;
+            NumClass = numClass;
+        }
 
-        public string NumClass { get; set; }
+        public string Code { get; }
+        public string Department { get; }
+        public string Name { get; }
+        public int NumClass { get; }
     }
 }

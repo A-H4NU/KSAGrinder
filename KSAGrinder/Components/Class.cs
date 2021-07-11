@@ -4,8 +4,26 @@ using System.Text;
 
 namespace KSAGrinder.Components
 {
-    public class Class
+    public readonly struct Class
     {
+        public Class(
+            string name,
+            string code,
+            int number,
+            string teacher,
+            (DayOfWeek Day, int Hour)[] schedule,
+            List<string> enrolledList,
+            string note)
+        {
+            Name = name;
+            Code = code;
+            Number = number;
+            Teacher = teacher;
+            Schedule = schedule;
+            EnrolledList = enrolledList;
+            Note = note;
+        }
+
         private static readonly Dictionary<DayOfWeek, string> _dayToShortKor = new Dictionary<DayOfWeek, string>()
         {
             {DayOfWeek.Monday, "월"},
@@ -17,12 +35,12 @@ namespace KSAGrinder.Components
             {DayOfWeek.Sunday, "일"},
         };
 
-        public string Name { get; set; }
-        public string Code { get; set; }
-        public int Number { get; set; }
-        public string Teacher { get; set; }
+        public string Name { get; }
+        public string Code { get; }
+        public int Number { get; }
+        public string Teacher { get; }
 
-        public (DayOfWeek Day, int Hour)[] Schedule { get; set; }
+        public (DayOfWeek Day, int Hour)[] Schedule { get; }
         public string DayTime
         {
             get
@@ -38,8 +56,8 @@ namespace KSAGrinder.Components
             }
         }
         public int Enroll => EnrolledList.Count;
-        public string Note { get; set; }
-        public List<string> EnrolledList { get; set; }
+        public string Note { get; }
+        public List<string> EnrolledList { get; }
 
         public override string ToString() => $"{Code} {Name} {Number}";
     }
