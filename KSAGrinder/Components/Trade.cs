@@ -8,19 +8,19 @@ using System.Linq;
 
 namespace KSAGrinder.Components
 {
-    public class Trade
+    public readonly struct Trade
     {
         private static DataSet _data;
 
-        public string LectureCode { get; private set; }
+        public string LectureCode { get; }
 
-        public string FromStudent { get; private set; }
+        public string FromStudent { get; }
 
-        public int FromNumber { get; private set; }
+        public int FromNumber { get; }
 
-        public string ToStudent { get; private set; }
+        public string ToStudent { get; }
 
-        public int ToNumber { get; private set; }
+        public int ToNumber { get; }
 
         public static void SetData(DataSet data) => _data = data;
 
@@ -37,7 +37,7 @@ namespace KSAGrinder.Components
                 throw new ArgumentException("Arguments are not valid.");
         }
 
-        public Trade(string fromStudent, Class fromClass, string toStudent, Class toClass)
+        public Trade(string fromStudent, in Class fromClass, string toStudent, in Class toClass)
         {
             if (_data == null)
                 throw new NoDataException("Data must be provided before any initialization of an instance!");
@@ -85,6 +85,13 @@ namespace KSAGrinder.Components
                 }
             }
             return scheduleL;
+        }
+
+        public static IEnumerator<IEnumerable<Trade>> GenerateTrade(string studentID, Schedule fromSchedule, Schedule toSchedule)
+        {
+            // TODO: Implement this
+            throw new NotImplementedException();
+            int n = 0;
         }
     }
 }

@@ -6,7 +6,7 @@ namespace KSAGrinder.Extensions
 {
     public static class CombinatoryExtension
     {
-        public static IEnumerator<IEnumerable<T>> CartesianProduct<T>(this IEnumerable<IEnumerable<T>> sequences)
+        public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(this IEnumerable<IEnumerable<T>> sequences)
         {
             int n = sequences.Count();
             if (n == 0)
@@ -15,42 +15,50 @@ namespace KSAGrinder.Extensions
             }
             else
             {
-                IEnumerator<IEnumerable<T>> smallerProduct = CartesianProduct(sequences.Take(n - 1));
-                while (smallerProduct.MoveNext())
+                foreach (IEnumerable<T> smallerProduct in CartesianProduct(sequences.Take(n - 1)))
                 {
-                    IEnumerable<T> currentProduct = smallerProduct.Current;
                     foreach (T lastElement in sequences.Last())
                     {
-                        yield return currentProduct.Append(lastElement);
+                        yield return smallerProduct.Append(lastElement);
                     }
                 }
             }
         }
 
-        public static IEnumerator<IEnumerable<T>> GetCombsWithMaxK<T>(this IEnumerable<T> list, int maxLength)
-            where T : IComparable
+        public static IEnumerable<IEnumerable<T>> GetCombsFromZeroToK<T>(this IEnumerable<T> list, int k)
+            where T : IComparable<T>
         {
-            if (maxLength == 0)
+            IEnumerable<IEnumerable<T>> GetKCombsFromLastCombs(int length, IEnumerable<IEnumerable<T>> lastCombs)
             {
-                yield return Enumerable.Empty<T>();
-            }
-            else if (maxLength == 1)
-            {
-                foreach (T t in list)
-                    yield return new T[] { t };
-            }
-            else
-            {
-                IEnumerator<IEnumerable<T>> combsList = GetCombsWithMaxK(list, maxLength - 1);
-                while (combsList.MoveNext())
+                if (length == 1)
                 {
-                    IEnumerable<T> combs = combsList.Current;
-                    yield return combs;
-                    foreach (T t2 in list.Where(o => o.CompareTo(combs.Last()) > 0))
+                    foreach (T t in list)
+                        yield return new T[] { t };
+                }
+                else
+                {
+                    foreach (IEnumerable<T> comb in lastCombs)
                     {
-                        yield return combs.Concat(new T[] { t2 });
+                        foreach (T t in list.Where(o => o.CompareTo(comb.Last()) > 0))
+                        {
+                            yield return comb.Concat(new T[] { t });
+                        }
                     }
                 }
+            }
+
+            if (k < 0) throw new ArgumentOutOfRangeException("k", k, "k must be nonnegative");
+            yield return Enumerable.Empty<T>();
+            IEnumerable<IEnumerable<T>> last = new IEnumerable<T>[] { Enumerable.Empty<T>() };
+            for (int i = 1; i <= k; ++i)
+            {
+                var newLast = new List<IEnumerable<T>>();
+                foreach (IEnumerable<T> comb in GetKCombsFromLastCombs(i, last))
+                {
+                    yield return comb;
+                    newLast.Add(comb);
+                }
+                last = newLast;
             }
         }
     }

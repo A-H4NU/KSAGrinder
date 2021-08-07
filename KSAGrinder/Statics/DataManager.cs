@@ -64,6 +64,8 @@ namespace KSAGrinder.Statics
 
         public static List<Class> ClassDict(string lectureCode) => _classDict[lectureCode];
 
+        public static int NumberOfClasses(string lectureCode) => ClassDict(lectureCode).Count;
+
         private static void InitializeClassDictionary()
         {
             _classDict.Clear();

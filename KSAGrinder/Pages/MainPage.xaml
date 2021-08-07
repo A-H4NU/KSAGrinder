@@ -192,6 +192,8 @@
                     <Button x:Name="BtnGenerate" Grid.Column="0" Content="조합" Height="25" Margin="0,0,5,0" Click="BtnGenerate_Click"/>
                     <Button x:Name="BtnTrade" Grid.Column="1" Content="트레이드 생성" Height="25" Margin="5,0,0,0" Click="BtnTrade_Click"/>
                 </Grid>
+
+                <Label x:Name="LblNumSchedules" DockPanel.Dock="Top" HorizontalContentAlignment="Center" Content="총 0개의 시간표를 조합했습니다."></Label>
                 
                 <DataGrid x:Name="SchedulesTable" ItemsSource="{Binding ScheduleCollection}" AutoGenerateColumns="False" IsReadOnly="True"
                           Style="{StaticResource LectureTableDataGridStyle}" Margin="0,0,0,10"

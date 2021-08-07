@@ -109,7 +109,7 @@ namespace KSAGrinder.Pages
         public static readonly RoutedCommand ShortCut_CtrlS = new RoutedCommand();
 
 
-        public const double MaxRowHeight = 50.0;
+        public const double MaxRowHeight = 65.0;
 
         public const int NRow = 14;
 
@@ -139,6 +139,8 @@ namespace KSAGrinder.Pages
             SizeChanged += MainPage_SizeChanged;
 
             _main.Closing += MainWindow_Closing;
+
+            ScheduleCollection.CollectionChanged += (o, e) => LblNumSchedules.Content = $"총 {ScheduleCollection.Count}개의 시간표를 조합했습니다.";
 
             foreach (Department e in Enum.GetValues(typeof(Department)))
             {
@@ -199,7 +201,7 @@ namespace KSAGrinder.Pages
                 DataRow lectureRow = tLecture.Rows.Find(code);
 
                 string classStr = $"{lectureRow[clName]}{Environment.NewLine}"
-                             + $"Class #{classRow[ccNumber]}{Environment.NewLine}"
+                             + $"{classRow[ccNumber]}분반{Environment.NewLine}"
                              + $"{classRow[ccTeacher]}";
 
                 var times = ((DayOfWeek Day, int Hour)[])classRow[ccTime];
@@ -670,22 +672,23 @@ namespace KSAGrinder.Pages
                 else
                     notPinned.Add(@class.Code);
             }
-            var newSchedules = _currentSchedule.CombinationsOfSchedule(pinned, onlyValid: true).AsEnumerable().ToList();
-            switch ((Preference)CmbPreference.SelectedIndex)
-            {
-                case Preference.Empty1:
-                    newSchedules.Sort((a, b) => -Math.Sign(a.Evaluate1Empty - b.Evaluate1Empty));
-                    break;
-                case Preference.Empty4:
-                    newSchedules.Sort((a, b) => -Math.Sign(a.Evaluate4Empty - b.Evaluate4Empty));
-                    break;
-                case Preference.Empty5:
-                    newSchedules.Sort((a, b) => -Math.Sign(a.Evaluate5Empty - b.Evaluate5Empty));
-                    break;
-                case Preference.Compact:
-                    newSchedules.Sort((a, b) => -Math.Sign(a.EvaluateCompact - b.EvaluateCompact));
-                    break;
-            }
+            IEnumerable<Schedule> newSchedules = _currentSchedule.CombinationsOfSchedule(pinned, onlyValid: true);
+            //switch ((Preference)CmbPreference.SelectedIndex)
+            //{
+            //    case Preference.Empty1:
+            //        newSchedules.Sort((a, b) => -Math.Sign(a.Evaluate1Empty - b.Evaluate1Empty));
+            //        break;
+            //    case Preference.Empty4:
+            //        newSchedules.Sort((a, b) => -Math.Sign(a.Evaluate4Empty - b.Evaluate4Empty));
+            //        break;
+            //    case Preference.Empty5:
+            //        newSchedules.Sort((a, b) => -Math.Sign(a.Evaluate5Empty - b.Evaluate5Empty));
+            //        break;
+            //    case Preference.Compact:
+            //        newSchedules.Sort((a, b) => -Math.Sign(a.EvaluateCompact - b.EvaluateCompact));
+            //        break;
+            //}
+
             ScheduleCollection.Clear();
             foreach (Schedule schedule in newSchedules)
             {

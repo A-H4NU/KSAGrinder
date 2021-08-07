@@ -225,68 +225,76 @@ namespace TimetableXmlFormatter
             });
             studentTable.PrimaryKey = new DataColumn[] { studentTable.Columns["ID"] };
 
-            var processedID = new HashSet<string>();
+            //var processedID = new HashSet<string>();
+            var idToRow = new Dictionary<string, object[]>();
 
             void ProcessStudentFile(string path)
             {
                 // indices of the first occurences of lecture names (on stdCSVpath1)
                 var firstIndex = new Dictionary<int, string>(); // (index, lecture name)
-                using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                var sr = new StreamReader(fs);
+                string[] firstRow = sr.ReadLine().Split(',');
+                for (int i = 1; i < firstRow.Length; ++i)
                 {
-                    using (var sr = new StreamReader(fs))
+                    string lectureName = GetUntilOrEntire(firstRow[i], "(");
+                    if (firstIndex.ContainsValue(lectureName))
                     {
-                        string[] firstRow = sr.ReadLine().Split(',');
-                        for (int i = 1; i < firstRow.Length; ++i)
-                        {
-                            string lectureName = GetUntilOrEntire(firstRow[i], "(");
-                            if (firstIndex.ContainsValue(lectureName))
-                            {
-                                continue;
-                            }
-                            else
-                            {
-                                firstIndex.Add(i, lectureName);
-                            }
-                        }
-                        sr.ReadLine();
-                        while (!sr.EndOfStream)
-                        {
-                            string[] line = sr.ReadLine().Split(',');
-                            if (line[0].Length == 0 || line[0][0] < '0' || line[0][0] > '9')
-                            {
-                                continue;
-                            }
-
-                            string id = GetUntilOrEntire(line[0], "(");
-                            string name = GetUntilOrEntire(line[0].Substring(id.Length + 1), ")");
-
-                            if (processedID.Contains(id))
-                            {
-                                continue;
-                            }
-                            processedID.Add(id);
-
-                            var applied = new List<(string Code, int Number)>();
-                            for (int i = 1; i < line.Length; ++i)
-                            {
-                                if (line[i] != "1" || !firstRow[i].Contains("_"))
-                                {
-                                    continue;
-                                }
-
-                                string[] @class = firstRow[i].Split('_');
-                                string code = lectures[@class[0].Substring(0, @class[0].LastIndexOf('('))];
-                                int classNum = Int32.Parse(@class[1]);
-                                applied.Add((code, classNum));
-                            }
-                            studentTable.Rows.Add(id, name, applied.ToArray());
-                        }
+                        continue;
                     }
+                    else
+                    {
+                        firstIndex.Add(i, lectureName);
+                    }
+                }
+                sr.ReadLine();
+                while (!sr.EndOfStream)
+                {
+                    string[] line = sr.ReadLine().Split(',');
+                    if (line[0].Length == 0 || line[0][0] < '0' || line[0][0] > '9')
+                    {
+                        continue;
+                    }
+
+                    string id = GetUntilOrEntire(line[0], "(");
+                    string name = GetUntilOrEntire(line[0].Substring(id.Length + 1), ")");
+
+                    
+
+                    List<(string Code, int Number)> applied;
+                    if (idToRow.ContainsKey(id))
+                    {
+                        applied = new List<(string Code, int Number)>(idToRow[id][2] as (string Code, int Number)[]);
+                        idToRow.Remove(id);
+                    }
+                    else
+                    {
+                        applied = new List<(string Code, int Number)>();
+                    }
+
+                    for (int i = 1; i < line.Length; ++i)
+                    {
+                        if (line[i] != "1" || !firstRow[i].Contains("_"))
+                        {
+                            continue;
+                        }
+
+                        string[] @class = firstRow[i].Split('_');
+                        string code = lectures[@class[0].Substring(0, @class[0].LastIndexOf('('))];
+                        int classNum = Int32.Parse(@class[1]);
+                        applied.Add((code, classNum));
+                    }
+                    idToRow[id] = new object[] { id, name, applied.ToArray() };
                 }
             }
 
             ProcessStudentFile(stdCSVpath1);
             ProcessStudentFile(stdCSVpath2);
+
+            foreach (object[] row in idToRow.Values)
+            {
+                studentTable.Rows.Add(row);
+            }
 
             #endregion
 
