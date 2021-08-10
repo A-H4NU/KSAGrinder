@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace KSAGrinder.Components
 {
-    public class Schedule : ICollection<Class>
+    public class Schedule : ICollection<Class>, ICloneable
     {
         private readonly List<Class> _classList = new List<Class>();
 
@@ -63,6 +63,29 @@ namespace KSAGrinder.Components
         {
             schedule._classList.Clear();
             schedule.AddRange(_classList);
+        }
+
+        public bool MoveClass(string lectureCode, int number)
+        {
+            int index = _classList.FindIndex(cls => cls.Code == lectureCode);
+            if (index == -1) return false;
+            _classList[index] = DataManager.GetClass(lectureCode, number);
+            return true;
+        }
+
+        /// <summary>
+        /// Returns the number of a lecture
+        /// </summary>
+        /// <param name="lectureCode">A lecture code to find its number</param>
+        /// <returns>The class number; -1 when it is not found</returns>
+        public int GetClassNumber(string lectureCode)
+        {
+            foreach (Class @class in _classList)
+            {
+                if (@class.Code == lectureCode)
+                    return @class.Number;
+            }
+            return -1;
         }
 
         private double EvaluateNEmpty(int n)
@@ -219,5 +242,18 @@ namespace KSAGrinder.Components
                 }
             }
         }
+
+        public object Clone() => new Schedule(this);
+
+        public override bool Equals(object obj)
+        {
+            if (obj is IEnumerable<Class> other)
+            {
+                return this.ToHashSet().SetEquals(other.ToHashSet());
+            }
+            return false;
+        }
+
+        public override int GetHashCode() => _classList.Aggregate(0, (val, cls) => val ^ cls.GetHashCode());
     }
 }

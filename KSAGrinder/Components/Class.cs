@@ -4,7 +4,7 @@ using System.Text;
 
 namespace KSAGrinder.Components
 {
-    public readonly struct Class
+    public readonly struct Class : IEquatable<Class>
     {
         public Class(
             string name,
@@ -60,5 +60,7 @@ namespace KSAGrinder.Components
         public List<string> EnrolledList { get; }
 
         public override string ToString() => $"{Code} {Name} {Number}";
+
+        public bool Equals(Class other) => Code == other.Code && Number == other.Number;
     }
 }

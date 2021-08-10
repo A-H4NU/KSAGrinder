@@ -22,6 +22,12 @@ namespace KSAGrinder.Statics
         /// </summary>
         private static readonly Dictionary<string, List<Class>> _classDict = new Dictionary<string, List<Class>>();
 
+        public static bool LectureExists(string code) => _classDict.Keys.Contains(code);
+
+        public static bool StudentExists(string id) => Data.Tables["Student"].Rows.Find(id) != null;
+
+        public static bool ClassExists(string code, int number) => LectureExists(code) && 1 <= number && number <= _classDict[code].Count;
+
         public static DataRow GetClassRow(string code, int number)
         {
             DataTable tClass = Data.Tables["Class"];

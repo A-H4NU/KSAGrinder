@@ -70,6 +70,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Components\Class.cs" />
+    <Compile Include="Components\ClassMove.cs" />
+    <Compile Include="Components\TradeCapture.cs" />
+    <Compile Include="Exceptions\TradeInvalidException.cs" />
+    <Compile Include="Extensions\CloneExtension.cs" />
     <Compile Include="Extensions\EnumeratorExtension.cs" />
     <Compile Include="Statics\DataManager.cs" />
     <Compile Include="Components\Department.cs" />

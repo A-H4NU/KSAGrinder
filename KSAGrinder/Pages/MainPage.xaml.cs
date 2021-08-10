@@ -672,7 +672,7 @@ namespace KSAGrinder.Pages
                 else
                     notPinned.Add(@class.Code);
             }
-            IEnumerable<Schedule> newSchedules = _currentSchedule.CombinationsOfSchedule(pinned, onlyValid: true);
+            IEnumerable<Schedule> newSchedules = _currentSchedule.CombinationsOfSchedule(pinned, 3, onlyValid: false);
             //switch ((Preference)CmbPreference.SelectedIndex)
             //{
             //    case Preference.Empty1:
