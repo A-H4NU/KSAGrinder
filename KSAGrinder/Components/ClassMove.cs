@@ -2,9 +2,12 @@
 using KSAGrinder.Extensions;
 using KSAGrinder.Statics;
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace KSAGrinder.Components
 {
@@ -31,8 +34,9 @@ namespace KSAGrinder.Components
         public override string ToString() => $"ClassMove {StudentId}, {LectureCode} {DataManager.NameOfLectureFromCode(LectureCode)} from {NumberFrom} to {NumberTo}";
 
         public static int Call = 0;
-        public static IEnumerable<IEnumerable<ClassMove>> GenerateClassMoves(string studentId, Schedule targetSchedule, int maxDepth)
+        public static async IAsyncEnumerable<IEnumerable<ClassMove>> GenerateClassMoves(string studentId, Schedule targetSchedule, int maxDepth)
         {
+            ++Call;
             var tradeCapture = new TradeCapture();
             var originalSchedule = DataManager.GetScheduleFromStudentID(studentId).ToList();
             foreach (Class targetClass in targetSchedule)
@@ -41,16 +45,20 @@ namespace KSAGrinder.Components
                 if (index < 0 || originalSchedule[index].Number == targetClass.Number) continue;
                 tradeCapture.Add(new ClassMove(studentId, targetClass.Code, originalSchedule[index].Number, targetClass.Number));
             }
-            return GenerateClassMoves(new[] { (studentId, targetSchedule) }, tradeCapture, 0, maxDepth);
+            await foreach (var moves in GenerateClassMoves(new[] { (studentId, targetSchedule) }, tradeCapture, 0, maxDepth))
+            {
+                yield return moves;
+            }
         }
 
-        public static IEnumerable<IEnumerable<ClassMove>> GenerateClassMoves(
+        public static async IAsyncEnumerable<IEnumerable<ClassMove>> GenerateClassMoves(
             IEnumerable<(string StudentId, Schedule Schedule)> targets,
             TradeCapture tradeCapture,
             int depth,
-            int maxDepth)
+            int maxDepth,
+            int batchSize = 1024,
+            int numThreads = 4)
         {
-            ++Call;
             if (tradeCapture.DoesFormTrade() &&
                 targets.All(tuple => tuple.Schedule.Equals(tradeCapture.GetScheduleOf(tuple.StudentId))) &&
                 tradeCapture.AreAllSchedulesValid())
@@ -62,6 +70,7 @@ namespace KSAGrinder.Components
             if (depth >= maxDepth) yield break;
 
             var sequences = new List<List<(ClassMove, Schedule)>>();
+            int card = 1;
             foreach(ClassMove tailMove in tradeCapture.TailsOfNoncycles())
             {
                 // have to make a new class move from tailMove.NumberTo
@@ -88,34 +97,70 @@ namespace KSAGrinder.Components
                         }
                     }
                 }
+                if (currentList.Count == 0) yield break;
                 sequences.Add(currentList);
+                card *= currentList.Count;
             }
 
-            foreach (IEnumerable<(ClassMove, Schedule)> optionsToTry in sequences.CartesianProduct())
+            async Task<IEnumerable<IEnumerable<ClassMove>>> ProcessBatch(IEnumerable<IEnumerable<(ClassMove, Schedule)>> batch)
             {
-                int n = 0;
-                var targetsToAdd = new List<(string, Schedule)>();
-                foreach ((ClassMove move, Schedule option) in optionsToTry)
+                var localTradeCapture = tradeCapture.Clone();
+                var result = new List<IEnumerable<ClassMove>>();
+                foreach (var optionsToTry in batch)
                 {
-                    try
+                    int n = 0;
+                    var targetsToAdd = new List<(string, Schedule)>();
+                    foreach ((ClassMove move, Schedule option) in optionsToTry)
                     {
-                        tradeCapture.Add(move);
+                        try
+                        {
+                            localTradeCapture.Add(move);
+                        }
+                        catch (TradeInvalidException)
+                        {
+                            Debug.WriteLine("Bad move.");
+                            n = -1; break;
+                        }
+                        targetsToAdd.Add((move.StudentId, option));
+                        ++n;
                     }
-                    catch (TradeInvalidException)
+                    if (n == -1) continue;
+                    //Debug.Assert(!targetsToAdd.Intersect(targets).Any());
+                    await foreach (IEnumerable<ClassMove> moves in GenerateClassMoves(targets.Concat(targetsToAdd), localTradeCapture, depth + 1, maxDepth))
                     {
-                        Debug.WriteLine("Bad move.");
-                        n = -1; break;
+                        result.Add(moves);
                     }
-                    targetsToAdd.Add((move.StudentId, option));
-                    ++n;
+                    tradeCapture.Pop(n);
                 }
-                if (n == -1) continue;
-                Debug.Assert(!targetsToAdd.Intersect(targets).Any());
-                foreach (IEnumerable<ClassMove> moves in GenerateClassMoves(targets.Concat(targetsToAdd), tradeCapture, depth+1, maxDepth))
+                return result;
+            }
+
+            numThreads = (int)Math.Min(Math.Ceiling((double)card / batchSize), numThreads);
+            var tasks = new Task<IEnumerable<IEnumerable<ClassMove>>>[numThreads];
+            foreach (var batch in sequences.CartesianProduct().Batch(batchSize))
+            {
+                if (tasks.All(task => task != null))
                 {
+                    int index = Task.WaitAny(tasks);
+                    foreach (var moves in await tasks[index])
+                        yield return moves;
+                    tasks[index] = ProcessBatch(batch);
+                    tasks[index].Start();
+                }
+                else
+                {
+                    int index = 0;
+                    while (tasks[index] != null) ++index;
+                    tasks[index] = ProcessBatch(batch);
+                    tasks[index].Start();
+                }
+            }
+
+            while (tasks.Any(task => task != null && !task.IsCompleted))
+            {
+                int index = Task.WaitAny(tasks);
+                foreach (var moves in await tasks[index])
                     yield return moves;
-                }
-                tradeCapture.Pop(n);
             }
         }
 

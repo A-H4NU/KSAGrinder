@@ -199,6 +199,8 @@ namespace KSAGrinder.Components
             return list;
         }
 
+        public TradeCapture Clone() => new TradeCapture(this);
+
         public bool Remove(ClassMove item) => throw new NotSupportedException();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

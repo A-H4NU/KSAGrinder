@@ -10,7 +10,6 @@ using System.Windows.Media;
 
 namespace KSAGrinder.ValueConverters
 {
-
     public class BlueIfHasNote : IMultiValueConverter
     {
         private static DataTable _classTable;

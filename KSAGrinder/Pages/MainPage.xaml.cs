@@ -19,6 +19,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -697,7 +698,12 @@ namespace KSAGrinder.Pages
             }
         }
 
-        private void BtnTrade_Click(object sender, RoutedEventArgs e)
+        //private async void BtnTrade_Click(object sender, RoutedEventArgs e)
+        //{
+        //    await Task.Run(() => BtnTrade_Click());
+        //}
+
+        private async void BtnTrade_Click(object sender, RoutedEventArgs e)
         {
             if (String.IsNullOrWhiteSpace(OriginalScheduleID))
             {
@@ -705,8 +711,8 @@ namespace KSAGrinder.Pages
                 //MessageBox.Show("");
             }
             IEnumerable<Class> originalSchedule = DataManager.GetScheduleFromStudentID(OriginalScheduleID);
-            IEnumerable<IEnumerable<ClassMove>> setOfMoves = ClassMove.GenerateClassMoves(OriginalScheduleID, _currentSchedule, 1);
-            foreach (IEnumerable<ClassMove> moves in setOfMoves)
+            var generatedMoves = ClassMove.GenerateClassMoves(OriginalScheduleID, _currentSchedule, 1);
+            await foreach (IEnumerable<ClassMove> moves in generatedMoves)
             {
                 var sb = new StringBuilder();
                 foreach (ClassMove move in moves)
