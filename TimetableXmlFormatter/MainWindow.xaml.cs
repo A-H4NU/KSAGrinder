@@ -259,17 +259,15 @@ namespace TimetableXmlFormatter
                     string id = GetUntilOrEntire(line[0], "(");
                     string name = GetUntilOrEntire(line[0].Substring(id.Length + 1), ")");
 
-                    
-
-                    List<(string Code, int Number)> applied;
+                    HashSet<(string Code, int Number)> applied;
                     if (idToRow.ContainsKey(id))
                     {
-                        applied = new List<(string Code, int Number)>(idToRow[id][2] as (string Code, int Number)[]);
+                        applied = new HashSet<(string Code, int Number)>(idToRow[id][2] as (string Code, int Number)[]);
                         idToRow.Remove(id);
                     }
                     else
                     {
-                        applied = new List<(string Code, int Number)>();
+                        applied = new HashSet<(string Code, int Number)>();
                     }
 
                     for (int i = 1; i < line.Length; ++i)

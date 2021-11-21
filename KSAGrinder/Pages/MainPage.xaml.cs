@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -672,7 +673,7 @@ namespace KSAGrinder.Pages
                 else
                     notPinned.Add(@class.Code);
             }
-            IEnumerable<Schedule> newSchedules = _currentSchedule.CombinationsOfSchedule(pinned, 3, onlyValid: false);
+            IEnumerable<Schedule> newSchedules = _currentSchedule.Combination(pinned, onlyValid: true);
             //switch ((Preference)CmbPreference.SelectedIndex)
             //{
             //    case Preference.Empty1:
@@ -701,16 +702,37 @@ namespace KSAGrinder.Pages
             if (String.IsNullOrWhiteSpace(OriginalScheduleID))
             {
                 // TODO: Implement this
-                MessageBox.Show("");
+                //MessageBox.Show("");
             }
-            //IEnumerable<Class> originalSchedule = DataManager.GetScheduleFromStudentID(OriginalScheduleID);
-            //IEnumerable<IEnumerable<Trade>> r = Trade.GenerateTrades(OriginalScheduleID, originalSchedule, _currentSchedule, 1);
-            //if (r == null)
+            IEnumerable<Class> originalSchedule = DataManager.GetScheduleFromStudentID(OriginalScheduleID);
+            IEnumerable<IEnumerable<ClassMove>> setOfMoves = ClassMove.GenerateClassMoves(OriginalScheduleID, _currentSchedule, 1);
+            foreach (IEnumerable<ClassMove> moves in setOfMoves)
+            {
+                var sb = new StringBuilder();
+                foreach (ClassMove move in moves)
+                    sb.AppendLine(move.ToString());
+                MessageBox.Show(sb.ToString());
+            }
+            MessageBox.Show(ClassMove.Call.ToString());
+            //var sch1 = new Schedule(DataManager.GetScheduleFromStudentID("20-050"));
+            //Debug.Assert(sch1.MoveClass("HA1804", 6));
+            //var sch2 = new Schedule(DataManager.GetScheduleFromStudentID("20-088"));
+            //Debug.Assert(sch2.MoveClass("HA1804", 8));
+            //var capture = new TradeCapture
             //{
-            //    MessageBox.Show("There are no trades possible");
-            //    return;
-            //}
-            //MessageBox.Show(r.Count().ToString());
+            //    new ClassMove("20-050", "HA1804", 8, 6),
+            //    new ClassMove("20-088", "HA1804", 6, 8),
+            //};
+            //IEnumerable<IEnumerable<ClassMove>> res = ClassMove.GenerateClassMoves(new[]
+            //{
+            //    ("20-050", sch1),
+            //    ("20-088", sch2)
+            //},
+            //capture,
+            //0,
+            //2);
+            //IEnumerable<ClassMove>[] r = res.ToArray();
+            //MessageBox.Show(r.Length.ToString());
         }
 
         private void DataGridRow_MouseDoubleClick(object sender, MouseButtonEventArgs e)

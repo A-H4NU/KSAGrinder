@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace KSAGrinder.Components
 {
-    public class TradeCapture : IList<ClassMove>
+    public class TradeCapture : ICollection<ClassMove>
     {
         private readonly List<ClassMove> _classMoves;
         private readonly Dictionary<string, Schedule> _capturedSchedules;
@@ -24,11 +24,49 @@ namespace KSAGrinder.Components
 
         public TradeCapture(IEnumerable<ClassMove> collection) : this() => AddRange(collection);
 
-        public IReadOnlyCollection<Class> GetScheduleOf(string studentID)
-            => PrivateGetScheduleOf(studentID, false).ToList().AsReadOnly();
+        public IReadOnlyCollection<Class> GetScheduleOf(string studentId)
+            => PrivateGetScheduleOf(studentId, false).ToList().AsReadOnly();
 
         public IReadOnlyCollection<string> GetEnrollListOf(string lectureCode, int number)
             => PrivateGetEnrollListOf(lectureCode, number, false).AsReadOnly();
+
+        /// <summary>
+        ///     List of lecture codes that <paramref name="studentId"/> has a move on.
+        /// </summary>
+        public IEnumerable<string> InvolvedLecturesOf(string studentId)
+        {
+            var result = new List<string>();
+            foreach (ClassMove move in _classMoves)
+            {
+                if (move.StudentId == studentId && !result.Contains(move.LectureCode))
+                    result.Add(move.LectureCode);
+            }
+            return result;
+        }
+
+        /// <summary>
+        ///     Check if <paramref name="studentId"/> is involved in the moves.
+        /// </summary>
+        public bool IsStudentInvoled(string studentId)
+        {
+            foreach (ClassMove move in _classMoves)
+                if (move.StudentId == studentId) return true;
+            return false;
+        }
+
+        /// <summary>
+        ///     The list of strudents involed in the moves.
+        /// </summary>
+        public IEnumerable<string> StudentsInvolved()
+        {
+            var list = new List<string>();
+            foreach (ClassMove move in _classMoves)
+            {
+                if (!list.Contains(move.StudentId))
+                    list.Add(move.StudentId);
+            }
+            return list;
+        }
 
         /// <summary>
         ///     Regardless of whether the resulting schedules are valid,
@@ -93,8 +131,6 @@ namespace KSAGrinder.Components
 
         public bool AreAllSchedulesValid() => _capturedSchedules.Values.All(scd => scd.IsValid);
 
-        public ClassMove this[int index] { get => _classMoves[index]; set => throw new NotSupportedException(); }
-
         public int Count => _classMoves.Count;
 
         public bool IsReadOnly => false;
@@ -116,7 +152,12 @@ namespace KSAGrinder.Components
                 Add(element);
         }
 
-        public void Clear() => throw new NotSupportedException("Removing an element is not supported.");
+        public void Clear()
+        {
+            _classMoves.Clear();
+            _capturedSchedules.Clear();
+            _capturedClassEnrollLists.Clear();
+        }
 
         public bool Contains(ClassMove item) => _classMoves.Contains(item);
 
@@ -126,25 +167,48 @@ namespace KSAGrinder.Components
 
         public int IndexOf(ClassMove item) => _classMoves.IndexOf(item);
 
-        public void Insert(int index, ClassMove item)
+        /// <returns>the undone move</returns>
+        /// <exception cref="InvalidOperationException"/>
+        public ClassMove Pop()
         {
-            if (index == _classMoves.Count)
-                Add(item);
-            throw new NotSupportedException("Inserting an element in the midst of the list is not supported.");
+            if (_classMoves.Count == 0)
+                throw new InvalidOperationException("The list is empty.");
+
+            ClassMove last = _classMoves[_classMoves.Count-1];
+            _classMoves.RemoveAt(_classMoves.Count-1);
+
+            PrivateGetScheduleOf(last.StudentId, false).MoveClass(last.LectureCode, last.NumberFrom);
+            PrivateGetEnrollListOf(last.LectureCode, last.NumberTo, false).Remove(last.StudentId);
+            PrivateGetEnrollListOf(last.LectureCode, last.NumberFrom, false).Add(last.StudentId);
+
+            return last;
         }
 
-        public bool Remove(ClassMove item) => throw new NotSupportedException("Removing an element is not supported.");
+        /// <returns>the list of undone moves</returns>
+        /// <exception cref="InvalidOperationException"/>
+        /// <exception cref="ArgumentOutOfRangeException"/>
+        public IEnumerable<ClassMove> Pop(int n)
+        {
+            if (n < 0)
+                throw new ArgumentOutOfRangeException("n", "n must be nonnegative");
+            var list = new List<ClassMove>();
+            for (int i = 0; i < n; ++i)
+            {
+                list.Add(Pop());
+            }
+            return list;
+        }
 
-        public void RemoveAt(int index) => throw new NotSupportedException("Removing an element is not supported.");
+        public bool Remove(ClassMove item) => throw new NotSupportedException();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        private Schedule PrivateGetScheduleOf(string studentID, bool capture = true)
+        private Schedule PrivateGetScheduleOf(string studentId, bool capture = true)
         {
-            if (_capturedSchedules.TryGetValue(studentID, out Schedule value))
+            if (_capturedSchedules.TryGetValue(studentId, out Schedule value))
                 return value;
-            var res = new Schedule(DataManager.GetScheduleFromStudentID(studentID));
-            if (capture) _capturedSchedules[studentID] = res;
+            var res = new Schedule(DataManager.GetScheduleFromStudentID(studentId));
+            if (capture) _capturedSchedules[studentId] = res;
             return res;
         }
 

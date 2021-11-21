@@ -49,6 +49,8 @@ namespace KSAGrinder.Components
                 var schedule = new HashSet<(DayOfWeek, int)>();
                 foreach (Class @class in _classList)
                 {
+                    //if (@class.Schedule.ToHashSet().Count != @class.Schedule.Count())
+                    //    Debug.Assert(false);
                     foreach ((DayOfWeek, int) hour in @class.Schedule)
                     {
                         if (!schedule.Add(hour))
@@ -58,6 +60,27 @@ namespace KSAGrinder.Components
                 return true;
             }
         }
+
+        //public object OverlappingClasses
+        //{
+        //    get
+        //    {
+        //        var schedule = new HashSet<(DayOfWeek, int)>();
+        //        foreach (Class @class in _classList)
+        //        {
+        //            foreach ((DayOfWeek, int) hour in @class.Schedule)
+        //            {
+        //                if (schedule.Add(hour)) continue;
+        //                foreach (Class class2 in _classList)
+        //                {
+        //                    if (!class2.Equals(@class) && class2.Schedule.Contains(hour))
+        //                        return (@class, class2);
+        //                }
+        //            }
+        //        }
+        //        return null;
+        //    }
+        //}
 
         public void CopyTo(Schedule schedule)
         {
@@ -192,7 +215,7 @@ namespace KSAGrinder.Components
             return true;
         }
 
-        public IEnumerable<Schedule> CombinationsOfSchedule(IEnumerable<string> pinnedLectures = null, int maxMove = -1, bool onlyValid = true)
+        public IEnumerable<Schedule> Combination(IEnumerable<string> pinnedLectures = null, int maxMove = -1, bool onlyValid = true)
         {
             if (pinnedLectures == null) pinnedLectures = Enumerable.Empty<string>();
             if (maxMove == 0)

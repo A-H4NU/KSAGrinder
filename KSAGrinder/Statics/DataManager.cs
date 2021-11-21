@@ -28,6 +28,8 @@ namespace KSAGrinder.Statics
 
         public static bool ClassExists(string code, int number) => LectureExists(code) && 1 <= number && number <= _classDict[code].Count;
 
+        public static string NameOfLectureFromCode(string lectureCode) => _classDict[lectureCode][0].Name;
+
         public static DataRow GetClassRow(string code, int number)
         {
             DataTable tClass = Data.Tables["Class"];
@@ -70,6 +72,9 @@ namespace KSAGrinder.Statics
 
         public static List<Class> ClassDict(string lectureCode) => _classDict[lectureCode];
 
+        /// <summary>
+        ///     Get the number of classes with the lecture code <paramref name="lectureCode"/>
+        /// </summary>
         public static int NumberOfClasses(string lectureCode) => ClassDict(lectureCode).Count;
 
         private static void InitializeClassDictionary()
