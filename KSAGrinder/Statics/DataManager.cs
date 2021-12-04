@@ -22,7 +22,7 @@ namespace KSAGrinder.Statics
         /// </summary>
         private static readonly Dictionary<string, List<Class>> _classDict = new Dictionary<string, List<Class>>();
 
-        public static bool LectureExists(string code) => _classDict.Keys.Contains(code);
+        public static bool LectureExists(string code) => _classDict.ContainsKey(code);
 
         public static bool StudentExists(string id) => Data.Tables["Student"].Rows.Find(id) != null;
 

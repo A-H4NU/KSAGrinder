@@ -75,20 +75,63 @@ namespace KSAGrinder.Components
         public bool DoesFormTrade() => _classMoves.GroupBy(move => move.LectureCode).All(collection => ClassMove.IsSetOfCycles(collection));
 
         /// <summary>
-        ///     Get the list of tails.
+        ///     Get the list of head-tail tuples of maximal simple paths.
         /// </summary>
         /// <returns>
-        ///     The list of <see cref="ClassMove"/> objects
-        ///     without any other <see cref="ClassMove"/> objects to continue forward.
+        ///     The list of (<see cref="ClassMove"/> head, <see cref="ClassMove"/> tail) tuples of maximal simple paths.
         /// </returns>
         /// <example>
         ///     <code>
         ///         var A = new ClassMove("Math", "Alpha", 1, 2);
         ///         var B = new ClassMove("Math", "Beta", 2, 3);
-        ///         new TradeCapture(new ClassMove[] {A, B}).TailsOfNoncycles() == [ B ]
+        ///         new TradeCapture(new ClassMove[] {A, B}).TailsOfNoncycles() == [ (A, B) ]
         ///     </code>
         /// </example>
-        public IEnumerable<ClassMove> TailsOfNoncycles()
+        public IEnumerable<(ClassMove Head, ClassMove Tail)> HeadTailTuplesOfNoncycles()
+        {
+            foreach (IGrouping<string, ClassMove> movesOfALecture in _classMoves.GroupBy(move => move.LectureCode))
+            {
+                if (ClassMove.IsSetOfCycles(movesOfALecture)) continue;
+
+                var leftMoves = new List<ClassMove>(movesOfALecture);
+                while (leftMoves.Count > 0)
+                {
+                    ClassMove root = leftMoves[leftMoves.Count - 1];
+                    leftMoves.RemoveAt(leftMoves.Count - 1);
+                    ClassMove current, tail;
+
+                    // Continue forward
+                    current = root;
+                    while (true)
+                    {
+                        int index = leftMoves.FindIndex(move => current.NumberTo == move.NumberFrom);
+                        if (index == -1)
+                        {
+                            tail = current;
+                            break;
+                        }
+                        current = leftMoves[index];
+                        leftMoves.RemoveAt(index);
+                    }
+
+                    // Backward
+                    current = root;
+                    while (true)
+                    {
+                        int index = leftMoves.FindIndex(move => current.NumberFrom == move.NumberTo);
+                        if (index == -1)
+                        {
+                            yield return (current, tail);
+                            break;
+                        }
+                        current = leftMoves[index];
+                        leftMoves.RemoveAt(index);
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<ClassMove> TailsOfNonCycles()
         {
             foreach (IGrouping<string, ClassMove> movesOfALecture in _classMoves.GroupBy(move => move.LectureCode))
             {
@@ -121,7 +164,9 @@ namespace KSAGrinder.Components
                     {
                         int index = leftMoves.FindIndex(move => current.NumberFrom == move.NumberTo);
                         if (index == -1)
+                        {
                             break;
+                        }
                         current = leftMoves[index];
                         leftMoves.RemoveAt(index);
                     }
@@ -174,7 +219,7 @@ namespace KSAGrinder.Components
             if (_classMoves.Count == 0)
                 throw new InvalidOperationException("The list is empty.");
 
-            ClassMove last = _classMoves[_classMoves.Count-1];
+            ClassMove last = _classMoves[_classMoves.Count - 1];
             _classMoves.RemoveAt(_classMoves.Count-1);
 
             PrivateGetScheduleOf(last.StudentId, false).MoveClass(last.LectureCode, last.NumberFrom);
@@ -190,7 +235,7 @@ namespace KSAGrinder.Components
         public IEnumerable<ClassMove> Pop(int n)
         {
             if (n < 0)
-                throw new ArgumentOutOfRangeException("n", "n must be nonnegative");
+                throw new ArgumentOutOfRangeException(nameof(n), "n must be nonnegative");
             var list = new List<ClassMove>();
             for (int i = 0; i < n; ++i)
             {

@@ -179,18 +179,18 @@
             </DataGrid>
 
             <DockPanel Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" Margin="10">
-                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                <!--<DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
                     <Label Content="선호: " FontSize="13"/>
                     <ComboBox x:Name="CmbPreference" ItemsSource="{Binding PreferenceCollection}"
                               SelectedIndex="0" VerticalContentAlignment="Center" FontSize="13"/>
-                </DockPanel>
+                </DockPanel>-->
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Button x:Name="BtnGenerate" Grid.Column="0" Content="조합" Height="25" Margin="0,0,5,0" Click="BtnGenerate_Click"/>
-                    <Button x:Name="BtnTrade" Grid.Column="1" Content="트레이드 생성" Height="25" Margin="5,0,0,0" Click="BtnTrade_Click"/>
+                    <Button x:Name="BtnTrade" Grid.Column="1" Content="트레이드 탐색" Height="25" Margin="5,0,0,0" Click="BtnTrade_Click"/>
                 </Grid>
 
                 <Label x:Name="LblNumSchedules" DockPanel.Dock="Top" HorizontalContentAlignment="Center" Content="총 0개의 시간표를 조합했습니다."></Label>

@@ -226,7 +226,7 @@ namespace KSAGrinder.Components
 
             var codeToIndex = Enumerable.Range(0, _classList.Count).ToDictionary(i => _classList[i].Code);
             string[] notPinnedLectures = _classList.Select(@class => @class.Code).Except(pinnedLectures).ToArray();
-            int n_notPinned = notPinnedLectures.Count();
+            int n_notPinned = notPinnedLectures.Length;
             if (maxMove < 0 || maxMove > n_notPinned) maxMove = n_notPinned;
             int[] currentNumbersNotPinned = notPinnedLectures.Select(code => _classList[codeToIndex[code]].Number).ToArray();
 
@@ -266,7 +266,7 @@ namespace KSAGrinder.Components
             }
         }
 
-        public object Clone() => new Schedule(this);
+        
 
         public override bool Equals(object obj)
         {
@@ -278,5 +278,7 @@ namespace KSAGrinder.Components
         }
 
         public override int GetHashCode() => _classList.Aggregate(0, (val, cls) => val ^ cls.GetHashCode());
+
+        public object Clone() => new Schedule(this);
     }
 }

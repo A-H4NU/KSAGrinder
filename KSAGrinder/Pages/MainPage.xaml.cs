@@ -336,17 +336,20 @@ namespace KSAGrinder.Pages
             #region Ecrypt and save the XMLDocument in the specified path
 
             using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
-            using (var aes = Aes.Create())
             {
-                aes.Key = CryptKey;
-
-                byte[] iv = aes.IV;
-                fileStream.Write(iv, 0, iv.Length);
-
-                using (var cryptoStream = new CryptoStream(fileStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
-                using (var encryptWriter = new StreamWriter(cryptoStream))
+                using (var aes = Aes.Create())
                 {
-                    encryptWriter.Write(xmlStr);
+                    aes.Key = CryptKey;
+                    byte[] iv = aes.IV;
+                    fileStream.Write(iv, 0, iv.Length);
+
+                    using (var cryptoStream = new CryptoStream(fileStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        using (var encryptWriter = new StreamWriter(cryptoStream))
+                        {
+                            encryptWriter.Write(xmlStr);
+                        }
+                    }
                 }
             }
 
@@ -377,18 +380,20 @@ namespace KSAGrinder.Pages
                     numBytesToRead -= n;
                 }
 
+                ;
                 using (var cryptoStream = new CryptoStream(fileStream, aes.CreateDecryptor(CryptKey, iv), CryptoStreamMode.Read))
-                using (var decryptReader = new StreamReader(cryptoStream))
                 {
-                    string decrypted = decryptReader.ReadToEnd();
-                    xdoc.LoadXml(decrypted);
+                    using (var decryptReader = new StreamReader(cryptoStream))
+                    {
+                        string decrypted = decryptReader.ReadToEnd();
+                        xdoc.LoadXml(decrypted);
+                    }
                 }
             }
 
             var newList = new List<Class>();
             XmlElement root = xdoc.DocumentElement;
             string hash = root.Attributes.GetNamedItem("Hash").Value;
-            OriginalScheduleID = root.Attributes.GetNamedItem("OriginalID").Value;
             if (_hash == hash)
             {
                 foreach (XmlNode cls in root.ChildNodes)
@@ -411,6 +416,7 @@ namespace KSAGrinder.Pages
             {
                 throw new DifferentDataSetException("다른 데이터셋에서 만든 파일입니다.");
             }
+            OriginalScheduleID = root.Attributes.GetNamedItem("OriginalID").Value;
         }
 
         private void InvalidateStyles()
@@ -703,23 +709,15 @@ namespace KSAGrinder.Pages
         //    await Task.Run(() => BtnTrade_Click());
         //}
 
-        private async void BtnTrade_Click(object sender, RoutedEventArgs e)
+        private void BtnTrade_Click(object sender, RoutedEventArgs e)
         {
             if (String.IsNullOrWhiteSpace(OriginalScheduleID))
             {
                 // TODO: Implement this
                 //MessageBox.Show("");
             }
-            IEnumerable<Class> originalSchedule = DataManager.GetScheduleFromStudentID(OriginalScheduleID);
-            var generatedMoves = ClassMove.GenerateClassMoves(OriginalScheduleID, _currentSchedule, 1);
-            await foreach (IEnumerable<ClassMove> moves in generatedMoves)
-            {
-                var sb = new StringBuilder();
-                foreach (ClassMove move in moves)
-                    sb.AppendLine(move.ToString());
-                MessageBox.Show(sb.ToString());
-            }
-            MessageBox.Show(ClassMove.Call.ToString());
+            var finder = new TradeFinder(OriginalScheduleID, _currentSchedule);
+            finder.ShowDialog();
             //var sch1 = new Schedule(DataManager.GetScheduleFromStudentID("20-050"));
             //Debug.Assert(sch1.MoveClass("HA1804", 6));
             //var sch2 = new Schedule(DataManager.GetScheduleFromStudentID("20-088"));

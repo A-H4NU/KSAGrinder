@@ -21,7 +21,7 @@ namespace KSAGrinder.ValueConverters
             _schedule = schedule;
         }
 
-        private bool DoesOverlapIfAdded(string code, int number)
+        private static bool DoesOverlapIfAdded(string code, int number)
         {
             (DayOfWeek Day, int Hour)[] GetSchedule(string c, int n)
             {
