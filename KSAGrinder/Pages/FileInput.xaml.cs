@@ -28,6 +28,13 @@ namespace KSAGrinder.Pages
             _main = main;
         }
 
+        public static void ClearSettings()
+        {
+            Settings.Default.LastDataset = null;
+            Settings.Default.LastFile = null;
+            Settings.Default.Save();
+        }
+
         private void BtnSelect_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog
@@ -153,13 +160,12 @@ namespace KSAGrinder.Pages
                         else
                         {
                             MessageBox.Show("데이터셋을 불러오든 데 실패했습니다!", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+                            ClearSettings();
                         }
                     }
                     else
                     {
-                        Settings.Default.LastDataset = null;
-                        Settings.Default.LastFile = null;
-                        Settings.Default.Save();
+                        ClearSettings();
                     }
                 }
                 else
@@ -175,13 +181,12 @@ namespace KSAGrinder.Pages
                         else
                         {
                             MessageBox.Show("데이터셋을 불러오든 데 실패했습니다!", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+                            ClearSettings();
                         }
                     }
                     else
                     {
-                        Settings.Default.LastDataset = null;
-                        Settings.Default.LastFile = null;
-                        Settings.Default.Save();
+                        ClearSettings();
                     }
                 }
             }

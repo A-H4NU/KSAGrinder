@@ -15,6 +15,8 @@
         <valueConverters:LectureGrayingIfSelected x:Key="GrayingIfSelected"/>
         <valueConverters:BlueIfHasNote x:Key="BlueIfHasNote"/>
         <valueConverters:ScoreToColor x:Key="ScoreToColor"/>
+        <valueConverters:DepartmentToString x:Key="DepartmentToString"/>
+        <valueConverters:TextToVisibility x:Key="TextToVisibility"/>
 
         <!-- Timetable Styles -->
         <Style x:Key="TimetableDataGridStyle" TargetType="{x:Type DataGrid}">
@@ -96,9 +98,19 @@
             <DockPanel Margin="10" Grid.Column="1" Grid.Row="0">
                 <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
                     <ComboBox x:Name="CmbDepartment" Width="85.24" DockPanel.Dock="Left" FontSize="13" VerticalContentAlignment="Center" SelectedIndex="0"
-                          ItemsSource="{Binding DepartmentCollection}" SelectionChanged="CmbDepartment_SelectionChanged"/>
-                    <Label Content="검색: " FontSize="13" Margin="10,0,0,0"/>
-                    <TextBox x:Name="TxtSearch" VerticalContentAlignment="Center" FontSize="13" TextChanged="TxtSearch_TextChanged"/>
+                          ItemsSource="{Binding DepartmentCollection}" SelectionChanged="CmbDepartment_SelectionChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ., Converter={StaticResource DepartmentToString}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <!--<Label Content="검색: " FontSize="13" Margin="10,0,0,0"/>-->
+                    <Grid Background="White" Margin="10,0,0,0">
+                        <TextBlock x:Name="TxtHint" Margin="5,2" FontSize="13" MinWidth="50" Text="검색 (초성 검색 지원)" VerticalAlignment="Center"
+                                   Foreground="LightGray" Visibility="{Binding ElementName=TxtSearch, Path=Text, Converter={StaticResource TextToVisibility}}" IsHitTestVisible="False"/>
+                        <TextBox x:Name="TxtSearch" VerticalContentAlignment="Center" Background="Transparent" FontSize="13" TextChanged="TxtSearch_TextChanged"/>
+                    </Grid>
                 </DockPanel>
                 <Grid Grid.Column="1" Grid.Row="0">
                     <Grid.RowDefinitions>
@@ -111,7 +123,7 @@
                       AlternatingRowBackground = "#F4F4F4" HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
                       CanUserResizeColumns="False" CanUserAddRows="False" IsReadOnly="True" SelectionChanged="LectureTable_SelectionChanged">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="학부" Width="55" Binding="{Binding Department}"/>
+                            <DataGridTextColumn Header="학부" Width="55" Binding="{Binding Department, Converter={StaticResource DepartmentToString}}"/>
                             <DataGridTextColumn Header="강의명" Width="*" Binding="{Binding Name}"/>
                             <DataGridTextColumn Header="분반 수" Width="55" Binding="{Binding NumClass}" CanUserSort="False"/>
                         </DataGrid.Columns>

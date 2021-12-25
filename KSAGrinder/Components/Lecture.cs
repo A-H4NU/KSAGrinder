@@ -2,7 +2,7 @@
 {
     public readonly struct Lecture
     {
-        public Lecture(string code, string department, string name, int numClass)
+        public Lecture(string code, Department department, string name, int numClass)
         {
             Code = code;
             Department = department;
@@ -11,7 +11,7 @@
         }
 
         public string Code { get; }
-        public string Department { get; }
+        public Department Department { get; }
         public string Name { get; }
         public int NumClass { get; }
     }

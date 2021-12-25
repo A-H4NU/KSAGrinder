@@ -185,6 +185,7 @@ namespace KSAGrinder.Pages
                     MessageBox.Show(
                         $"파일을 불러오는 데 실패했습니다!{Environment.NewLine}{ex.Message}", "오류",
                         MessageBoxButton.OK, MessageBoxImage.Error);
+                    FileInput.ClearSettings();
                     return;
                 }
             }
@@ -296,7 +297,7 @@ namespace KSAGrinder.Pages
                     }
                     newList.Add(new Lecture(
                         code: (string)row[cCode],
-                        department: (string)row[cDepartment],
+                        department: (Department)Enum.Parse(typeof(Department), (string)row[cDepartment]),
                         name: name,
                         numClass: DataManager.ClassDict((string)row[cCode]).Count
                     ));
