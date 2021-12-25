@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace KSAGrinder.Components
 {
-    public class TradeCapture : ICollection<ClassMove>
+    public sealed class TradeCapture : ICollection<ClassMove>
     {
         private readonly List<ClassMove> _classMoves;
         private readonly Dictionary<string, Schedule> _capturedSchedules;
@@ -24,6 +24,14 @@ namespace KSAGrinder.Components
 
         public TradeCapture(IEnumerable<ClassMove> collection) : this() => AddRange(collection);
 
+        public string Summary
+            => $"{InvolvedStudents().Count()}인 참여 / {_classMoves.Count}번 분반 이동{Environment.NewLine}"
+               + "참여 학생: " + String.Join(", ", InvolvedStudents().Select(id => id + " " + DataManager.GetNameFromStudentID(id)));
+
+        public int NumberOfStudentsInvolved => InvolvedStudents().Count();
+
+        public string InvolvedStudentsString => String.Join(", ", InvolvedStudents());
+
         public IReadOnlyCollection<Class> GetScheduleOf(string studentId)
             => PrivateGetScheduleOf(studentId, false).ToList().AsReadOnly();
 
@@ -35,7 +43,7 @@ namespace KSAGrinder.Components
         /// </summary>
         public IEnumerable<string> InvolvedLecturesOf(string studentId)
         {
-            var result = new List<string>();
+            List<string> result = new List<string>();
             foreach (ClassMove move in _classMoves)
             {
                 if (move.StudentId == studentId && !result.Contains(move.LectureCode))
@@ -57,9 +65,9 @@ namespace KSAGrinder.Components
         /// <summary>
         ///     The list of strudents involed in the moves.
         /// </summary>
-        public IEnumerable<string> StudentsInvolved()
+        public IEnumerable<string> InvolvedStudents()
         {
-            var list = new List<string>();
+            List<string> list = new List<string>();
             foreach (ClassMove move in _classMoves)
             {
                 if (!list.Contains(move.StudentId))
@@ -93,7 +101,7 @@ namespace KSAGrinder.Components
             {
                 if (ClassMove.IsSetOfCycles(movesOfALecture)) continue;
 
-                var leftMoves = new List<ClassMove>(movesOfALecture);
+                List<ClassMove> leftMoves = new List<ClassMove>(movesOfALecture);
                 while (leftMoves.Count > 0)
                 {
                     ClassMove root = leftMoves[leftMoves.Count - 1];
@@ -137,7 +145,7 @@ namespace KSAGrinder.Components
             {
                 if (ClassMove.IsSetOfCycles(movesOfALecture)) continue;
 
-                var leftMoves = new List<ClassMove>(movesOfALecture);
+                List<ClassMove> leftMoves = new List<ClassMove>(movesOfALecture);
                 while (leftMoves.Count > 0)
                 {
                     ClassMove root = leftMoves[leftMoves.Count - 1];
@@ -220,7 +228,7 @@ namespace KSAGrinder.Components
                 throw new InvalidOperationException("The list is empty.");
 
             ClassMove last = _classMoves[_classMoves.Count - 1];
-            _classMoves.RemoveAt(_classMoves.Count-1);
+            _classMoves.RemoveAt(_classMoves.Count - 1);
 
             PrivateGetScheduleOf(last.StudentId, false).MoveClass(last.LectureCode, last.NumberFrom);
             PrivateGetEnrollListOf(last.LectureCode, last.NumberTo, false).Remove(last.StudentId);
@@ -236,7 +244,7 @@ namespace KSAGrinder.Components
         {
             if (n < 0)
                 throw new ArgumentOutOfRangeException(nameof(n), "n must be nonnegative");
-            var list = new List<ClassMove>();
+            List<ClassMove> list = new List<ClassMove>();
             for (int i = 0; i < n; ++i)
             {
                 list.Add(Pop());
@@ -254,7 +262,7 @@ namespace KSAGrinder.Components
         {
             if (_capturedSchedules.TryGetValue(studentId, out Schedule value))
                 return value;
-            var res = new Schedule(DataManager.GetScheduleFromStudentID(studentId));
+            Schedule res = new Schedule(DataManager.GetScheduleFromStudentID(studentId));
             if (capture) _capturedSchedules[studentId] = res;
             return res;
         }
@@ -263,7 +271,7 @@ namespace KSAGrinder.Components
         {
             if (_capturedClassEnrollLists.TryGetValue((lectureCode, number), out List<string> value))
                 return value;
-            var res = DataManager.GetClass(lectureCode, number).EnrolledList.Clone().ToList();
+            List<string> res = DataManager.GetClass(lectureCode, number).EnrolledList.Clone().ToList();
             if (capture) _capturedClassEnrollLists[(lectureCode, number)] = res;
             return res;
         }

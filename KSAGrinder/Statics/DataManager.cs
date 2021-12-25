@@ -91,7 +91,7 @@ namespace KSAGrinder.Statics
             DataTable tStudent = Data.Tables["Student"];
             DataColumn cApplied = tStudent.Columns["Applied"];
             DataColumn cID = tStudent.Columns["ID"];
-            var applyDict = new Dictionary<(string Code, int Number), List<string>>();
+            Dictionary<(string Code, int Number), List<string>> applyDict = new Dictionary<(string Code, int Number), List<string>>();
             void AddToApplyDict(string code, int number, string student)
             {
                 if (applyDict.TryGetValue((code, number), out List<string> list))
@@ -101,7 +101,7 @@ namespace KSAGrinder.Statics
             }
             foreach (DataRow student in tStudent.Rows)
             {
-                var applied = ((string Code, int Number)[])student[cApplied];
+                (string Code, int Number)[] applied = ((string Code, int Number)[])student[cApplied];
                 string idNum = student[cID].ToString();
                 foreach ((string code, int number) in applied)
                     AddToApplyDict(code, number, idNum);
@@ -116,13 +116,13 @@ namespace KSAGrinder.Statics
                 }
 
                 _classDict[code].Add(new Class(
-                    name:           tLecture.Rows.Find(code)[cName].ToString(),
-                    code:           code,
-                    number:         Int32.Parse(row[cNumber].ToString()),
-                    teacher:        row[cTeacher].ToString(),
-                    schedule:       ((DayOfWeek Day, int Hour)[])row[cTime],
-                    note:           row[cNote].ToString(),
-                    enrolledList:   applyDict[(code, (int)row[cNumber])]
+                    name: tLecture.Rows.Find(code)[cName].ToString(),
+                    code: code,
+                    number: Int32.Parse(row[cNumber].ToString()),
+                    teacher: row[cTeacher].ToString(),
+                    schedule: ((DayOfWeek Day, int Hour)[])row[cTime],
+                    note: row[cNote].ToString(),
+                    enrolledList: applyDict[(code, (int)row[cNumber])]
                 ));
             }
         }

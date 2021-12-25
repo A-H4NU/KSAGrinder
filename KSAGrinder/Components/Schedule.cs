@@ -46,7 +46,7 @@ namespace KSAGrinder.Components
         {
             get
             {
-                var schedule = new HashSet<(DayOfWeek, int)>();
+                HashSet<(DayOfWeek, int)> schedule = new HashSet<(DayOfWeek, int)>();
                 foreach (Class @class in _classList)
                 {
                     //if (@class.Schedule.ToHashSet().Count != @class.Schedule.Count())
@@ -113,7 +113,7 @@ namespace KSAGrinder.Components
 
         private double EvaluateNEmpty(int n)
         {
-            var schedule = new HashSet<(DayOfWeek, int)>();
+            HashSet<(DayOfWeek, int)> schedule = new HashSet<(DayOfWeek, int)>();
             foreach (Class @class in _classList)
             {
                 foreach ((DayOfWeek, int) hour in @class.Schedule)
@@ -139,7 +139,7 @@ namespace KSAGrinder.Components
         {
             get
             {
-                var lastClass = new Dictionary<DayOfWeek, int>();
+                Dictionary<DayOfWeek, int> lastClass = new Dictionary<DayOfWeek, int>();
                 for (DayOfWeek day = DayOfWeek.Monday; day <= DayOfWeek.Friday; day++)
                     lastClass[day] = 0;
                 foreach (Class @class in _classList)
@@ -184,7 +184,7 @@ namespace KSAGrinder.Components
 
         public static bool CheckValid(IEnumerable<Class> classes)
         {
-            var schedule = new List<(DayOfWeek, int)>();
+            List<(DayOfWeek, int)> schedule = new List<(DayOfWeek, int)>();
             foreach (Class @class in classes)
             {
                 foreach ((DayOfWeek, int) hour in @class.Schedule)
@@ -199,9 +199,9 @@ namespace KSAGrinder.Components
 
         public static bool CheckValid(IEnumerable<Class> classes, out Schedule result)
         {
-            var schedule = new List<(DayOfWeek, int)>();
+            List<(DayOfWeek, int)> schedule = new List<(DayOfWeek, int)>();
             result = null;
-            var list = new List<Class>();
+            List<Class> list = new List<Class>();
             foreach (Class @class in classes)
             {
                 foreach ((DayOfWeek, int) hour in @class.Schedule)
@@ -224,7 +224,7 @@ namespace KSAGrinder.Components
                 yield break;
             }
 
-            var codeToIndex = Enumerable.Range(0, _classList.Count).ToDictionary(i => _classList[i].Code);
+            Dictionary<string, int> codeToIndex = Enumerable.Range(0, _classList.Count).ToDictionary(i => _classList[i].Code);
             string[] notPinnedLectures = _classList.Select(@class => @class.Code).Except(pinnedLectures).ToArray();
             int n_notPinned = notPinnedLectures.Length;
             if (maxMove < 0 || maxMove > n_notPinned) maxMove = n_notPinned;
@@ -233,7 +233,7 @@ namespace KSAGrinder.Components
             IEnumerable<Class> GenerateScheduleFromCombination(string[] lecturesToMoveAsCode, int[] combination)
             {
                 int index = 0;
-                var classesOfSchedule = new Class[_classList.Count];
+                Class[] classesOfSchedule = new Class[_classList.Count];
                 for (int i = 0; i < _classList.Count; i++)
                 {
                     string lectureCode = _classList[i].Code;
@@ -266,7 +266,7 @@ namespace KSAGrinder.Components
             }
         }
 
-        
+
 
         public override bool Equals(object obj)
         {

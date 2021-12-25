@@ -3,6 +3,7 @@
 using KSAGrinder.Components;
 using KSAGrinder.Exceptions;
 using KSAGrinder.Extensions;
+using KSAGrinder.Properties;
 using KSAGrinder.Statics;
 using KSAGrinder.ValueConverters;
 using KSAGrinder.Windows;
@@ -18,8 +19,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -94,7 +93,7 @@ namespace KSAGrinder.Pages
 
         public ObservableCollection<Department> DepartmentCollection { get; } = new ObservableCollection<Department>();
 
-        public ObservableCollection<Lecture> LectureCollection { get;} = new ObservableCollection<Lecture>();
+        public ObservableCollection<Lecture> LectureCollection { get; } = new ObservableCollection<Lecture>();
 
         public ObservableCollection<Class> ClassCollection { get; } = new ObservableCollection<Class>();
 
@@ -110,12 +109,11 @@ namespace KSAGrinder.Pages
         public static readonly RoutedCommand ShortCut_CtrlO = new RoutedCommand();
         public static readonly RoutedCommand ShortCut_CtrlS = new RoutedCommand();
 
-
         public const double MaxRowHeight = 65.0;
 
         public const int NRow = 14;
 
-        public MainPage(MainWindow main, DataSet data, string hash)
+        public MainPage(MainWindow main, DataSet data, string hash, string filePathToOpen = null)
         {
             _main = main;
             _data = data;
@@ -128,13 +126,15 @@ namespace KSAGrinder.Pages
 
             InitializeComponent();
 
-            ConvertItemToIndex.Initialize(Timetable);
+            ConvertItemToIndexDataRow.Initialize(Timetable);
             LectureGrayingIfSelected.Initialize(_currentSchedule);
             BlueIfHasNote.Initialize(_data.Tables["Class"], _currentSchedule);
 
             Timetable.DataContext = HourCollection;
 
             Timetable.Loaded += Timetable_Loaded;
+            // Make shortcuts able to be executed from the start
+            Timetable.Focus();
 
             InitializeHourCollection();
 
@@ -171,6 +171,23 @@ namespace KSAGrinder.Pages
             CommandBindings.Add(new CommandBinding(ShortCut_CtrlN, MenuNewSchedule_Click));
             CommandBindings.Add(new CommandBinding(ShortCut_CtrlO, MenuOpen_Click));
             CommandBindings.Add(new CommandBinding(ShortCut_CtrlS, MenuSave_Click));
+
+
+            if (!String.IsNullOrWhiteSpace(filePathToOpen))
+            {
+                try
+                {
+                    LoadXmlInBinary(filePathToOpen);
+                    WorkingWith = filePathToOpen;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"파일을 불러오는 데 실패했습니다!{Environment.NewLine}{ex.Message}", "오류",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+            }
         }
 
         private void InvalidateWindowTitle()
@@ -206,7 +223,7 @@ namespace KSAGrinder.Pages
                              + $"{classRow[ccNumber]}분반{Environment.NewLine}"
                              + $"{classRow[ccTeacher]}";
 
-                var times = ((DayOfWeek Day, int Hour)[])classRow[ccTime];
+                (DayOfWeek Day, int Hour)[] times = ((DayOfWeek Day, int Hour)[])classRow[ccTime];
                 foreach ((DayOfWeek day, int hour) in times)
                 {
                     hours[hour - 1, (int)day - 1] = classStr;
@@ -220,12 +237,12 @@ namespace KSAGrinder.Pages
             {
                 HourCollection.Add(new Hour()
                 {
-                    __hour__    = i + 1,
-                    Monday      = hours[i, 0],
-                    Tuesday     = hours[i, 1],
-                    Wednesday   = hours[i, 2],
-                    Thursday    = hours[i, 3],
-                    Friday      = hours[i, 4],
+                    __hour__ = i + 1,
+                    Monday = hours[i, 0],
+                    Tuesday = hours[i, 1],
+                    Wednesday = hours[i, 2],
+                    Thursday = hours[i, 3],
+                    Friday = hours[i, 4],
                 });
             }
         }
@@ -258,17 +275,17 @@ namespace KSAGrinder.Pages
                 }
                 return result;
             }
-            var department = (Department)CmbDepartment.SelectedItem;
+            Department department = (Department)CmbDepartment.SelectedItem;
             string departmentStr = department.ToString();
             DataTable tLecture = _data.Tables["Lecture"];
             DataColumn cDepartment = tLecture.Columns["Department"];
             DataColumn cName = tLecture.Columns["Name"];
             DataColumn cCode = tLecture.Columns["Code"];
-            var newList = new List<Lecture>();
+            List<Lecture> newList = new List<Lecture>();
             foreach (DataRow row in tLecture.Rows)
             {
                 string name = (string)row[cName];
-                var kname = new KoreanString(name);
+                KoreanString kname = new KoreanString(name);
                 if (department == Department.All || departmentStr == (string)row[cDepartment])
                 {
                     if (!String.IsNullOrEmpty(TxtSearch.Text)
@@ -278,10 +295,10 @@ namespace KSAGrinder.Pages
                         continue;
                     }
                     newList.Add(new Lecture(
-                        code:       (string)row[cCode],
+                        code: (string)row[cCode],
                         department: (string)row[cDepartment],
-                        name:       name,
-                        numClass:   DataManager.ClassDict((string)row[cCode]).Count
+                        name: name,
+                        numClass: DataManager.ClassDict((string)row[cCode]).Count
                     ));
                 }
             }
@@ -297,7 +314,7 @@ namespace KSAGrinder.Pages
         {
             #region Construct XmlDocument 
 
-            var xdoc = new XmlDocument();
+            XmlDocument xdoc = new XmlDocument();
 
             XmlElement root = xdoc.CreateElement("Timetable");
             XmlAttribute attHash = xdoc.CreateAttribute("Hash");
@@ -323,8 +340,8 @@ namespace KSAGrinder.Pages
             }
 
             string xmlStr;
-            using (var sw = new StringWriter())
-            using (var xw = XmlWriter.Create(sw))
+            using (StringWriter sw = new StringWriter())
+            using (XmlWriter xw = XmlWriter.Create(sw))
             {
                 xdoc.WriteTo(xw);
                 xw.Flush();
@@ -335,17 +352,17 @@ namespace KSAGrinder.Pages
 
             #region Ecrypt and save the XMLDocument in the specified path
 
-            using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                using (var aes = Aes.Create())
+                using (Aes aes = Aes.Create())
                 {
                     aes.Key = CryptKey;
                     byte[] iv = aes.IV;
                     fileStream.Write(iv, 0, iv.Length);
 
-                    using (var cryptoStream = new CryptoStream(fileStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    using (CryptoStream cryptoStream = new CryptoStream(fileStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
                     {
-                        using (var encryptWriter = new StreamWriter(cryptoStream))
+                        using (StreamWriter encryptWriter = new StreamWriter(cryptoStream))
                         {
                             encryptWriter.Write(xmlStr);
                         }
@@ -363,10 +380,10 @@ namespace KSAGrinder.Pages
                 => node.ChildNodes.Cast<XmlNode>()
                     .First(child => String.Equals(child.Name, name, comparisonType));
 
-            var xdoc = new XmlDocument();
+            XmlDocument xdoc = new XmlDocument();
 
-            using (var fileStream = new FileStream(filePath, FileMode.Open))
-            using (var aes = Aes.Create())
+            using (FileStream fileStream = new FileStream(filePath, FileMode.Open))
+            using (Aes aes = Aes.Create())
             {
                 byte[] iv = new byte[aes.IV.Length];
                 int numBytesToRead = aes.IV.Length;
@@ -381,9 +398,9 @@ namespace KSAGrinder.Pages
                 }
 
                 ;
-                using (var cryptoStream = new CryptoStream(fileStream, aes.CreateDecryptor(CryptKey, iv), CryptoStreamMode.Read))
+                using (CryptoStream cryptoStream = new CryptoStream(fileStream, aes.CreateDecryptor(CryptKey, iv), CryptoStreamMode.Read))
                 {
-                    using (var decryptReader = new StreamReader(cryptoStream))
+                    using (StreamReader decryptReader = new StreamReader(cryptoStream))
                     {
                         string decrypted = decryptReader.ReadToEnd();
                         xdoc.LoadXml(decrypted);
@@ -391,7 +408,7 @@ namespace KSAGrinder.Pages
                 }
             }
 
-            var newList = new List<Class>();
+            List<Class> newList = new List<Class>();
             XmlElement root = xdoc.DocumentElement;
             string hash = root.Attributes.GetNamedItem("Hash").Value;
             if (_hash == hash)
@@ -447,7 +464,7 @@ namespace KSAGrinder.Pages
         {
             try
             {
-                var sfd = new SaveFileDialog
+                SaveFileDialog sfd = new SaveFileDialog
                 {
                     Filter = "바이너리 파일 (*.bin)|*.bin"
                 };
@@ -456,6 +473,8 @@ namespace KSAGrinder.Pages
                     SaveXmlInBinary(sfd.FileName);
                     WorkingWith = sfd.FileName;
                     Modified = false;
+                    Settings.Default.LastFile = sfd.FileName;
+                    Settings.Default.Save();
                     return true;
                 }
                 return false;
@@ -463,7 +482,7 @@ namespace KSAGrinder.Pages
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"저장하는 데 실패했습니다!{Environment.NewLine}{ex.Message}", "에러",
+                    $"저장하는 데 실패했습니다!{Environment.NewLine}{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
@@ -495,7 +514,7 @@ namespace KSAGrinder.Pages
 
         private void Timetable_Loaded(object sender, RoutedEventArgs e)
         {
-            var dataGridElementStyle = (Style)Resources["TextBoxStyle"];
+            Style dataGridElementStyle = (Style)Resources["TextBoxStyle"];
             foreach (DataGridColumn column in Timetable.Columns.Concat(LectureTable.Columns))
             {
                 if (column is DataGridTextColumn textColumn)
@@ -537,7 +556,7 @@ namespace KSAGrinder.Pages
                     MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result != MessageBoxResult.Yes) return;
             }
-            var dialog = new LoadFromID(_data);
+            LoadFromID dialog = new LoadFromID(_data);
             dialog.ShowDialog();
             if (dialog.ResultRow != null)
             {
@@ -569,7 +588,7 @@ namespace KSAGrinder.Pages
             }
             try
             {
-                var ofd = new OpenFileDialog()
+                OpenFileDialog ofd = new OpenFileDialog()
                 {
                     Filter = "바이너리 파일 (*.bin)|*.bin|모든 파일 (*.*)|*.*"
                 };
@@ -578,11 +597,13 @@ namespace KSAGrinder.Pages
                     LoadXmlInBinary(ofd.FileName);
                     WorkingWith = ofd.FileName;
                 }
+                Settings.Default.LastFile = ofd.FileName;
+                Settings.Default.Save();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"파일을 불러오는 데 실패했습니다!{Environment.NewLine}{ex.Message}", "에러",
+                    $"파일을 불러오는 데 실패했습니다!{Environment.NewLine}{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -602,13 +623,11 @@ namespace KSAGrinder.Pages
             }
             catch
             {
-                MessageBox.Show("저장하는 데 실패했습니다!", "에러", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("저장하는 데 실패했습니다!", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void MenuSaveAs_Click(object sender, RoutedEventArgs e) => TrySaveDialog();
-
-        private void MenuClose_Click(object sender, RoutedEventArgs e) => _main.Close();
 
         private void CmbDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e) => LoadLectures();
 
@@ -618,7 +637,7 @@ namespace KSAGrinder.Pages
             {
                 return;
             }
-            var lecture = (Lecture)LectureTable.SelectedItem;
+            Lecture lecture = (Lecture)LectureTable.SelectedItem;
             ClassCollection.Clear();
             foreach (Class cls in DataManager.ClassDict(lecture.Code))
             {
@@ -632,22 +651,23 @@ namespace KSAGrinder.Pages
         {
             if (ClassTable.SelectedItem is Class cls)
             {
+                string note = String.IsNullOrWhiteSpace(cls.Note) ? "없음" : cls.Note;
                 string content =
-                    $"< {cls.Name} #{cls.Number} >\n\n" +
+                    $"< {cls.Name} {cls.Number}분반 >\n\n" +
                     $"교과목코드: {cls.Code}\n" +
                     $"선생님: {cls.Teacher}\n" +
                     $"요일/시간: {cls.DayTime}\n" +
                     $"신청인원: {cls.Enroll}\n" +
-                    $"비고: {cls.Note}\n\n" +
+                    $"비고: {note}\n\n" +
                     $"신청한 학생 목록\n";
                 foreach (string student in cls.EnrolledList)
                     content += $" - {student} {DataManager.GetNameFromStudentID(student)}\n";
-
-                MessageBox.Show(content, "세부 정보", MessageBoxButton.OK, MessageBoxImage.Information);
+                DetailView detailWindow = new DetailView(content);
+                detailWindow.ShowDialog();
             }
             else
             {
-                MessageBox.Show("디테일을 불러오는 데 실패했습니다!", "에러", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("세부 정보를 불러오는 데 실패했습니다!", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -670,32 +690,17 @@ namespace KSAGrinder.Pages
 
         private void BtnGenerate_Click(object sender, RoutedEventArgs e)
         {
-            var notPinned = new List<string>();
-            var pinned = new List<string>();
+            List<string> notPinned = new List<string>();
+            List<string> pinned = new List<string>();
             for (int i = 0; i < _currentSchedule.Count; ++i)
             {
-                var @class = (Class)CurrentClassTable.Items[i];
+                Class @class = (Class)CurrentClassTable.Items[i];
                 if (((CheckBox)CurrentClassTable.GetCell(i, 0).Content).IsChecked == true)
                     pinned.Add(@class.Code);
                 else
                     notPinned.Add(@class.Code);
             }
             IEnumerable<Schedule> newSchedules = _currentSchedule.Combination(pinned, onlyValid: true);
-            //switch ((Preference)CmbPreference.SelectedIndex)
-            //{
-            //    case Preference.Empty1:
-            //        newSchedules.Sort((a, b) => -Math.Sign(a.Evaluate1Empty - b.Evaluate1Empty));
-            //        break;
-            //    case Preference.Empty4:
-            //        newSchedules.Sort((a, b) => -Math.Sign(a.Evaluate4Empty - b.Evaluate4Empty));
-            //        break;
-            //    case Preference.Empty5:
-            //        newSchedules.Sort((a, b) => -Math.Sign(a.Evaluate5Empty - b.Evaluate5Empty));
-            //        break;
-            //    case Preference.Compact:
-            //        newSchedules.Sort((a, b) => -Math.Sign(a.EvaluateCompact - b.EvaluateCompact));
-            //        break;
-            //}
 
             ScheduleCollection.Clear();
             foreach (Schedule schedule in newSchedules)
@@ -704,19 +709,18 @@ namespace KSAGrinder.Pages
             }
         }
 
-        //private async void BtnTrade_Click(object sender, RoutedEventArgs e)
-        //{
-        //    await Task.Run(() => BtnTrade_Click());
-        //}
-
         private void BtnTrade_Click(object sender, RoutedEventArgs e)
         {
             if (String.IsNullOrWhiteSpace(OriginalScheduleID))
             {
-                // TODO: Implement this
-                //MessageBox.Show("");
+                MessageBox.Show("트레이드를 탐색하기 위해서 학번을 입력해야 합니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
+                LoadFromID enterId = new LoadFromID(_data);
+                enterId.ShowDialog();
+                if (enterId.ResultRow == null)
+                    return;
+                OriginalScheduleID = enterId.ResultID;
             }
-            var finder = new TradeFinder(OriginalScheduleID, _currentSchedule);
+            TradeFinder finder = new TradeFinder(OriginalScheduleID, _currentSchedule);
             finder.ShowDialog();
             //var sch1 = new Schedule(DataManager.GetScheduleFromStudentID("20-050"));
             //Debug.Assert(sch1.MoveClass("HA1804", 6));
@@ -786,7 +790,7 @@ namespace KSAGrinder.Pages
                 UpdateHourCollection();
                 foreach (int pinnedIndex in pinnedIndices)
                 {
-                    var checkBox = CurrentClassTable.GetCell(pinnedIndex, 0).Content as CheckBox;
+                    CheckBox checkBox = CurrentClassTable.GetCell(pinnedIndex, 0).Content as CheckBox;
                     checkBox.IsChecked = true;
                 }
 

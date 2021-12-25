@@ -16,7 +16,7 @@ namespace KSAGrinder.Extensions
                 DataGridCellsPresenter presenter = GetVisualChild<DataGridCellsPresenter>(rowContainer);
 
                 // try to get the cell but it may possibly be virtualized
-                var cell = (DataGridCell)presenter.ItemContainerGenerator.ContainerFromIndex(column);
+                DataGridCell cell = (DataGridCell)presenter.ItemContainerGenerator.ContainerFromIndex(column);
                 if (cell == null)
                 {
                     // now try to bring into view and retreive the cell
@@ -30,7 +30,7 @@ namespace KSAGrinder.Extensions
 
         public static DataGridRow GetRow(this DataGrid dg, int index)
         {
-            var row = (DataGridRow)dg.ItemContainerGenerator.ContainerFromIndex(index);
+            DataGridRow row = (DataGridRow)dg.ItemContainerGenerator.ContainerFromIndex(index);
             if (row == null)
             {
                 // may be virtualized, bring into view and try again
@@ -42,11 +42,11 @@ namespace KSAGrinder.Extensions
 
         private static T GetVisualChild<T>(Visual parent) where T : Visual
         {
-            var child = default(T);
+            T child = default(T);
             int numVisuals = VisualTreeHelper.GetChildrenCount(parent);
             for (int i = 0; i < numVisuals; i++)
             {
-                var v = (Visual)VisualTreeHelper.GetChild(parent, i);
+                Visual v = (Visual)VisualTreeHelper.GetChild(parent, i);
                 child = v as T;
                 if (child == null) child = GetVisualChild<T>(v);
                 else break;

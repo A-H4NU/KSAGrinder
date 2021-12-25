@@ -13,10 +13,10 @@ namespace KSAGrinder.ValueConverters
             Color dark = Colors.DarkGreen;
             if (value is double score)
             {
-                var newColor = Color.FromRgb(
-                    (byte)((light.R * score + dark.R * (100 - score))/100),
-                    (byte)((light.G * score + dark.G * (100 - score))/100),
-                    (byte)((light.B * score + dark.B * (100 - score))/100));
+                Color newColor = Color.FromRgb(
+                    (byte)((light.R * score + dark.R * (100 - score)) / 100),
+                    (byte)((light.G * score + dark.G * (100 - score)) / 100),
+                    (byte)((light.B * score + dark.B * (100 - score)) / 100));
                 return new SolidColorBrush(newColor);
             }
             return null;

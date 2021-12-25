@@ -10,7 +10,7 @@ namespace KSAGrinder.ValueConverters
     /// <summary>
     /// For row headers of "Timetable"
     /// </summary>
-    public class ConvertItemToIndex : IValueConverter
+    public class ConvertItemToIndexDataRow : IValueConverter
     {
         private static DataGrid _dg;
 
@@ -21,9 +21,9 @@ namespace KSAGrinder.ValueConverters
             try
             {
                 CollectionView cv = _dg.Items;
-                int rowIndex = cv.IndexOf(value)+1;
+                int rowIndex = cv.IndexOf(value) + 1;
 
-                var label = new Label
+                Label label = new Label
                 {
                     Content = rowIndex.ToString(),
                     HorizontalAlignment = HorizontalAlignment.Center,

@@ -52,7 +52,7 @@ namespace KSAGrinder.Extensions
             IEnumerable<IEnumerable<T>> last = new IEnumerable<T>[] { Enumerable.Empty<T>() };
             for (int i = 1; i <= k; ++i)
             {
-                var newLast = new List<IEnumerable<T>>();
+                List<IEnumerable<T>> newLast = new List<IEnumerable<T>>();
                 foreach (IEnumerable<T> comb in GetKCombsFromLastCombs(i, last))
                 {
                     yield return comb;

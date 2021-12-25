@@ -53,6 +53,10 @@ namespace KSAGrinder.Windows
             {
                 Return();
             }
+            if (e.Key == Key.Escape)
+            {
+                Close();
+            }
         }
     }
 }

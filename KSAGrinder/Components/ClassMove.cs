@@ -1,13 +1,6 @@
-﻿using KSAGrinder.Exceptions;
-using KSAGrinder.Extensions;
-using KSAGrinder.Statics;
+﻿using KSAGrinder.Statics;
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace KSAGrinder.Components
 {
@@ -36,7 +29,7 @@ namespace KSAGrinder.Components
 
         public static bool IsSetOfCycles(IEnumerable<ClassMove> collection)
         {
-            var leftMoves = new List<ClassMove>(collection);
+            List<ClassMove> leftMoves = new List<ClassMove>(collection);
             while (leftMoves.Count > 0)
             {
                 ClassMove root = leftMoves[leftMoves.Count - 1];

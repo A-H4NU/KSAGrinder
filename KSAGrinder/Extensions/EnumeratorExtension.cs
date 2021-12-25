@@ -20,9 +20,9 @@ namespace KSAGrinder.Extensions
         public static IEnumerable<IEnumerable<T>> Batch<T>(this IEnumerable<T> source, int size)
         {
             T[] bucket = null;
-            var count = 0;
+            int count = 0;
 
-            foreach (var item in source)
+            foreach (T item in source)
             {
                 if (bucket == null)
                     bucket = new T[size];
