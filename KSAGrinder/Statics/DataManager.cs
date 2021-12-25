@@ -1,4 +1,6 @@
-﻿using KSAGrinder.Components;
+﻿using KoreanText;
+
+using KSAGrinder.Components;
 
 using System;
 using System.Collections.Generic;
@@ -15,12 +17,21 @@ namespace KSAGrinder.Statics
         {
             Data = data;
             InitializeClassDictionary();
+            InitializeLectureList();
         }
 
         /// <summary>
         /// correspond a code to a list of classes
         /// </summary>
         private static readonly Dictionary<string, List<Class>> _classDict = new Dictionary<string, List<Class>>();
+
+        private static readonly List<Lecture> _lectures = new List<Lecture>();
+
+        public static IEnumerable<Lecture> GetLectures()
+        {
+            foreach (var lecture in _lectures)
+                yield return lecture;
+        }
 
         public static bool LectureExists(string code) => _classDict.ContainsKey(code);
 
@@ -123,6 +134,24 @@ namespace KSAGrinder.Statics
                     schedule: ((DayOfWeek Day, int Hour)[])row[cTime],
                     note: row[cNote].ToString(),
                     enrolledList: applyDict[(code, (int)row[cNumber])]
+                ));
+            }
+        }
+
+        private static void InitializeLectureList()
+        {
+            _lectures.Clear();
+            DataTable tLecture = Data.Tables["Lecture"];
+            DataColumn cDepartment = tLecture.Columns["Department"];
+            DataColumn cName = tLecture.Columns["Name"];
+            DataColumn cCode = tLecture.Columns["Code"];
+            foreach (DataRow row in tLecture.Rows)
+            {
+                _lectures.Add(new Lecture(
+                    code: (string)row[cCode],
+                    department: (Department)Enum.Parse(typeof(Department), (string)row[cDepartment]),
+                    name: (string)row[cName],
+                    numClass: DataManager.ClassDict((string)row[cCode]).Count
                 ));
             }
         }
