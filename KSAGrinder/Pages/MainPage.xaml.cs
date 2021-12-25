@@ -278,33 +278,7 @@ namespace KSAGrinder.Pages
             }
             Department department = (Department)CmbDepartment.SelectedItem;
             string departmentStr = department.ToString();
-            //DataTable tLecture = _data.Tables["Lecture"];
-            //DataColumn cDepartment = tLecture.Columns["Department"];
-            //DataColumn cName = tLecture.Columns["Name"];
-            //DataColumn cCode = tLecture.Columns["Code"];
-            //List<Lecture> newList = new List<Lecture>();
-            //foreach (DataRow row in tLecture.Rows)
-            //{
-            //    string name = (string)row[cName];
-            //    KoreanString kname = new KoreanString(name);
-            //    if (department == Department.All || departmentStr == (string)row[cDepartment])
-            //    {
-            //        if (!String.IsNullOrEmpty(TxtSearch.Text)
-            //            && !(name.StartsWith(TxtSearch.Text, StringComparison.OrdinalIgnoreCase)
-            //                 || ExtractChosung(kname).StartsWith(TxtSearch.Text)))
-            //        {
-            //            continue;
-            //        }
-            //        newList.Add(new Lecture(
-            //            code: (string)row[cCode],
-            //            department: (Department)Enum.Parse(typeof(Department), (string)row[cDepartment]),
-            //            name: name,
-            //            numClass: DataManager.ClassDict((string)row[cCode]).Count
-            //        ));
-            //    }
-            //}
             LectureCollection.Clear();
-            //LectureTable.InvalidateVisual();
             foreach (Lecture lecture in DataManager.GetLectures())
             {
                 KoreanString kname = new KoreanString(lecture.Name);
