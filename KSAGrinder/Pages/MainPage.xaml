@@ -85,7 +85,10 @@
             </Grid.ColumnDefinitions>
 
             <DockPanel x:Name="TimetablePanel" Grid.RowSpan="2" Margin="10,0,10,10">
-                <Label DockPanel.Dock="Top" Content="시간표" FontSize="22" FontWeight="SemiBold" HorizontalContentAlignment="Center"/>
+                <Grid DockPanel.Dock="Top">
+                    <Label Content="시간표" FontSize="22" FontWeight="SemiBold" HorizontalContentAlignment="Center"/>
+                    <Label x:Name="LblValid" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+                </Grid>
                 <DataGrid x:Name="Timetable" ColumnWidth="*"
                       Style="{DynamicResource TimetableDataGridStyle}"
                       ItemsSource="{Binding}" AutoGenerateColumns="True"

@@ -1,20 +1,20 @@
-﻿<Window x:Class="KSAGrinder.Windows.TradeFinder"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:KSAGrinder.Windows"
-        xmlns:statics="clr-namespace:KSAGrinder.Statics"
-        mc:Ignorable="d"
-        DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        Title="트레이드 탐색" Height="600" Width="400">
-    <Grid>
-        <Frame NavigationUIVisibility="Hidden" statics:DisableNavigation.Disable="True" Name="Main"/>
-    </Grid>
-    <!--<Window.Resources>
+﻿<Page x:Name="Page" x:Class="KSAGrinder.Pages.TradeFinderMain"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:KSAGrinder.Pages"
+      xmlns:valueConverters="clr-namespace:KSAGrinder.ValueConverters"
+      mc:Ignorable="d"
+      DataContext="{Binding RelativeSource={RelativeSource Self}}"
+      d:DesignHeight="600" d:DesignWidth="400"
+      d:Background="White"
+      Title="TradeFinderMain"
+      Unloaded="Page_Unloaded">
+    <Page.Resources>
         <valueConverters:ConvertItemToIndexListBox x:Key="IndexConv"/>
         <valueConverters:TradesToSummary x:Key="tradesToSummary"/>
-    </Window.Resources>
+    </Page.Resources>
     <Grid>
         <DockPanel>
             <Grid DockPanel.Dock="Top" Margin="10,10,10,0">
@@ -39,9 +39,9 @@
                         <ComboBoxItem Content="4"/>
                     </ComboBox>
                 </DockPanel>
-                <Button x:Name="BtnSelect" Grid.Column="2" Content="과목 선택..." Margin="5,0,0,0" Click="BtnSelect_Click"/>
+                <Button x:Name="BtnSelect" Grid.Column="2" Content="과목 선택..." Margin="5,0,0,0" Click="BtnSelect_Click" Height="26" VerticalAlignment="Top"/>
             </Grid>
-            <TextBlock DockPanel.Dock="Top" Text="{Binding Path=SelectionMessage}" Margin="10,5,10,5" TextAlignment="Center"/>
+            <TextBlock DockPanel.Dock="Top" Text="{Binding Path=SelectionMessage}" Margin="10,5,10,0" TextAlignment="Center"/>
             <TextBlock DockPanel.Dock="Top" Text="{Binding Path=WarningMessage}" TextAlignment="Center" TextWrapping="WrapWithOverflow" Margin="10,5,10,0"/>
             <UniformGrid DockPanel.Dock="Top" Margin="10,10,10,0" Columns="2" Rows="1">
                 <Button x:Name="BtnStop" Content="탐색 중지" HorizontalAlignment="Stretch" Padding="0,2.5,0,2.5" Margin="0,0,5,0" IsEnabled="False" Click="BtnStop_Click"/>
@@ -58,7 +58,7 @@
                         <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                             <DockPanel.InputBindings>
                                 <MouseBinding Gesture="LeftDoubleClick"
-                                              Command="{Binding DataContext.ShowDetailCommand, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"
+                                              Command="{Binding DataContext.ShowDetailCommand, RelativeSource={RelativeSource AncestorType=Page, Mode=FindAncestor}}"
                                               CommandParameter="{Binding .}"/>
                             </DockPanel.InputBindings>
                             <Label Content="{Binding RelativeSource={RelativeSource FindAncestor, 
@@ -71,5 +71,5 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </DockPanel>
-    </Grid>-->
-</Window>
+    </Grid>
+</Page>

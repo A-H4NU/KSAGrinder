@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:KSAGrinder.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="450" d:DesignWidth="800" d:Background="White"
       DataContext="{Binding RelativeSource={RelativeSource Self}}"
       Title="FileInput"
       Loaded="Page_Loaded">
@@ -16,7 +16,12 @@
             <Label Content="제공된 파일을 선택하거나 드래그 앤 드롭하세요." FontSize="20" Margin="0,0,0,10"/>
             <Button x:Name="BtnSelect" MaxWidth="100" Height="25" Content="선택" Click="BtnSelect_Click"/>
             <TextBlock TextAlignment="Center" FontSize="15" Margin="0,20,0,0">
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate_Newbie" NavigateUri="">처음이신가요? 여기를 클릭해주세요.</Hyperlink>
+            </TextBlock>
+            <TextBlock TextAlignment="Center" FontSize="15" Margin="0,3,0,0">
                 <Hyperlink RequestNavigate="Hyperlink_RequestNavigate_Where" NavigateUri="https://www.google.com">"제공된 파일"이 어디있나요?</Hyperlink>
+            </TextBlock>
+            <TextBlock TextAlignment="Center" FontSize="15" Margin="0,3,0,0">
                 <Hyperlink RequestNavigate="Hyperlink_RequestNavigate_Credit" NavigateUri="">누가 이 프로그램에 기여했나요?</Hyperlink>
             </TextBlock>
         </StackPanel>

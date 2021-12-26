@@ -32,6 +32,14 @@ namespace KSAGrinder.Components
 
         public string InvolvedStudentsString => String.Join(", ", InvolvedStudents());
 
+        public IEnumerable<(string, IReadOnlyCollection<Class>)> GetCapturedSchedules()
+        {
+            var res = new List<(string, IReadOnlyCollection<Class>)>(_capturedSchedules.Count);
+            foreach (var pair in _capturedSchedules)
+                res.Add((pair.Key, pair.Value.ToList().AsReadOnly()));
+            return res;
+        }
+
         public IReadOnlyCollection<Class> GetScheduleOf(string studentId)
             => PrivateGetScheduleOf(studentId, false).ToList().AsReadOnly();
 
@@ -182,7 +190,12 @@ namespace KSAGrinder.Components
             }
         }
 
-        public bool AreAllSchedulesValid() => _capturedSchedules.Values.All(scd => scd.IsValid);
+        public bool AreAllSchedulesValid(string exceptForThisStudentId = null)
+            => _capturedSchedules.All(pair =>
+            {
+                var (id, scd) = (pair.Key, pair.Value);
+                return id == exceptForThisStudentId || scd.IsValid;
+            });
 
         public int Count => _classMoves.Count;
 

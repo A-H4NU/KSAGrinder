@@ -19,7 +19,8 @@ namespace KSAGrinder.ValueConverters
             if (value is ReadOnlyCollection<ClassMove> moves)
             {
                 HashSet<string> involvedStudents = moves.Select(move => move.StudentId).ToHashSet();
-                return $"{involvedStudents.Count()}인 참여 / {moves.Count}번의 분반 이동{Environment.NewLine}"
+                involvedStudents.Remove(moves.First().StudentId);
+                return $"{involvedStudents.Count() + 1}인 참여 / {moves.Count}번의 분반 이동{Environment.NewLine}"
                   + "참여 학생: " + String.Join(", ", involvedStudents.Select(id => id + " " + DataManager.GetNameFromStudentID(id)));
             }
             return String.Empty;

@@ -125,20 +125,33 @@ namespace KSAGrinder.Pages
             }
         }
 
+        private void Hyperlink_RequestNavigate_Newbie(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            DetailView credit = new DetailView(
+                Properties.Resources.ResourceManager.GetString("Welcome"),
+                "환영합니다!",
+                TextWrapping.WrapWithOverflow);
+            credit.ShowDialog();
+            e.Handled = true;
+        }
+
         private void Hyperlink_RequestNavigate_Where(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
-            MessageBox.Show("지금 열릴 구글 드라이브에 접근하기 위해 학교가 제공한 구글 계정이 필요합니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(
+                "지금 열릴 구글 드라이브에 접근하기 위해 학교가 제공한 구글 계정이 필요합니다.",
+                "알림",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
             System.Diagnostics.Process.Start(e.Uri.AbsoluteUri);
             e.Handled = true;
         }
 
         private void Hyperlink_RequestNavigate_Credit(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
-            DetailView credit = new DetailView(Properties.Resources.ResourceManager.GetString("Credit"))
-            {
-                Title = "도움주신 분들"
-            };
-            credit.TxtDetail.TextWrapping = TextWrapping.WrapWithOverflow;
+            DetailView credit = new DetailView(
+                Properties.Resources.ResourceManager.GetString("Credit"),
+                "도움주신 분들",
+                TextWrapping.WrapWithOverflow);
             credit.ShowDialog();
             e.Handled = true;
         }

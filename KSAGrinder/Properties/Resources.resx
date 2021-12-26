@@ -117,6 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClassSelectionHelp" xml:space="preserve">
+    <value>체크가 헤제된 강의는 트레이드 탐색 및 유효성 검사에서 무시됩니다.
+
+만약 모든 강의가 체크되어 있다면, 관련된 모든 학생의 시간표가 유효한 트레이드만 탐색합니다.
+
+만약 하나 이상의 강의가 체크 해제되어 있다면, 현재 시간표가 유효한지 검사할 때 체크 해제된 강의는 무시합니다. 현재 시간표의 주인({0}) 외 관련된 모든 학생의 시간표가 유효한 트레이드만 탐색합니다.</value>
+  </data>
   <data name="Credit" xml:space="preserve">
     <value>이 프로그램을 만들 동기를 제공해주신 IDEV 회장 19-124 황제욱 선배님과 21-079 이종현께 감사의 말씀을 전합니다.
 
@@ -134,5 +141,18 @@
 20-031 김현기
 
 제 도움에 선뜻 나서 주셔서 디버깅 자료를 제공해주신 모든 분들에게 깊이 감사드립니다.</value>
+  </data>
+  <data name="Welcome" xml:space="preserve">
+    <value>KSAGrinder를 이용해 주셔서 감사합니다!
+
+이 프로그램은 꽤 복잡한 관계로, 함께 동봉된 매뉴얼을 꼭 읽어 주시기 바랍니다.
+
+[ 정보의 부정확성에 대해 ]
+
+이 프로그램은 현재 초기 개발 버전으로, 일부 정보는 부정확할 수 있습니다. 꼭 교차검증을 거치시기 바랍니다.
+
+데이터셋은 가온누리에 올라오는 엑셀 파일을 통해 제작합니다. 엑셀 파일에 오류가 포함되어 있는 경우가 왕왕 있습니다. 주의하시기 바랍니다.
+
+어느 누구도 이 프로그램 혹은 제공된 데이터셋에 포함된 정보의 정확성을 보장하지 않습니다. 이 프로그램 혹은 제공된 데이터셋에 포함된 잘못된 정보로 인해 발생하는 손실에 책임지지 않습니다. (그렇다고 일부러 오류를 내진 않았습니다.)</value>
   </data>
 </root>

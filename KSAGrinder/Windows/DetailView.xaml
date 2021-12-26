@@ -5,11 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KSAGrinder.Windows"
         mc:Ignorable="d"
-        Title="세부 정보" Height="400" Width="300">
+        Title="세부 정보" Height="600" Width="400">
     <Grid>
         <DockPanel Margin="10">
+            <UniformGrid DockPanel.Dock="Top" Rows="1" Columns="2" Margin="0,0,0,10">
+                <Button x:Name="BtnZoomOut" Content="축소" Margin="0,0,5,0" Click="BtnZoomOut_Click"/>
+                <Button x:Name="BtnZoomIn" Content="확대" Margin="5,0,0,0" Click="BtnZoomIn_Click"/>
+            </UniformGrid>
             <Label DockPanel.Dock="Bottom" Content="드래그해서 복사할 수 있습니다." HorizontalContentAlignment="Center"/>
-            <TextBox x:Name="TxtDetail" DockPanel.Dock="Top" Margin="0,0,0,5" IsReadOnly="True"/>
+            <TextBox x:Name="TxtDetail" DockPanel.Dock="Top" FontSize="16" Margin="0,0,0,5" IsReadOnly="True"/>
         </DockPanel>
     </Grid>
 </Window>

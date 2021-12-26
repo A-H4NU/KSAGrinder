@@ -203,13 +203,6 @@ namespace KSAGrinder.Pages
 
         private void UpdateHourCollection()
         {
-            DataTable tClass = _data.Tables["Class"];
-            DataColumn ccTeacher = tClass.Columns["Teacher"];
-            DataColumn ccNumber = tClass.Columns["Number"];
-            DataColumn ccTime = tClass.Columns["Time"];
-            DataTable tLecture = _data.Tables["Lecture"];
-            DataColumn clName = tLecture.Columns["Name"];
-
             string[,] hours = new string[NRow, 5];
 
             CurrentClassCollection.Clear();
@@ -217,17 +210,17 @@ namespace KSAGrinder.Pages
             {
                 string code = @class.Code;
                 int number = @class.Number;
-                DataRow classRow = DataManager.GetClassRow(code, number);
-                DataRow lectureRow = tLecture.Rows.Find(code);
 
-                string classStr = $"{lectureRow[clName]}{Environment.NewLine}"
-                             + $"{classRow[ccNumber]}분반{Environment.NewLine}"
-                             + $"{classRow[ccTeacher]}";
+                string classStr = $"{DataManager.NameOfLectureFromCode(code)}{Environment.NewLine}"
+                             + $"{number}분반{Environment.NewLine}"
+                             + $"{@class.Teacher}";
 
-                (DayOfWeek Day, int Hour)[] times = ((DayOfWeek Day, int Hour)[])classRow[ccTime];
-                foreach ((DayOfWeek day, int hour) in times)
+                foreach ((DayOfWeek day, int hour) in @class.Schedule)
                 {
-                    hours[hour - 1, (int)day - 1] = classStr;
+                    if (String.IsNullOrWhiteSpace(hours[hour - 1, (int)day - 1]))
+                        hours[hour - 1, (int)day - 1] = classStr;
+                    else
+                        hours[hour - 1, (int) day - 1] = "!!!!!!!!!\n겹침\n!!!!!!!!!";
                 }
                 int idx = DataManager.ClassDict(code).FindIndex((c) => c.Number == number);
                 CurrentClassCollection.Add(DataManager.ClassDict(code)[idx]);
@@ -246,6 +239,8 @@ namespace KSAGrinder.Pages
                     Friday = hours[i, 4],
                 });
             }
+
+            LblValid.Content = _currentSchedule.IsValid ? String.Empty : "유효하지 않음";
         }
 
         private void InitializeHourCollection()
@@ -645,7 +640,7 @@ namespace KSAGrinder.Pages
                 foreach (string student in cls.EnrolledList)
                     content += $" - {student} {DataManager.GetNameFromStudentID(student)}\n";
                 DetailView detailWindow = new DetailView(content);
-                detailWindow.ShowDialog();
+                detailWindow.Show();
             }
             else
             {
@@ -693,6 +688,16 @@ namespace KSAGrinder.Pages
 
         private void BtnTrade_Click(object sender, RoutedEventArgs e)
         {
+            if (!_currentSchedule.IsValid)
+            {
+                var result = MessageBox.Show(
+                    "현재 시간표가 유효하지 않습니다. 그래도 진행하시겠습니까?",
+                    "현재 시간표가 유효하지 않음",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+                if (result == MessageBoxResult.No)
+                    return;
+            }
             if (String.IsNullOrWhiteSpace(OriginalScheduleID))
             {
                 MessageBox.Show("트레이드를 탐색하기 위해서 학번을 입력해야 합니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
