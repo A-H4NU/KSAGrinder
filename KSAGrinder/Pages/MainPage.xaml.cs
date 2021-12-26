@@ -380,7 +380,6 @@ namespace KSAGrinder.Pages
                     numBytesToRead -= n;
                 }
 
-                ;
                 using (CryptoStream cryptoStream = new CryptoStream(fileStream, aes.CreateDecryptor(CryptKey, iv), CryptoStreamMode.Read))
                 {
                     using (StreamReader decryptReader = new StreamReader(cryptoStream))

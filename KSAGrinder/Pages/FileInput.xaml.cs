@@ -40,7 +40,7 @@ namespace KSAGrinder.Pages
             OpenFileDialog ofd = new OpenFileDialog
             {
                 Title = "제공된 파일을 선택하세요.",
-                Filter = "ZIP files (*.zip)|*.zip"
+                Filter = "Dataset files (*.ds)|*.ds"
             };
             if (ofd.ShowDialog() == true)
             {
@@ -143,7 +143,7 @@ namespace KSAGrinder.Pages
             e.Handled = true;
         }
 
-        private void page_Loaded(object sender, RoutedEventArgs e)
+        private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             if (File.Exists(Settings.Default.LastDataset))
             {
