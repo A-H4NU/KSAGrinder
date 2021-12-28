@@ -7,7 +7,8 @@
         xmlns:statics="clr-namespace:KSAGrinder.Statics"
         mc:Ignorable="d"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        Title="트레이드 탐색" Height="600" Width="400">
+        Title="트레이드 탐색" Height="600" Width="400"
+        Closed="Window_Closed">
     <Grid>
         <Frame NavigationUIVisibility="Hidden" statics:DisableNavigation.Disable="True" Name="Main"/>
     </Grid>

@@ -12,6 +12,7 @@ namespace KSAGrinder.Windows
         {
             InitializeComponent();
             TxtDetail.Text = detail;
+            TxtDetail.FontSize = Properties.Settings.Default.DetailFontSize;
             if (title != null)
                 Title = title;
             TxtDetail.TextWrapping = wrapping;
@@ -19,12 +20,14 @@ namespace KSAGrinder.Windows
 
         private void BtnZoomOut_Click(object sender, RoutedEventArgs e)
         {
-            TxtDetail.FontSize = Math.Max(6, TxtDetail.FontSize - 2);
+            Properties.Settings.Default.DetailFontSize = TxtDetail.FontSize = Math.Max(6, TxtDetail.FontSize - 2);
+            Properties.Settings.Default.Save();
         }
 
         private void BtnZoomIn_Click(object sender, RoutedEventArgs e)
         {
-            TxtDetail.FontSize = Math.Min(30, TxtDetail.FontSize + 2);
+            Properties.Settings.Default.DetailFontSize = TxtDetail.FontSize = Math.Min(30, TxtDetail.FontSize + 2);
+            Properties.Settings.Default.Save();
         }
     }
 }

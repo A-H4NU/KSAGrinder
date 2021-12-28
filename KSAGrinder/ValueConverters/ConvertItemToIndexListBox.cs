@@ -12,7 +12,7 @@ namespace KSAGrinder.ValueConverters
             ListBoxItem item = (ListBoxItem)value;
             ListBox listView = ItemsControl.ItemsControlFromItemContainer(item) as ListBox;
             int index = listView.ItemContainerGenerator.IndexFromContainer(item);
-            return String.Format("{0:000}", index + 1);
+            return String.Format("{0:0000}", index + 1);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

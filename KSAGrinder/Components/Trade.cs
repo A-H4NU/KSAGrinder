@@ -11,7 +11,9 @@ namespace KSAGrinder.Components
     {
         private static DataSet _data;
 
-        public string LectureCode { get; }
+        public string Code { get; }
+
+        public int Grade { get; }
 
         public string StudentA { get; }
 
@@ -23,11 +25,12 @@ namespace KSAGrinder.Components
 
         public static void SetData(DataSet data) => _data = data;
 
-        public Trade(string lectureCode, string studentA, int numberA, string studentB, int numberB)
+        public Trade(string code, int grade, string studentA, int numberA, string studentB, int numberB)
         {
             if (_data == null)
                 throw new NoDataException("Data must be provided before any initialization of an instance!");
-            LectureCode = lectureCode;
+            Code = code;
+            Grade = grade;
             StudentA = studentA;
             NumberA = numberA;
             StudentB = studentB;
@@ -40,9 +43,10 @@ namespace KSAGrinder.Components
         {
             if (_data == null)
                 throw new NoDataException("Data must be provided before any initialization of an instance!");
-            if (classA.Code != classB.Code)
-                throw new ArgumentException("Codes of fromClass and toClass must be same!");
-            LectureCode = classA.Code;
+            if (classA.Code != classB.Code || classA.Grade != classB.Grade)
+                throw new ArgumentException("Codes and grades of fromClass and toClass must be same!");
+            Code = classA.Code;
+            Grade = classA.Grade;
             StudentA = studentA;
             NumberA = classA.Number;
             StudentB = studentB;
@@ -60,12 +64,12 @@ namespace KSAGrinder.Components
                 if (NumberA == NumberB) return false;
                 return DataManager.StudentExists(StudentA)
                         && DataManager.StudentExists(StudentB)
-                        && DataManager.ClassExists(LectureCode, NumberA)
-                        && DataManager.ClassExists(LectureCode, NumberB);
+                        && DataManager.ClassExists(Code, Grade, NumberA)
+                        && DataManager.ClassExists(Code, Grade, NumberB);
             }
         }
 
-        public Trade Inverse => new Trade(LectureCode, StudentA, NumberA, StudentB, NumberA);
+        public Trade Inverse => new Trade(Code, Grade, StudentA, NumberB, StudentB, NumberA);
 
         //private static IEnumerable<Class> MoveClass(IEnumerable<Class> schedule, string code, int to)
         //{
@@ -133,11 +137,11 @@ namespace KSAGrinder.Components
         //    }
         //}
 
-        public override string ToString() => $"{{ Trade {LectureCode} between {StudentA}, {NumberA} and {StudentB}, {NumberB} }}";
+        public override string ToString() => $"{{ Trade {Code} between {StudentA}, {NumberA} and {StudentB}, {NumberB} }}";
 
         public bool Equals(Trade other)
         {
-            if (LectureCode != other.LectureCode) return false;
+            if (Code != other.Code) return false;
             (string, int) thisA = (StudentA, NumberA), thisB = (StudentB, NumberB);
             (string, int) otherA = (other.StudentA, other.NumberA), otherB = (other.StudentB, other.NumberB);
             return (thisA == otherA && thisB == otherB) || (thisA == otherB && thisB == otherA);

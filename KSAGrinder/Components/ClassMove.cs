@@ -11,21 +11,25 @@ namespace KSAGrinder.Components
 
         public readonly string StudentId;
 
-        public readonly string LectureCode;
+        public readonly string Code;
+
+        public readonly int Grade;
 
         public readonly int NumberFrom, NumberTo;
 
-        public ClassMove(string studentId, string lectureCode, int numberFrom, int numberTo)
+        public ClassMove(string studentId, string lectureCode, int grade, int numberFrom, int numberTo)
         {
             StudentId = studentId;
-            LectureCode = lectureCode;
+            Code = lectureCode;
+            Grade = grade;
             NumberFrom = numberFrom;
             NumberTo = numberTo;
         }
 
-        public bool IsValid => DataManager.ClassExists(LectureCode, NumberFrom) && DataManager.ClassExists(LectureCode, NumberTo);
+        public bool IsValid
+            => DataManager.ClassExists(Code, Grade, NumberFrom) && DataManager.ClassExists(Code, Grade, NumberTo);
 
-        public override string ToString() => $"ClassMove {StudentId}, {LectureCode} {DataManager.NameOfLectureFromCode(LectureCode)} from {NumberFrom} to {NumberTo}";
+        public override string ToString() => $"ClassMove {StudentId}, {Code} {DataManager.GetNameOfLectureFromCode(Code)} from {NumberFrom} to {NumberTo}";
 
         public static bool IsSetOfCycles(IEnumerable<ClassMove> collection)
         {
@@ -37,7 +41,8 @@ namespace KSAGrinder.Components
                 int currentNumber = root.NumberTo;
                 while (currentNumber != root.NumberFrom)
                 {
-                    int index = leftMoves.FindIndex(move => root.LectureCode == move.LectureCode && currentNumber == move.NumberFrom);
+                    int index = leftMoves.FindIndex(move
+                        => root.Code == move.Code && root.Grade == move.Grade && currentNumber == move.NumberFrom);
                     if (index == -1)
                         return false;
                     currentNumber = leftMoves[index].NumberTo;

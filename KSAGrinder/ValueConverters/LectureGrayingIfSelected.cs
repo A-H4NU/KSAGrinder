@@ -8,26 +8,28 @@ using System.Windows.Media;
 
 namespace KSAGrinder.ValueConverters
 {
-    public class LectureGrayingIfSelected : IValueConverter
+    public class LectureGrayingIfSelected : IMultiValueConverter
     {
         private static Schedule _schedule;
 
         public static void Initialize(Schedule schedule) => _schedule = schedule;
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is string code)
+            if (value[0] is string code && value[1] is int grade)
             {
-                IEnumerator<Class> enumerator = _schedule.GetEnumerator();
-                while (enumerator.MoveNext())
+                foreach (var @class in _schedule)
                 {
-                    if (enumerator.Current.Code == code)
+                    if (@class.Code == code && @class.Grade == grade)
                         return Brushes.LightGray;
                 }
             }
             return Brushes.Black;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
+        object[] IMultiValueConverter.ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

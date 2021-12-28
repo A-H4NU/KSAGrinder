@@ -50,7 +50,7 @@ namespace KSAGrinder.Pages
             {
                 _originalScheduleID = value;
                 Schedule.OriginalScheduleID = value;
-                InvalidateWindowTitle();
+                UpdateWindowTitle();
             }
         }
 
@@ -71,7 +71,7 @@ namespace KSAGrinder.Pages
             set
             {
                 _workingWith = value;
-                InvalidateWindowTitle();
+                UpdateWindowTitle();
             }
         }
 
@@ -83,7 +83,7 @@ namespace KSAGrinder.Pages
             set
             {
                 _modified = value;
-                InvalidateWindowTitle();
+                UpdateWindowTitle();
             }
         }
 
@@ -128,7 +128,7 @@ namespace KSAGrinder.Pages
 
             ConvertItemToIndexDataRow.Initialize(Timetable);
             LectureGrayingIfSelected.Initialize(_currentSchedule);
-            BlueIfHasNote.Initialize(_data.Tables["Class"], _currentSchedule);
+            BlueIfHasNote.Initialize(_currentSchedule);
 
             Timetable.DataContext = HourCollection;
 
@@ -185,13 +185,13 @@ namespace KSAGrinder.Pages
                     MessageBox.Show(
                         $"파일을 불러오는 데 실패했습니다!{Environment.NewLine}{ex.Message}", "오류",
                         MessageBoxButton.OK, MessageBoxImage.Error);
-                    FileInput.ClearSettings();
+                    FileInput.ClearLastFileSettings();
                     return;
                 }
             }
         }
 
-        private void InvalidateWindowTitle()
+        private void UpdateWindowTitle()
         {
             string title = _windowTitle;
             if (!String.IsNullOrWhiteSpace(OriginalScheduleID))
@@ -209,9 +209,10 @@ namespace KSAGrinder.Pages
             foreach (Class @class in _currentSchedule)
             {
                 string code = @class.Code;
+                int grade = @class.Grade;
                 int number = @class.Number;
 
-                string classStr = $"{DataManager.NameOfLectureFromCode(code)}{Environment.NewLine}"
+                string classStr = $"{DataManager.GetNameOfLectureFromCode(code)}{Environment.NewLine}"
                              + $"{number}분반{Environment.NewLine}"
                              + $"{@class.Teacher}";
 
@@ -222,8 +223,8 @@ namespace KSAGrinder.Pages
                     else
                         hours[hour - 1, (int) day - 1] = "!!!!!!!!!\n겹침\n!!!!!!!!!";
                 }
-                int idx = DataManager.ClassDict(code).FindIndex((c) => c.Number == number);
-                CurrentClassCollection.Add(DataManager.ClassDict(code)[idx]);
+                int idx = DataManager.ClassDict(code, grade).FindIndex((c) => c.Number == number);
+                CurrentClassCollection.Add(DataManager.ClassDict(code, grade)[idx]);
             }
 
             HourCollection.Clear();
@@ -306,11 +307,15 @@ namespace KSAGrinder.Pages
             foreach (Class cls in _currentSchedule)
             {
                 string code = cls.Code;
+                int grade = cls.Grade;
                 int number = cls.Number;
                 XmlElement node = xdoc.CreateElement("Class");
                 XmlElement nCode = xdoc.CreateElement("Code");
                 nCode.InnerText = code;
                 node.AppendChild(nCode);
+                XmlElement nGrade = xdoc.CreateElement("Grade");
+                nGrade.InnerText = grade.ToString();
+                node.AppendChild(nGrade);
                 XmlElement nNumber = xdoc.CreateElement("Number");
                 nNumber.InnerText = number.ToString();
                 node.AppendChild(nNumber);
@@ -393,12 +398,13 @@ namespace KSAGrinder.Pages
                 foreach (XmlNode cls in root.ChildNodes)
                 {
                     XmlNode[] arr = cls.ChildNodes.Cast<XmlNode>().ToArray();
-                    if (arr.Length != 2)
+                    if (arr.Length != 3)
                     {
                         throw new Exception("포맷 에러");
                     }
                     newList.Add(DataManager.GetClass(
                         FindByName(cls, "Code").InnerText,
+                        Int32.Parse(FindByName(cls, "Grade").InnerText),
                         Int32.Parse(FindByName(cls, "Number").InnerText)));
                 }
                 _currentSchedule.Clear();
@@ -616,7 +622,7 @@ namespace KSAGrinder.Pages
             }
             Lecture lecture = (Lecture)LectureTable.SelectedItem;
             ClassCollection.Clear();
-            foreach (Class cls in DataManager.ClassDict(lecture.Code))
+            foreach (Class cls in DataManager.ClassDict(lecture.Code, lecture.Grade))
             {
                 ClassCollection.Add(cls);
             }
@@ -630,13 +636,15 @@ namespace KSAGrinder.Pages
             {
                 string note = String.IsNullOrWhiteSpace(cls.Note) ? "없음" : cls.Note;
                 string content =
-                    $"< {cls.Name} {cls.Number}분반 >\n\n" +
-                    $"교과목코드: {cls.Code}\n" +
-                    $"선생님: {cls.Teacher}\n" +
-                    $"요일/시간: {cls.DayTime}\n" +
-                    $"신청인원: {cls.Enroll}\n" +
-                    $"비고: {note}\n\n" +
-                    $"신청한 학생 목록\n";
+                    $"강의명: {cls.Name}{Environment.NewLine}" + 
+                    $"학년: {cls.Grade}{Environment.NewLine}" +
+                    $"분반: {cls.Number}{Environment.NewLine}" + 
+                    $"교과목코드: {cls.Code}{Environment.NewLine}" +
+                    $"선생님: {cls.Teacher}{Environment.NewLine}" +
+                    $"요일/시간: {cls.DayTime}{Environment.NewLine}" +
+                    $"신청인원: {cls.Enroll}{Environment.NewLine}" +
+                    $"비고: {note}{Environment.NewLine}{Environment.NewLine}" +
+                    $"신청한 학생 목록{Environment.NewLine}";
                 foreach (string student in cls.EnrolledList)
                     content += $" - {student} {DataManager.GetNameFromStudentID(student)}\n";
                 DetailView detailWindow = new DetailView(content);
@@ -667,15 +675,12 @@ namespace KSAGrinder.Pages
 
         private void BtnGenerate_Click(object sender, RoutedEventArgs e)
         {
-            List<string> notPinned = new List<string>();
-            List<string> pinned = new List<string>();
+            List<(string, int)> pinned = new List<(string, int)>();
             for (int i = 0; i < _currentSchedule.Count; ++i)
             {
                 Class @class = (Class)CurrentClassTable.Items[i];
                 if (((CheckBox)CurrentClassTable.GetCell(i, 0).Content).IsChecked == true)
-                    pinned.Add(@class.Code);
-                else
-                    notPinned.Add(@class.Code);
+                    pinned.Add((@class.Code, @class.Grade));
             }
             IEnumerable<Schedule> newSchedules = _currentSchedule.Combination(pinned, onlyValid: true);
 
@@ -737,7 +742,7 @@ namespace KSAGrinder.Pages
                 Class? @class = null;
                 foreach (Class c in _currentSchedule)
                 {
-                    if (c.Code == cls.Code)
+                    if ((c.Code, c.Grade) == (cls.Code, cls.Grade))
                     {
                         @class = c;
                         break;

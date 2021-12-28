@@ -128,11 +128,19 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="학부" Width="55" Binding="{Binding Department, Converter={StaticResource DepartmentToString}}"/>
                             <DataGridTextColumn Header="강의명" Width="*" Binding="{Binding Name}"/>
+                            <DataGridTextColumn Header="학년" Width="40" Binding="{Binding Grade}"/>
                             <DataGridTextColumn Header="분반 수" Width="55" Binding="{Binding NumClass}" CanUserSort="False"/>
                         </DataGrid.Columns>
                         <DataGrid.RowStyle>
                             <Style TargetType="{x:Type DataGridRow}">
-                                <Setter Property="Foreground" Value="{Binding Code, Converter={StaticResource GrayingIfSelected}}"/>
+                                <Setter Property="Foreground">
+                                    <Setter.Value>
+                                        <MultiBinding Converter="{StaticResource GrayingIfSelected}">
+                                            <Binding Path="Code"/>
+                                            <Binding Path="Grade"/>
+                                        </MultiBinding>
+                                    </Setter.Value>
+                                </Setter>
                             </Style>
                         </DataGrid.RowStyle>
                     </DataGrid>
@@ -160,6 +168,7 @@
                                     <Setter.Value>
                                         <MultiBinding Converter="{StaticResource BlueIfHasNote}">
                                             <Binding Path="Code"/>
+                                            <Binding Path="Grade"/>
                                             <Binding Path="Number"/>
                                         </MultiBinding>
                                     </Setter.Value>

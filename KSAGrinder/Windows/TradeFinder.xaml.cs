@@ -26,11 +26,18 @@ namespace KSAGrinder.Windows
     /// </summary>
     public partial class TradeFinder : Window
     {
+        private readonly TradeFinderMain _mainPage;
+
         public TradeFinder(string studentId, Schedule schedule)
         {
             InitializeComponent();
 
-            Main.Content = new TradeFinderMain(this, studentId, schedule);
+            Main.Content = _mainPage = new TradeFinderMain(this, studentId, schedule);
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            _mainPage.StopWorking();
         }
     }
 }

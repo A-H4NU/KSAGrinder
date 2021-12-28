@@ -12,26 +12,24 @@ namespace KSAGrinder.ValueConverters
 {
     public class BlueIfHasNote : IMultiValueConverter
     {
-        private static DataTable _classTable;
         private static Schedule _schedule;
 
-        public static void Initialize(DataTable classTable, Schedule schedule)
+        public static void Initialize(Schedule schedule)
         {
-            _classTable = classTable;
             _schedule = schedule;
         }
 
-        private static bool DoesOverlapIfAdded(string code, int number)
+        private static bool DoesOverlapIfAdded(string code, int grade, int number)
         {
-            (DayOfWeek Day, int Hour)[] GetSchedule(string c, int n)
+            (DayOfWeek Day, int Hour)[] GetSchedule(string c, int g, int n)
             {
-                int idx = DataManager.ClassDict(c).FindIndex((cls) => cls.Number == n);
-                return DataManager.ClassDict(c)[idx].Schedule;
+                int idx = DataManager.ClassDict(c, g).FindIndex((cls) => cls.Number == n);
+                return DataManager.ClassDict(c, g)[idx].Schedule;
             }
-            (DayOfWeek Day, int Hour)[] schedule = GetSchedule(code, number);
+            (DayOfWeek Day, int Hour)[] schedule = GetSchedule(code, grade, number);
             foreach (Class cls in _schedule)
             {
-                (DayOfWeek Day, int Hour)[] existingSchedule = GetSchedule(cls.Code, cls.Number);
+                (DayOfWeek Day, int Hour)[] existingSchedule = GetSchedule(cls.Code, cls.Grade, cls.Number);
                 foreach ((DayOfWeek Day, int Hour) time in schedule)
                 {
                     if (existingSchedule.Contains(time))
@@ -45,26 +43,17 @@ namespace KSAGrinder.ValueConverters
 
         public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value[0] is string code && value[1] is int number)
+            if (value[0] is string code && value[1] is int grade && value[2] is int number)
             {
                 foreach (Class @class in _schedule)
                 {
-                    if (@class.Code == code && @class.Number == number)
+                    if ((@class.Code, @class.Grade, @class.Number) == (code, grade, number))
                         return Brushes.LightGray;
                 }
 
-                bool overlap = DoesOverlapIfAdded(code, number);
-                DataRow classRow = null;
-                foreach (DataRow row in _classTable.Rows)
-                {
-                    if (row[_classTable.Columns["Code"]].Equals(code) && row[_classTable.Columns["Number"]].Equals(number))
-                    {
-                        classRow = row;
-                        break;
-                    }
-                }
+                bool overlap = DoesOverlapIfAdded(code, grade, number);
+                bool hasNote = !String.IsNullOrEmpty(DataManager.GetClass(code, grade, number).Note);
 
-                bool hasNote = classRow != null && !String.IsNullOrEmpty((string)classRow[_classTable.Columns["Note"]]);
                 if (overlap && hasNote)
                     return Brushes.PaleVioletRed;
                 if (overlap && !hasNote)

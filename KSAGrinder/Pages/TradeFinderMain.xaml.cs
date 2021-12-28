@@ -56,8 +56,8 @@ namespace KSAGrinder.Pages
             {
                 if (MaxLectureMoves >= 3)
                     return "4 이상으로 탐색 넓이를 설정하면\n탐색 시간이 극도로 길어질 수 있습니다!";
-                else if (MaxDepth >= 4)
-                    return "4 이상으로 탐색 깊이를 설정하면\n탐색 시간이 극도로 길어질 수 있습니다!";
+                else if (MaxDepth >= 3)
+                    return "3 이상으로 탐색 깊이를 설정하면\n탐색 시간이 극도로 길어질 수 있습니다!";
                 return "탐색하는 동안\n1) CPU를 크게 점유해 전력 소모가 증가하고\n"
                     + "2) 메모리(RAM)를 일부 점유하며 따라서\n"
                     + "3) 다른 프로그램의 성능이 저하될 수 있습니다.";
@@ -72,22 +72,22 @@ namespace KSAGrinder.Pages
                 int total = LecturesToMove.Count;
                 var res = $"총 {selected}/{total}개 강의 선택됨{Environment.NewLine}";
                 if (selected < total)
-                    res += $"{total - selected}개 강의는 탐색 및 유효성 검사에서 무시됩니다.";
+                    res += $"{total - selected}개 강의는 탐색에서 무시됩니다.";
                 else
-                    res += $"완벽히 유효한 트레이드만 탐색합니다.";
+                    res += $"모든 강의를 탐색에 고려합니다.";
                 return res;
             }
         }
 
         private readonly ICommand _showDetail = new DelegateCommand<ReadOnlyCollection<ClassMove>>(ShowDetail);
-        //private readonly ICommand _showDetail = new DelegateCommand<object>(TestMethod);
+
         public ICommand ShowDetailCommand => _showDetail;
 
         private readonly ObservableCollection<ReadOnlyCollection<ClassMove>> _tradeList = new ObservableCollection<ReadOnlyCollection<ClassMove>>();
         public ObservableCollection<ReadOnlyCollection<ClassMove>> TradeList => _tradeList;
 
-        // lecture code => bool
-        public readonly Dictionary<string, bool> LecturesToMove = new Dictionary<string, bool>();
+        // (code, grade) => bool
+        public readonly Dictionary<(string, int), bool> LecturesToMove = new Dictionary<(string, int), bool>();
 
         public TradeFinderMain(TradeFinder main, string studentId, Schedule schedule)
         {
@@ -98,9 +98,9 @@ namespace KSAGrinder.Pages
             List<Class> originalSchedule = DataManager.GetScheduleFromStudentID(StudentId).ToList();
             foreach (Class targetClass in _schedule)
             {
-                int index = originalSchedule.FindIndex(cls => cls.Code == targetClass.Code);
+                int index = originalSchedule.FindIndex(cls => cls.Code == targetClass.Code && cls.Grade == targetClass.Grade);
                 if (index < 0 || originalSchedule[index].Number == targetClass.Number) continue;
-                LecturesToMove.Add(targetClass.Code, true);
+                LecturesToMove[(targetClass.Code, targetClass.Grade)] = true;
             }
             _classSelection = new ClassSelection(_main, this);
             UpdateSelectionMessage();
@@ -117,18 +117,19 @@ namespace KSAGrinder.Pages
                 List<Class> targetSchedule = _schedule.ToList();
                 foreach (var pair in LecturesToMove)
                 {
-                    (string lectureCode, bool willMove) = (pair.Key, pair.Value);
+                    ((string code, int grade), bool willMove) = (pair.Key, pair.Value);
                     if (!willMove) continue;
                     tradeCapture.Add(new ClassMove(
                         StudentId,
-                        lectureCode,
-                        originalSchedule.Find(cls => cls.Code == lectureCode).Number,
-                        targetSchedule.Find(cls => cls.Code == lectureCode).Number));
+                        code,
+                        grade,
+                        originalSchedule.Find(cls => cls.Code == code && cls.Grade == grade).Number,
+                        targetSchedule.Find(cls => cls.Code == code && cls.Grade == grade).Number));
                 }
                 GenerateClassMoves(new[] { (StudentId, new Schedule(tradeCapture.GetScheduleOf(StudentId))) }, tradeCapture, 0, MaxDepth, ProcessResult);
                 if (_cts == null || !_cts.IsCancellationRequested)
                 {
-                    MessageBox.Show("탐색이 종료되었습니다.");
+                    MessageBox.Show("탐색이 종료되었습니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
                     Dispatcher.Invoke(() => SetComponentStatus(working: false));
                 }
             }
@@ -156,6 +157,24 @@ namespace KSAGrinder.Pages
             SetComponentStatus(working: false);
         }
 
+        private void BtnSelect_Click(object sender, RoutedEventArgs e)
+        {
+            _main.Main.Navigate(_classSelection);
+        }
+
+        private void BtnSort_Click(object sender, RoutedEventArgs e)
+        {
+            int GetNStudentsInvolved(IEnumerable<ClassMove> moves)
+                => moves.Select(move => move.StudentId).ToHashSet().Count();
+
+            var sorted = TradeList.ToList();
+            sorted.Sort((a, b) => GetNStudentsInvolved(a) - GetNStudentsInvolved(b));
+            TradeList.Clear();
+            foreach (var move in sorted)
+                TradeList.Add(move);
+            BtnSort.IsEnabled = false;
+        }
+
         private readonly object _processResultLock = new object();
         private void ProcessResult(TradeCapture moves)
         {
@@ -172,7 +191,7 @@ namespace KSAGrinder.Pages
 
         private void GenerateClassMoves(
             IEnumerable<(string StudentId, Schedule Schedule)> targets,
-            Components.TradeCapture tradeCapture,
+            TradeCapture tradeCapture,
             int depth,
             int maxDepth,
             ProcessResultDelegate processResult,
@@ -180,21 +199,22 @@ namespace KSAGrinder.Pages
             int numThreads = 4)
         {
             if (tradeCapture.DoesFormTrade() &&
-                targets.All(tuple => tuple.Schedule.Equals(tradeCapture.GetScheduleOf(tuple.StudentId))) &&
-                tradeCapture.AreAllSchedulesValid(LecturesToMove.Values.All(b => b) ? null : StudentId))
+                targets.All(tuple => tuple.Schedule.Equals(tradeCapture.GetScheduleOf(tuple.StudentId)))) //&&
+                //tradeCapture.AreAllSchedulesValid(LecturesToMove.Values.All(b => b) ? null : StudentId))
             {
                 bool okay = true;
-                foreach ((var studentId, var schedule) in tradeCapture.GetCapturedSchedules())
-                {
-                    IEnumerable<Class> toCheckValid = schedule;
-                    if (studentId == StudentId)
-                        toCheckValid = toCheckValid.Where(cls => !LecturesToMove.ContainsKey(cls.Code) || LecturesToMove[cls.Code]);
-                    if (!Schedule.CheckValid(toCheckValid))
-                    {
-                        okay = false;
-                        break;
-                    }
-                }
+                //foreach ((var studentId, var schedule) in tradeCapture.GetCapturedSchedules())
+                //{
+                //    IEnumerable<Class> toCheckValid = schedule;
+                //    if (studentId == StudentId)
+                //        toCheckValid = toCheckValid.Where(cls
+                //            => !LecturesToMove.ContainsKey((cls.Code, cls.Grade)) || LecturesToMove[(cls.Code, cls.Grade)]);
+                //    if (!Schedule.CheckValid(toCheckValid))
+                //    {
+                //        okay = false;
+                //        break;
+                //    }
+                //}
                 if (okay)
                 {
                     processResult(tradeCapture);
@@ -206,7 +226,7 @@ namespace KSAGrinder.Pages
 
             if (depth >= maxDepth) return;
 
-            List<List<(ClassMove, Schedule)>> sequences = new List<List<(ClassMove, Schedule)>>();
+            var sequences = new List<List<(IEnumerable<ClassMove>, Schedule)>>();
             long card = 1;
             foreach ((ClassMove head, ClassMove tail) in tradeCapture.HeadTailTuplesOfNoncycles())
             //foreach (ClassMove tail in tradeCapture.TailsOfNonCycles())
@@ -214,25 +234,34 @@ namespace KSAGrinder.Pages
                 if (_cts.IsCancellationRequested) return;
 
                 // have to make a new class move from tailMove.NumberTo
-                int numberOfClasses = DataManager.NumberOfClasses(tail.LectureCode);
+                int numberOfClasses = DataManager.GetTheNumberOfClasses(tail.Code, tail.Grade);
                 // Class numbers already targeted (move.ToNumber of some move of tailMove.LectureCode)
-                IEnumerable<int> numbersInvolved = from move in tradeCapture where move.LectureCode == tail.LectureCode select move.NumberTo;
+                IEnumerable<int> numbersInvolved = from move in tradeCapture
+                                                   where (move.Code, move.Grade) == (tail.Code, tail.Grade)
+                                                   select move.NumberTo;
                 IEnumerable<string> studentsInvolved = tradeCapture.InvolvedStudents();
-                List<(ClassMove, Schedule)> currentList = new List<(ClassMove, Schedule)>();
+                var currentList = new List<(IEnumerable<ClassMove>, Schedule)>();
 
                 // For each class numbers of tailMove.LectureCode but not involved
-                //foreach (int numberTo in RangeWithPreference(numberOfClasses, head.NumberFrom).Except(numbersInvolved))
-                foreach (int numberTo in Enumerable.Range(1, numberOfClasses).Except(numbersInvolved))
+                foreach (int numberTo in RangeWithPreference(numberOfClasses, head.NumberFrom).Except(numbersInvolved))
+                //foreach (int numberTo in Enumerable.Range(1, numberOfClasses).Except(numbersInvolved))
                 {
+
                     // For each students in (tailMove.LectureCode, tailMove.NumberTo) but not in targets
-                    foreach (string studentId in tradeCapture.GetEnrollListOf(tail.LectureCode, tail.NumberTo).Except(studentsInvolved))
+                    foreach (string studentId in tradeCapture.GetEnrollListOf(tail.Code, tail.Grade, tail.NumberTo).Except(studentsInvolved))
                     {
+                        if (_cts.IsCancellationRequested) return;
                         Schedule schedule = new Schedule(tradeCapture.GetScheduleOf(studentId));
-                        schedule.MoveClass(tail.LectureCode, numberTo);
-                        IEnumerable<Schedule> options = schedule.Combination(tradeCapture.InvolvedLecturesOf(studentId).Append(tail.LectureCode), MaxLectureMoves, false);
+                        schedule.MoveClass(tail.Code, tail.Grade, numberTo);
+                        var thisMove = new ClassMove(studentId, tail.Code, tail.Grade, tail.NumberTo, numberTo);
+                        IEnumerable<Schedule> options = schedule.Combination(
+                            tradeCapture.InvolvedLecturesOf(studentId)
+                                        .Append((tail.Code, tail.Grade)),
+                            MaxLectureMoves,
+                            true);
                         foreach (Schedule option in options)
                         {
-                            (ClassMove, Schedule) toAdd = (new ClassMove(studentId, tail.LectureCode, tail.NumberTo, numberTo), option);
+                            (IEnumerable<ClassMove>, Schedule) toAdd = (Schedule.Difference(studentId, schedule, option).Append(thisMove), option);
                             if (option.IsValid) currentList.Insert(0, toAdd);
                             else currentList.Add(toAdd);
                         }
@@ -246,44 +275,77 @@ namespace KSAGrinder.Pages
 
             if (_cts.IsCancellationRequested) return;
 
-            void ProcessBatch(IEnumerable<IEnumerable<(ClassMove, Schedule)>> batch)
+            void ProcessBatch(IEnumerable<IEnumerable<(IEnumerable<ClassMove>, Schedule)>> batch)
             {
-                Components.TradeCapture localTradeCapture = tradeCapture.Clone();
-                int originalNumMoves = localTradeCapture.Count;
-                List<IEnumerable<ClassMove>> result = new List<IEnumerable<ClassMove>>();
-                foreach (IEnumerable<(ClassMove, Schedule)> optionsToTry in batch)
+                //int originalNumMoves = localTradeCapture.Count;
+                //List<IEnumerable<ClassMove>> result = new List<IEnumerable<ClassMove>>();
+                foreach (var optionToTry in batch)
                 {
+                    var validOptionToTry = MakeValid(optionToTry);
+                    if (validOptionToTry == null) continue;
+
+                    TradeCapture localTradeCapture = tradeCapture.Clone();
                     bool good = true;
                     List<(string, Schedule)> targetsToAdd = new List<(string, Schedule)>();
-                    foreach ((ClassMove move, Schedule option) in optionsToTry)
+                    foreach ((IEnumerable<ClassMove> moves, Schedule option) in validOptionToTry)
                     {
                         try
                         {
-                            localTradeCapture.Add(move);
+                            foreach (var move in moves)
+                                localTradeCapture.Add(move);
                         }
-                        catch (TradeInvalidException)
+                        catch (TradeInvalidException e)
                         {
                             Debug.WriteLine("Bad move.");
                             good = false; break;
                         }
-                        targetsToAdd.Add((move.StudentId, option));
+                        targetsToAdd.Add((moves.First().StudentId, option));
                     }
-                    if (!good) continue;
-                    //Debug.Assert(!targetsToAdd.Intersect(targets).Any());
-                    //await foreach (IEnumerable<ClassMove> moves in GenerateClassMoves(targets.Concat(targetsToAdd), localTradeCapture, depth + 1, maxDepth))
-                    //{
-                    //    result.Add(moves);
-                    //}
+                    if (!good)
+                    {
+                        continue;
+                    }
                     int dummy = localTradeCapture.Count;
                     GenerateClassMoves(targets.Concat(targetsToAdd), localTradeCapture, depth + 1, maxDepth, processResult);
                     Debug.Assert(dummy == localTradeCapture.Count);
-                    localTradeCapture.Pop(localTradeCapture.Count - originalNumMoves);
+                    //localTradeCapture.Pop(localTradeCapture.Count - originalNumMoves);
                 }
+            }
+
+            IEnumerable<(IEnumerable<ClassMove>, Schedule)> MakeValid(IEnumerable<(IEnumerable<ClassMove> Moves, Schedule Schedule)> option)
+            {
+                var res = new List<(IEnumerable<ClassMove>, Schedule)>();
+                var optionArr = option.ToArray();
+
+                for (int i = 0; i < optionArr.Length; i++)
+                {
+                    bool overlapping = false;
+                    for (int j = 0; j < i; j++)
+                    {
+                        var std1 = optionArr[i].Moves.First().StudentId;
+                        var std2 = optionArr[j].Moves.First().StudentId;
+                        if (std1 != std2) continue;
+                        var moves1 = optionArr[i].Moves.ToHashSet();
+                        var moves2 = optionArr[j].Moves.ToHashSet();
+                        if (moves1.SetEquals(moves2))
+                        {
+                            overlapping = true;
+                            break;
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                    if (!overlapping)
+                        res.Add(optionArr[i]);
+                }
+                return res;
             }
 
             numThreads = (int)Math.Min(Math.Ceiling((double)card / batchSize), numThreads);
             Task[] tasks = new Task[numThreads];
-            foreach (IEnumerable<IEnumerable<(ClassMove, Schedule)>> batch in sequences.CartesianProduct().Batch(batchSize))
+            foreach (var batch in sequences.CartesianProduct().Batch(batchSize))
             {
                 // Break so that the left tasks to be executed.
                 if (_cts.IsCancellationRequested)
@@ -305,15 +367,7 @@ namespace KSAGrinder.Pages
                 }
             }
 
-            Task.WaitAll(tasks);
-            //try
-            //{
-            //    Task.WaitAll(tasks);
-            //}
-            //catch (Exception)
-            //{
-            //    MessageBox.Show("탐색 도중 오류가 발생해 중단했습니다. 모든 경우를 탐색해지 못했을 수 있습니다.", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
-            //}
+            Task.WaitAll(tasks.Where(t => t != null).ToArray());
         }
 
         /// <summary>
@@ -358,7 +412,7 @@ namespace KSAGrinder.Pages
                 sb.AppendLine($"{group.Key} {name}{eunneun}");
                 foreach (ClassMove move in group)
                 {
-                    sb.AppendLine($"\t{DataManager.NameOfLectureFromCode(move.LectureCode)} {move.NumberFrom}분반에서 {move.NumberTo}분반으로");
+                    sb.AppendLine($"\t{DataManager.GetNameOfLectureFromCode(move.Code)} {move.NumberFrom}분반에서 {move.NumberTo}분반으로");
                 }
                 instructionsForGroup.Add(sb.ToString().Replace("\0", ""));
             }
@@ -376,15 +430,11 @@ namespace KSAGrinder.Pages
                 BtnFind.IsEnabled = !working;
                 BtnStop.IsEnabled = working;
                 BtnSelect.IsEnabled = !working;
+                BtnSort.IsEnabled = !working;
             }
         }
 
-        private void BtnSelect_Click(object sender, RoutedEventArgs e)
-        {
-            _main.Main.Navigate(_classSelection);
-        }
-
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        public void StopWorking()
         {
             if (_thread != null && _thread.IsAlive)
             {

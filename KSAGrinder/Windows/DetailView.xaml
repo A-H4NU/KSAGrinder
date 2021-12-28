@@ -7,10 +7,10 @@
         mc:Ignorable="d"
         Title="세부 정보" Height="600" Width="400">
     <Grid>
-        <DockPanel Margin="10">
+        <DockPanel Margin="10,10,10,0">
             <UniformGrid DockPanel.Dock="Top" Rows="1" Columns="2" Margin="0,0,0,10">
-                <Button x:Name="BtnZoomOut" Content="축소" Margin="0,0,5,0" Click="BtnZoomOut_Click"/>
-                <Button x:Name="BtnZoomIn" Content="확대" Margin="5,0,0,0" Click="BtnZoomIn_Click"/>
+                <Button x:Name="BtnZoomOut" Content="축소" Padding="0,2.5,0,2.5" Margin="0,0,5,0" Click="BtnZoomOut_Click"/>
+                <Button x:Name="BtnZoomIn" Content="확대" Padding="0,2.5,0,2.5" Margin="5,0,0,0" Click="BtnZoomIn_Click"/>
             </UniformGrid>
             <Label DockPanel.Dock="Bottom" Content="드래그해서 복사할 수 있습니다." HorizontalContentAlignment="Center"/>
             <TextBox x:Name="TxtDetail" DockPanel.Dock="Top" FontSize="16" Margin="0,0,0,5" IsReadOnly="True"/>

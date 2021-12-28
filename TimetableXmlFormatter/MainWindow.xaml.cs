@@ -135,7 +135,8 @@ namespace TimetableXmlFormatter
             var lectureColumns = new (string Name, Type Type, int Index)[]
             {
                 ("Code", typeof(string), 3), // this must be first
-                ("Name", typeof(string), 6), // this must be second
+                ("Name", typeof(string), 6), // this must be second,
+                ("Grade", typeof(int), 7), // this must be third
                 ("Department", typeof(string), 4),
                 ("Credit", typeof(int), 12),
                 ("Hours", typeof(int), 13),
@@ -143,6 +144,7 @@ namespace TimetableXmlFormatter
             var classColumns = new (string Name, Type Type, int Index)[]
             {
                 ("Code", typeof(string), 3),
+                ("Grade", typeof(int), 7),
                 ("Number", typeof(int), 8),
                 ("Teacher", typeof(string), 9),
                 ("Time", typeof((DayOfWeek day, int hour)[]), 10),
@@ -156,7 +158,7 @@ namespace TimetableXmlFormatter
                 lectureTable.Columns.Add(name, type);
             }
 
-            lectureTable.PrimaryKey = new DataColumn[] { lectureTable.Columns["Code"] };
+            lectureTable.PrimaryKey = new DataColumn[] { lectureTable.Columns["Code"], lectureTable.Columns["Grade"] };
 
             var classTable = new DataTable("Class");
             foreach ((string name, Type type, int _) in classColumns)
@@ -164,19 +166,24 @@ namespace TimetableXmlFormatter
                 classTable.Columns.Add(name, type);
             }
 
-            var lectures = new Dictionary<string, string>(); // lecture name => code
+            var lectureNameToCode = new Dictionary<string, string>(); // lecture name => code
+            var lectureCodeGradeSet = new HashSet<(string Code, int Grade)>();
             using (var fs = new FileStream(classCSVpath, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (var sr = new StreamReader(fs))
             {
-                sr.ReadLine(); // skip column headers
+                sr.ReadLine(); // skip headers
                 while (!sr.EndOfStream)
                 {
                     string[] values = sr.ReadLine().Split(',');
                     string code = values[lectureColumns[0].Index];
                     string name = values[lectureColumns[1].Index];
-                    if (!lectures.ContainsValue(code)) // if the lecture is read first time
+                    int grade = Int32.Parse(values[lectureColumns[2].Index]);
+
+                    // Lecture
+                    lectureNameToCode[name] = code;
+                    if (!lectureCodeGradeSet.Contains((code, grade)))
                     {
-                        lectures.Add(name, code);
+                        lectureCodeGradeSet.Add((code, grade));
                         string[] lectureData = new string[lectureColumns.Length];
                         for (int i = 0; i < lectureData.Length; ++i)
                         {
@@ -187,6 +194,8 @@ namespace TimetableXmlFormatter
                         }
                         lectureTable.Rows.Add(lectureData);
                     }
+                    
+                    // Class
                     object[] classData = new object[classColumns.Length];
                     for (int i = 0; i < classData.Length; ++i)
                     {
@@ -194,18 +203,11 @@ namespace TimetableXmlFormatter
                         Type type = classColumns[i].Type;
                         object datum;
                         if (type == typeof(string))
-                        {
                             datum = value;
-                        }
                         else if (type == typeof(int))
-                        {
                             datum = Int32.Parse(value);
-                        }
                         else
-                        {
                             datum = ConvertToTimes(value);
-                        }
-
                         classData[i] = datum;
                     }
                     classTable.Rows.Add(classData);
@@ -221,7 +223,7 @@ namespace TimetableXmlFormatter
             {
                 new DataColumn("ID", typeof(string)),
                 new DataColumn("Name", typeof(string)),
-                new DataColumn("Applied", typeof((string Code, int Number)[])),
+                new DataColumn("Applied", typeof((string Code, int Grade, int Number)[])),
             });
             studentTable.PrimaryKey = new DataColumn[] { studentTable.Columns["ID"] };
 
@@ -230,57 +232,50 @@ namespace TimetableXmlFormatter
 
             void ProcessStudentFile(string path)
             {
-                // indices of the first occurences of lecture names (on stdCSVpath1)
-                var firstIndex = new Dictionary<int, string>(); // (index, lecture name)
+                // indices of the first occurences of lecture names (on path)
+                //var firstIndex = new Dictionary<int, string>(); // (index, lecture name)
                 var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
                 var sr = new StreamReader(fs);
                 string[] firstRow = sr.ReadLine().Split(',');
-                for (int i = 1; i < firstRow.Length; ++i)
-                {
-                    string lectureName = GetUntilOrEntire(firstRow[i], "(");
-                    if (firstIndex.ContainsValue(lectureName))
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        firstIndex.Add(i, lectureName);
-                    }
-                }
+                //for (int i = 1; i < firstRow.Length; ++i)
+                //{
+                //    string lectureName = GetUntilOrEntire(firstRow[i], "(");
+                //    if (firstIndex.ContainsValue(lectureName))
+                //        continue;
+                //    else
+                //        firstIndex.Add(i, lectureName);
+                //}
                 sr.ReadLine();
                 while (!sr.EndOfStream)
                 {
                     string[] line = sr.ReadLine().Split(',');
                     if (line[0].Length == 0 || line[0][0] < '0' || line[0][0] > '9')
-                    {
                         continue;
-                    }
 
                     string id = GetUntilOrEntire(line[0], "(");
                     string name = GetUntilOrEntire(line[0].Substring(id.Length + 1), ")");
 
-                    HashSet<(string Code, int Number)> applied;
+                    HashSet<(string Code, int Grade, int Number)> applied;
                     if (idToRow.ContainsKey(id))
                     {
-                        applied = new HashSet<(string Code, int Number)>(idToRow[id][2] as (string Code, int Number)[]);
+                        applied = new HashSet<(string Code, int Grade, int Number)>(idToRow[id][2] as (string Code, int Grade, int Number)[]);
                         idToRow.Remove(id);
                     }
                     else
                     {
-                        applied = new HashSet<(string Code, int Number)>();
+                        applied = new HashSet<(string Code, int Grade, int Number)>();
                     }
 
                     for (int i = 1; i < line.Length; ++i)
                     {
                         if (line[i] != "1" || !firstRow[i].Contains("_"))
-                        {
                             continue;
-                        }
 
                         string[] @class = firstRow[i].Split('_');
-                        string code = lectures[@class[0].Substring(0, @class[0].LastIndexOf('('))];
+                        string code = lectureNameToCode[@class[0].Substring(0, @class[0].LastIndexOf('('))];
+                        int grade = Int32.Parse(GetUntilOrEntire(@class[0].Substring(@class[0].LastIndexOf('(') + 1), ")"));
                         int classNum = Int32.Parse(@class[1]);
-                        applied.Add((code, classNum));
+                        applied.Add((code, grade, classNum));
                     }
                     idToRow[id] = new object[] { id, name, applied.ToArray() };
                 }

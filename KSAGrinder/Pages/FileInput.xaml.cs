@@ -28,7 +28,7 @@ namespace KSAGrinder.Pages
             _main = main;
         }
 
-        public static void ClearSettings()
+        public static void ClearLastFileSettings()
         {
             Settings.Default.LastDataset = null;
             Settings.Default.LastFile = null;
@@ -39,9 +39,9 @@ namespace KSAGrinder.Pages
         {
             OpenFileDialog ofd = new OpenFileDialog
             {
-                Title = "제공된 파일을 선택하세요.",
+                //Title = "제공된 데이터셋을 선택하세요.",
                 Filter = "Dataset files (*.ds)|*.ds"
-            };
+            };                
             if (ofd.ShowDialog() == true)
             {
                 if (TryUnzip(ofd.FileName, out DataSet result, out string hash))
@@ -156,13 +156,28 @@ namespace KSAGrinder.Pages
             e.Handled = true;
         }
 
+        private void Hyperlink_RequestNavigate_Icon(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            DetailView copyright = new DetailView(
+                Properties.Resources.ResourceManager.GetString("IconCopyright"),
+                "아이콘",
+                TextWrapping.WrapWithOverflow);
+            copyright.ShowDialog();
+            e.Handled = true;
+        }
+
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             if (File.Exists(Settings.Default.LastDataset))
             {
                 if (File.Exists(Settings.Default.LastFile))
                 {
-                    MessageBoxResult messageResult = MessageBox.Show("마지막으로 연 \"저장본\"을 다시 여시겠습니까?", "마지막으로 연 저장본", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    MessageBoxResult messageResult = MessageBox.Show(
+                        $"마지막으로 연 \"저장본\"을 다시 여시겠습니까?{Environment.NewLine}{Environment.NewLine}" +
+                            $"{Path.GetFileName(Settings.Default.LastFile)}",
+                        "마지막으로 연 저장본",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
                     if (messageResult == MessageBoxResult.Yes)
                     {
                         if (TryUnzip(Settings.Default.LastDataset, out DataSet result, out string hash))
@@ -173,17 +188,22 @@ namespace KSAGrinder.Pages
                         else
                         {
                             MessageBox.Show("데이터셋을 불러오든 데 실패했습니다!", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
-                            ClearSettings();
+                            ClearLastFileSettings();
                         }
                     }
                     else
                     {
-                        ClearSettings();
+                        ClearLastFileSettings();
                     }
                 }
                 else
                 {
-                    MessageBoxResult messageResult = MessageBox.Show("마지막으로 연 \"데이터셋\"을 다시 여시겠습니까?", "마지막으로 연 데이터셋", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    MessageBoxResult messageResult = MessageBox.Show(
+                        $"마지막으로 연 \"데이터셋\"을 다시 여시겠습니까?{Environment.NewLine}{Environment.NewLine}" +
+                            $"{Path.GetFileName(Settings.Default.LastDataset)}",
+                        "마지막으로 연 데이터셋",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
                     if (messageResult == MessageBoxResult.Yes)
                     {
                         if (TryUnzip(Settings.Default.LastDataset, out DataSet result, out string hash))
@@ -194,12 +214,12 @@ namespace KSAGrinder.Pages
                         else
                         {
                             MessageBox.Show("데이터셋을 불러오든 데 실패했습니다!", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
-                            ClearSettings();
+                            ClearLastFileSettings();
                         }
                     }
                     else
                     {
-                        ClearSettings();
+                        ClearLastFileSettings();
                     }
                 }
             }

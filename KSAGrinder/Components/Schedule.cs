@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace KSAGrinder.Components
 {
@@ -88,24 +89,24 @@ namespace KSAGrinder.Components
             schedule.AddRange(_classList);
         }
 
-        public bool MoveClass(string lectureCode, int number)
+        public bool MoveClass(string code, int grade, int number)
         {
-            int index = _classList.FindIndex(cls => cls.Code == lectureCode);
+            int index = _classList.FindIndex(cls => cls.Code == code && cls.Grade == grade);
             if (index == -1) return false;
-            _classList[index] = DataManager.GetClass(lectureCode, number);
+            _classList[index] = DataManager.GetClass(code, grade, number);
             return true;
         }
 
         /// <summary>
         /// Returns the number of a lecture
         /// </summary>
-        /// <param name="lectureCode">A lecture code to find its number</param>
+        /// <param name="code">A lecture code to find its number</param>
         /// <returns>The class number; -1 when it is not found</returns>
-        public int GetClassNumber(string lectureCode)
+        public int GetClassNumber(string code, int grade)
         {
             foreach (Class @class in _classList)
             {
-                if (@class.Code == lectureCode)
+                if (@class.Code == code && @class.Grade == grade)
                     return @class.Number;
             }
             return -1;
@@ -170,7 +171,7 @@ namespace KSAGrinder.Components
                 {
                     foreach (Class cls2 in _classList)
                     {
-                        if (cls1.Code == cls2.Code)
+                        if ((cls1.Code, cls1.Grade) == (cls2.Code, cls2.Grade))
                         {
                             if (cls1.Number != cls2.Number)
                                 ++count;
@@ -215,44 +216,46 @@ namespace KSAGrinder.Components
             return true;
         }
 
-        public IEnumerable<Schedule> Combination(IEnumerable<string> pinnedLectures = null, int maxMove = -1, bool onlyValid = true)
+        public IEnumerable<Schedule> Combination(IEnumerable<(string, int)> pinnedLectures = null, int maxMove = -1, bool onlyValid = true)
         {
-            if (pinnedLectures == null) pinnedLectures = Enumerable.Empty<string>();
+            if (pinnedLectures == null) pinnedLectures = Enumerable.Empty<(string, int)>();
             if (maxMove == 0)
             {
                 yield return this;
                 yield break;
             }
 
-            Dictionary<string, int> codeToIndex = Enumerable.Range(0, _classList.Count).ToDictionary(i => _classList[i].Code);
-            string[] notPinnedLectures = _classList.Select(@class => @class.Code).Except(pinnedLectures).ToArray();
+            Dictionary<(string, int), int> lectureToIndex = Enumerable.Range(0, _classList.Count)
+                                                                      .ToDictionary(i => (_classList[i].Code, _classList[i].Grade));
+            (string, int)[] notPinnedLectures = _classList.Select(@class => (@class.Code, @class.Grade)).Except(pinnedLectures).ToArray();
             int n_notPinned = notPinnedLectures.Length;
             if (maxMove < 0 || maxMove > n_notPinned) maxMove = n_notPinned;
-            int[] currentNumbersNotPinned = notPinnedLectures.Select(code => _classList[codeToIndex[code]].Number).ToArray();
+            int[] currentNumbersNotPinned = notPinnedLectures.Select(tuple => _classList[lectureToIndex[(tuple.Item1, tuple.Item2)]].Number).ToArray();
 
-            IEnumerable<Class> GenerateScheduleFromCombination(string[] lecturesToMoveAsCode, int[] combination)
+            IEnumerable<Class> GenerateScheduleFromCombination((string, int)[] lecturesToMove, int[] combination)
             {
                 int index = 0;
                 Class[] classesOfSchedule = new Class[_classList.Count];
                 for (int i = 0; i < _classList.Count; i++)
                 {
-                    string lectureCode = _classList[i].Code;
-                    yield return lecturesToMoveAsCode.Contains(lectureCode) ? DataManager.GetClass(lectureCode, combination[index++]) : _classList[i];
+                    string code = _classList[i].Code;
+                    int grade = _classList[i].Grade;
+                    yield return lecturesToMove.Contains((code, grade)) ? DataManager.GetClass(code, grade, combination[index++]) : _classList[i];
                 }
             }
 
             foreach (IEnumerable<int> lecturesToMove in Enumerable.Range(0, n_notPinned).GetCombsFromZeroToK(maxMove))
             {
-                string[] lecturesToMoveAsCode = lecturesToMove.Select(i => notPinnedLectures[i]).ToArray();
-                IEnumerable<IEnumerable<int>> sequences = lecturesToMoveAsCode.Select(lectureCode =>
+                (string, int)[] lecturesToMoveAsCodeGrade = lecturesToMove.Select(i => notPinnedLectures[i]).ToArray();
+                IEnumerable<IEnumerable<int>> sequences = lecturesToMoveAsCodeGrade.Select(tuple =>
                 {
-                    IEnumerable<int> allNumbers = Enumerable.Range(1, DataManager.NumberOfClasses(lectureCode));
-                    return allNumbers.Except(new int[] { _classList[codeToIndex[lectureCode]].Number });
+                    IEnumerable<int> allNumbers = Enumerable.Range(1, DataManager.GetTheNumberOfClasses(tuple.Item1, tuple.Item2));
+                    return allNumbers.Except(new int[] { _classList[lectureToIndex[tuple]].Number });
                 }); // sequences.Count() == lecturesToMove.Count()
                 IEnumerable<int[]> combinations = sequences.CartesianProduct().Select(i => i.ToArray()); // dim(combinations)[1] == lecturesToMove.Count()
                 foreach (int[] combination in combinations)
                 {
-                    IEnumerable<Class> schedule = GenerateScheduleFromCombination(lecturesToMoveAsCode, combination);
+                    IEnumerable<Class> schedule = GenerateScheduleFromCombination(lecturesToMoveAsCodeGrade, combination);
                     if (onlyValid)
                     {
                         if (CheckValid(schedule, out Schedule result))
@@ -266,7 +269,18 @@ namespace KSAGrinder.Components
             }
         }
 
-
+        public static IEnumerable<ClassMove> Difference(string studentId, Schedule from, Schedule to)
+        {
+            var res = new List<ClassMove>();
+            var tolist = to.ToList();
+            foreach (var clsFrom in from)
+            {
+                var idx = tolist.FindIndex(cls => cls.Code == clsFrom.Code && cls.Grade == clsFrom.Grade && cls.Number != clsFrom.Number);
+                if (idx != -1)
+                    res.Add(new ClassMove(studentId, clsFrom.Code, clsFrom.Grade, clsFrom.Number, tolist[idx].Number));
+            }
+            return res;
+        }
 
         public override bool Equals(object obj)
         {

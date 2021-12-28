@@ -9,6 +9,7 @@ namespace KSAGrinder.Components
         public Class(
             string name,
             string code,
+            int grade,
             int number,
             string teacher,
             (DayOfWeek Day, int Hour)[] schedule,
@@ -17,6 +18,7 @@ namespace KSAGrinder.Components
         {
             Name = name;
             Code = code;
+            Grade = grade;
             Number = number;
             Teacher = teacher;
             Schedule = schedule;
@@ -37,6 +39,7 @@ namespace KSAGrinder.Components
 
         public string Name { get; }
         public string Code { get; }
+        public int Grade { get; }
         public int Number { get; }
         public string Teacher { get; }
 
@@ -61,6 +64,6 @@ namespace KSAGrinder.Components
 
         public override string ToString() => $"{Code} {Name} {Number}";
 
-        public bool Equals(Class other) => Code == other.Code && Number == other.Number;
+        public bool Equals(Class other) => (Code, Grade, Number) == (other.Code, other.Grade, other.Number);
     }
 }

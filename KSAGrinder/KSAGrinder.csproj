@@ -7,7 +7,11 @@
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <UseWindowsForms>False</UseWindowsForms>
     <PlatformTarget>x64</PlatformTarget>
+    <ApplicationIcon>KSAGrinder.ico</ApplicationIcon>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="KSAGrinder.ico" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="..\.editorconfig">
       <Link>.editorconfig</Link>

@@ -41,18 +41,19 @@ namespace KSAGrinder.Pages
             _main = main;
             _previousPage = previousPage;
 
-            foreach (var lectureCode in previousPage.LecturesToMove.Keys)
+            foreach (var (code, grade) in previousPage.LecturesToMove.Keys)
                 _classCheckBoxes.Add(new ClassCheckBox(
-                    lectureCode,
-                    DataManager.NameOfLectureFromCode(lectureCode),
-                    previousPage.LecturesToMove[lectureCode]));
+                    code,
+                    grade,
+                    DataManager.GetNameOfLectureFromCode(code),
+                    previousPage.LecturesToMove[(code, grade)]));
         }
 
         private void BtnConfirm_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var classCheckBox in _classCheckBoxes)
+            foreach (var ccb in _classCheckBoxes)
             {
-                _previousPage.LecturesToMove[classCheckBox.Code] = classCheckBox.IsChecked;
+                _previousPage.LecturesToMove[(ccb.Code, ccb.Grade)] = ccb.IsChecked;
             }
             _previousPage.UpdateSelectionMessage();
             _main.Main.Navigate(_previousPage);
@@ -60,18 +61,20 @@ namespace KSAGrinder.Pages
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var classCheckBox in _classCheckBoxes)
+            foreach (var ccb in _classCheckBoxes)
             {
-                classCheckBox.IsChecked = _previousPage.LecturesToMove[classCheckBox.Code];
+                ccb.IsChecked = _previousPage.LecturesToMove[(ccb.Code, ccb.Grade)];
             }
             _main.Main.Navigate(_previousPage);
         }
 
         public class ClassCheckBox : INotifyPropertyChanged
         {
-
             public event PropertyChangedEventHandler PropertyChanged;
+
             public string Code { get; private set; }
+
+            public int Grade { get; private set; }
 
             public string Name { get; private set; }
 
@@ -86,11 +89,12 @@ namespace KSAGrinder.Pages
                 }
             }
 
-            public ClassCheckBox(string code, string name, bool isChecked)
+            public ClassCheckBox(string code, int grade, string name, bool isChecked)
             {
                 Code = code ?? throw new ArgumentNullException(nameof(code));
                 Name = name ?? throw new ArgumentNullException(nameof(name));
                 _isChecked = isChecked;
+                Grade = grade;
             }
         }
 

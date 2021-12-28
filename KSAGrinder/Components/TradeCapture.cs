@@ -13,13 +13,13 @@ namespace KSAGrinder.Components
     {
         private readonly List<ClassMove> _classMoves;
         private readonly Dictionary<string, Schedule> _capturedSchedules;
-        private readonly Dictionary<(string, int), List<string>> _capturedClassEnrollLists;
+        private readonly Dictionary<(string, int, int), List<string>> _capturedClassEnrollLists;
 
         public TradeCapture()
         {
             _classMoves = new List<ClassMove>();
             _capturedSchedules = new Dictionary<string, Schedule>();
-            _capturedClassEnrollLists = new Dictionary<(string, int), List<string>>();
+            _capturedClassEnrollLists = new Dictionary<(string, int, int), List<string>>();
         }
 
         public TradeCapture(IEnumerable<ClassMove> collection) : this() => AddRange(collection);
@@ -43,19 +43,19 @@ namespace KSAGrinder.Components
         public IReadOnlyCollection<Class> GetScheduleOf(string studentId)
             => PrivateGetScheduleOf(studentId, false).ToList().AsReadOnly();
 
-        public IReadOnlyCollection<string> GetEnrollListOf(string lectureCode, int number)
-            => PrivateGetEnrollListOf(lectureCode, number, false).AsReadOnly();
+        public IReadOnlyCollection<string> GetEnrollListOf(string lectureCode, int grade, int number)
+            => PrivateGetEnrollListOf(lectureCode, grade, number, false).AsReadOnly();
 
         /// <summary>
         ///     List of lecture codes that <paramref name="studentId"/> has a move on.
         /// </summary>
-        public IEnumerable<string> InvolvedLecturesOf(string studentId)
+        public IEnumerable<(string, int)> InvolvedLecturesOf(string studentId)
         {
-            List<string> result = new List<string>();
+            var result = new List<(string, int)>();
             foreach (ClassMove move in _classMoves)
             {
-                if (move.StudentId == studentId && !result.Contains(move.LectureCode))
-                    result.Add(move.LectureCode);
+                if (move.StudentId == studentId && !result.Contains((move.Code, move.Grade)))
+                    result.Add((move.Code, move.Grade));
             }
             return result;
         }
@@ -88,7 +88,7 @@ namespace KSAGrinder.Components
         ///     Regardless of whether the resulting schedules are valid,
         ///     check that the set of moves can be partitioned as sets of trades. (including all k-trades)
         /// </summary>
-        public bool DoesFormTrade() => _classMoves.GroupBy(move => move.LectureCode).All(collection => ClassMove.IsSetOfCycles(collection));
+        public bool DoesFormTrade() => _classMoves.GroupBy(move => move.Code).All(collection => ClassMove.IsSetOfCycles(collection));
 
         /// <summary>
         ///     Get the list of head-tail tuples of maximal simple paths.
@@ -105,7 +105,7 @@ namespace KSAGrinder.Components
         /// </example>
         public IEnumerable<(ClassMove Head, ClassMove Tail)> HeadTailTuplesOfNoncycles()
         {
-            foreach (IGrouping<string, ClassMove> movesOfALecture in _classMoves.GroupBy(move => move.LectureCode))
+            foreach (var movesOfALecture in _classMoves.GroupBy(move => (move.Code, move.Grade)))
             {
                 if (ClassMove.IsSetOfCycles(movesOfALecture)) continue;
 
@@ -149,7 +149,7 @@ namespace KSAGrinder.Components
 
         public IEnumerable<ClassMove> TailsOfNonCycles()
         {
-            foreach (IGrouping<string, ClassMove> movesOfALecture in _classMoves.GroupBy(move => move.LectureCode))
+            foreach (IGrouping<string, ClassMove> movesOfALecture in _classMoves.GroupBy(move => move.Code))
             {
                 if (ClassMove.IsSetOfCycles(movesOfALecture)) continue;
 
@@ -243,9 +243,9 @@ namespace KSAGrinder.Components
             ClassMove last = _classMoves[_classMoves.Count - 1];
             _classMoves.RemoveAt(_classMoves.Count - 1);
 
-            PrivateGetScheduleOf(last.StudentId, false).MoveClass(last.LectureCode, last.NumberFrom);
-            PrivateGetEnrollListOf(last.LectureCode, last.NumberTo, false).Remove(last.StudentId);
-            PrivateGetEnrollListOf(last.LectureCode, last.NumberFrom, false).Add(last.StudentId);
+            PrivateGetScheduleOf(last.StudentId, false).MoveClass(last.Code, last.Grade, last.NumberFrom);
+            PrivateGetEnrollListOf(last.Code, last.Grade, last.NumberTo, false).Remove(last.StudentId);
+            PrivateGetEnrollListOf(last.Code, last.Grade, last.NumberFrom, false).Add(last.StudentId);
 
             return last;
         }
@@ -280,12 +280,12 @@ namespace KSAGrinder.Components
             return res;
         }
 
-        private List<string> PrivateGetEnrollListOf(string lectureCode, int number, bool capture = true)
+        private List<string> PrivateGetEnrollListOf(string lectureCode, int grade, int number, bool capture = true)
         {
-            if (_capturedClassEnrollLists.TryGetValue((lectureCode, number), out List<string> value))
+            if (_capturedClassEnrollLists.TryGetValue((lectureCode, grade, number), out List<string> value))
                 return value;
-            List<string> res = DataManager.GetClass(lectureCode, number).EnrolledList.Clone().ToList();
-            if (capture) _capturedClassEnrollLists[(lectureCode, number)] = res;
+            List<string> res = DataManager.GetClass(lectureCode, grade, number).EnrolledList.Clone().ToList();
+            if (capture) _capturedClassEnrollLists[(lectureCode, grade, number)] = res;
             return res;
         }
 
@@ -295,13 +295,13 @@ namespace KSAGrinder.Components
             // Check that the trade is appliable                                        
             if (!move.IsValid)
                 throw new TradeInvalidException(move, false);
-            if (!PrivateGetEnrollListOf(move.LectureCode, move.NumberFrom).Contains(move.StudentId))
+            if (!PrivateGetEnrollListOf(move.Code, move.Grade, move.NumberFrom).Contains(move.StudentId))
                 throw new TradeInvalidException(move, true);
 
             // Apply the trade
-            PrivateGetScheduleOf(move.StudentId).MoveClass(move.LectureCode, move.NumberTo);
-            PrivateGetEnrollListOf(move.LectureCode, move.NumberFrom).Remove(move.StudentId);
-            PrivateGetEnrollListOf(move.LectureCode, move.NumberTo).Add(move.StudentId);
+            PrivateGetScheduleOf(move.StudentId).MoveClass(move.Code, move.Grade, move.NumberTo);
+            PrivateGetEnrollListOf(move.Code, move.Grade, move.NumberFrom).Remove(move.StudentId);
+            PrivateGetEnrollListOf(move.Code, move.Grade, move.NumberTo).Add(move.StudentId);
         }
     }
 }

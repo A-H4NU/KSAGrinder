@@ -21,9 +21,9 @@ namespace KSAGrinder.Statics
         }
 
         /// <summary>
-        /// correspond a code to a list of classes
+        /// correspond a code-grade tuple to a list of classes
         /// </summary>
-        private static readonly Dictionary<string, List<Class>> _classDict = new Dictionary<string, List<Class>>();
+        private static readonly Dictionary<(string, int), List<Class>> _classDict = new Dictionary<(string, int), List<Class>>();
 
         private static readonly List<Lecture> _lectures = new List<Lecture>();
 
@@ -33,13 +33,13 @@ namespace KSAGrinder.Statics
                 yield return lecture;
         }
 
-        public static bool LectureExists(string code) => _classDict.ContainsKey(code);
+        public static bool LectureExists(string code, int grade) => _classDict.ContainsKey((code, grade));
 
         public static bool StudentExists(string id) => Data.Tables["Student"].Rows.Find(id) != null;
 
-        public static bool ClassExists(string code, int number) => LectureExists(code) && 1 <= number && number <= _classDict[code].Count;
+        public static bool ClassExists(string code, int grade, int number) => LectureExists(code, grade) && 1 <= number && number <= _classDict[(code, grade)].Count;
 
-        public static string NameOfLectureFromCode(string lectureCode) => _classDict[lectureCode][0].Name;
+        public static string GetNameOfLectureFromCode(string code) => _lectures.Find(lecture => lecture.Code == code).Name;
 
         public static DataRow GetClassRow(string code, int number)
         {
@@ -59,17 +59,17 @@ namespace KSAGrinder.Statics
             return classRow;
         }
 
-        public static Class GetClass(string code, int number) => _classDict[code][number - 1];
+        public static Class GetClass(string code, int grade, int number) => _classDict[(code, grade)][number - 1];
 
         public static IEnumerable<Class> GetScheduleFromStudentID(string id)
         {
             DataRow row = Data.Tables["Student"].Rows.Find(id);
             if (row == null) return null;
             DataTable tStudent = Data.Tables["Student"];
-            DataColumn csApplied = tStudent.Columns["Applied"];
+            DataColumn cApplied = tStudent.Columns["Applied"];
 
-            return from tuple in ((string Code, int Number)[])row[csApplied]
-                   select _classDict[tuple.Code][tuple.Number - 1];
+            return from tuple in ((string Code, int Grade, int Number)[])row[cApplied]
+                   select _classDict[(tuple.Code, tuple.Grade)][tuple.Number - 1];
         }
 
         public static string GetNameFromStudentID(string id)
@@ -81,12 +81,12 @@ namespace KSAGrinder.Statics
             return row[cName].ToString();
         }
 
-        public static List<Class> ClassDict(string lectureCode) => _classDict[lectureCode];
+        public static List<Class> ClassDict(string code, int grade) => _classDict[(code, grade)];
 
         /// <summary>
-        ///     Get the number of classes with the lecture code <paramref name="lectureCode"/>
+        ///     Get the number of classes with the lecture code <paramref name="code"/>
         /// </summary>
-        public static int NumberOfClasses(string lectureCode) => ClassDict(lectureCode).Count;
+        public static int GetTheNumberOfClasses(string code, int grade) => ClassDict(code, grade).Count;
 
         private static void InitializeClassDictionary()
         {
@@ -96,44 +96,47 @@ namespace KSAGrinder.Statics
             DataTable tClass = Data.Tables["Class"];
             DataColumn cCode = tClass.Columns["Code"];
             DataColumn cNumber = tClass.Columns["Number"];
+            DataColumn ccGrade = tClass.Columns["Grade"];
             DataColumn cTeacher = tClass.Columns["Teacher"];
             DataColumn cTime = tClass.Columns["Time"];
             DataColumn cNote = tClass.Columns["Note"];
             DataTable tStudent = Data.Tables["Student"];
             DataColumn cApplied = tStudent.Columns["Applied"];
             DataColumn cID = tStudent.Columns["ID"];
-            Dictionary<(string Code, int Number), List<string>> applyDict = new Dictionary<(string Code, int Number), List<string>>();
-            void AddToApplyDict(string code, int number, string student)
+            var applyDict = new Dictionary<(string Code, int Grade, int Number), List<string>>();
+            void AddToApplyDict(string code, int grade, int number, string student)
             {
-                if (applyDict.TryGetValue((code, number), out List<string> list))
+                if (applyDict.TryGetValue((code, grade, number), out List<string> list))
                     list.Add(student);
                 else
-                    applyDict[(code, number)] = new List<string>() { student };
+                    applyDict[(code, grade, number)] = new List<string>() { student };
             }
             foreach (DataRow student in tStudent.Rows)
             {
-                (string Code, int Number)[] applied = ((string Code, int Number)[])student[cApplied];
+                (string Code, int Grade, int Number)[] applied = ((string Code, int Grade, int Number)[])student[cApplied];
                 string idNum = student[cID].ToString();
-                foreach ((string code, int number) in applied)
-                    AddToApplyDict(code, number, idNum);
+                foreach ((string code, int grade, int number) in applied)
+                    AddToApplyDict(code, grade, number, idNum);
             }
             foreach (DataRow row in tClass.Rows)
             {
                 string code = (string)row[cCode];
+                int grade = (int)row[ccGrade];
 
-                if (!_classDict.ContainsKey(code))
+                if (!_classDict.ContainsKey((code, grade)))
                 {
-                    _classDict[code] = new List<Class>();
+                    _classDict[(code, grade)] = new List<Class>();
                 }
 
-                _classDict[code].Add(new Class(
-                    name: tLecture.Rows.Find(code)[cName].ToString(),
+                _classDict[(code, grade)].Add(new Class(
+                    name: tLecture.Rows.Find(new object[] { code, grade })[cName].ToString(),
                     code: code,
+                    grade: grade,
                     number: Int32.Parse(row[cNumber].ToString()),
                     teacher: row[cTeacher].ToString(),
                     schedule: ((DayOfWeek Day, int Hour)[])row[cTime],
                     note: row[cNote].ToString(),
-                    enrolledList: applyDict[(code, (int)row[cNumber])]
+                    enrolledList: applyDict[(code, grade, (int)row[cNumber])]
                 ));
             }
         }
@@ -144,14 +147,18 @@ namespace KSAGrinder.Statics
             DataTable tLecture = Data.Tables["Lecture"];
             DataColumn cDepartment = tLecture.Columns["Department"];
             DataColumn cName = tLecture.Columns["Name"];
+            DataColumn cGrade = tLecture.Columns["Grade"];
             DataColumn cCode = tLecture.Columns["Code"];
             foreach (DataRow row in tLecture.Rows)
             {
+                string code = row[cCode].ToString();
+                int grade = (int)row[cGrade];
                 _lectures.Add(new Lecture(
-                    code: (string)row[cCode],
+                    code: code,
                     department: (Department)Enum.Parse(typeof(Department), (string)row[cDepartment]),
                     name: (string)row[cName],
-                    numClass: DataManager.ClassDict((string)row[cCode]).Count
+                    grade: grade,
+                    numClass: GetTheNumberOfClasses(code, grade)
                 ));
             }
         }
