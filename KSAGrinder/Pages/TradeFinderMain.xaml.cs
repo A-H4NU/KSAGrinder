@@ -294,7 +294,7 @@ namespace KSAGrinder.Pages
                             foreach (var move in moves)
                                 localTradeCapture.Add(move);
                         }
-                        catch (TradeInvalidException e)
+                        catch (TradeInvalidException)
                         {
                             Debug.WriteLine("Bad move.");
                             good = false; break;
@@ -408,8 +408,7 @@ namespace KSAGrinder.Pages
             {
                 StringBuilder sb = new StringBuilder();
                 string name = DataManager.GetNameFromStudentID(group.Key);
-                char eunneun = new KoreanChar(name.Last()).GetJongSung() == '\0' ? '는' : '은';
-                sb.AppendLine($"{group.Key} {name}{eunneun}");
+                sb.AppendLine($"{group.Key} {name}");
                 foreach (ClassMove move in group)
                 {
                     sb.AppendLine($"\t{DataManager.GetNameOfLectureFromCode(move.Code)} {move.NumberFrom}분반에서 {move.NumberTo}분반으로");
