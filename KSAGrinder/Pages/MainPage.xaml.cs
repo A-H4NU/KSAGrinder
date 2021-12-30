@@ -189,6 +189,9 @@ namespace KSAGrinder.Pages
                     return;
                 }
             }
+
+            _data.Tables.Remove("Lecture");
+            _data.Tables.Remove("Class");
         }
 
         private void UpdateWindowTitle()
@@ -242,6 +245,9 @@ namespace KSAGrinder.Pages
             }
 
             LblValid.Content = _currentSchedule.IsValid ? String.Empty : "유효하지 않음";
+            int totalCredit =  _currentSchedule.Select(cls => DataManager.GetLecture(cls.Code, cls.Grade).Credit)
+                                               .Aggregate(0, (a, b) => a + b);
+            LblCredit.Text = $"총 {totalCredit}학점";
         }
 
         private void InitializeHourCollection()
@@ -449,7 +455,7 @@ namespace KSAGrinder.Pages
             {
                 SaveFileDialog sfd = new SaveFileDialog
                 {
-                    Filter = "바이너리 파일 (*.bin)|*.bin"
+                    Filter = "시간표 파일 (*.sch)|*.sch"
                 };
                 if (sfd.ShowDialog() == true)
                 {
@@ -573,7 +579,7 @@ namespace KSAGrinder.Pages
             {
                 OpenFileDialog ofd = new OpenFileDialog()
                 {
-                    Filter = "바이너리 파일 (*.bin)|*.bin|모든 파일 (*.*)|*.*"
+                    Filter = "시간표 파일 (*.sch)|*.sch|모든 파일 (*.*)|*.*"
                 };
                 if (ofd.ShowDialog() == true)
                 {

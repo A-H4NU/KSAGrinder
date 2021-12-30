@@ -1,4 +1,6 @@
-﻿using System;
+﻿using KSAGrinder.Statics;
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -42,6 +44,8 @@ namespace KSAGrinder.Components
         public int Grade { get; }
         public int Number { get; }
         public string Teacher { get; }
+
+        public int Credit => DataManager.GetLecture(Code, Grade).Credit;
 
         public (DayOfWeek Day, int Hour)[] Schedule { get; }
         public string DayTime

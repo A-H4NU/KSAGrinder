@@ -416,7 +416,7 @@ namespace KSAGrinder.Pages
                 instructionsForGroup.Add(sb.ToString().Replace("\0", ""));
             }
             DetailView detailWindow = new DetailView(String.Join(Environment.NewLine, instructionsForGroup));
-            detailWindow.ShowDialog();
+            detailWindow.Show();
         }
 
         private readonly object _setComponentStatusLock = new object();

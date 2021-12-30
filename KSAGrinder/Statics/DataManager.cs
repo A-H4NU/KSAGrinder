@@ -33,6 +33,8 @@ namespace KSAGrinder.Statics
                 yield return lecture;
         }
 
+        public static Lecture GetLecture(string code, int grade) => _lectures.Find(x => x.Code == code && x.Grade == grade);
+
         public static bool LectureExists(string code, int grade) => _classDict.ContainsKey((code, grade));
 
         public static bool StudentExists(string id) => Data.Tables["Student"].Rows.Find(id) != null;
@@ -149,6 +151,7 @@ namespace KSAGrinder.Statics
             DataColumn cName = tLecture.Columns["Name"];
             DataColumn cGrade = tLecture.Columns["Grade"];
             DataColumn cCode = tLecture.Columns["Code"];
+            DataColumn cCredit = tLecture.Columns["Credit"];
             foreach (DataRow row in tLecture.Rows)
             {
                 string code = row[cCode].ToString();
@@ -158,7 +161,8 @@ namespace KSAGrinder.Statics
                     department: (Department)Enum.Parse(typeof(Department), (string)row[cDepartment]),
                     name: (string)row[cName],
                     grade: grade,
-                    numClass: GetTheNumberOfClasses(code, grade)
+                    numClass: GetTheNumberOfClasses(code, grade),
+                    credit: (int)row[cCredit]
                 ));
             }
         }
