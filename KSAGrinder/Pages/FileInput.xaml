@@ -26,7 +26,7 @@
             </TextBlock>
         </StackPanel>
         <Label Content="한국과학영재학교 관계자 외 사용을 금지합니다." HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="15" Foreground="Red" FontWeight="Bold"/>
-        <Label Content="KSAGrinder v1.0" FontSize="13" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+        <Label Content="KSAGrinder v1.0.0" FontSize="13" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
         <TextBlock Margin="5" FontSize="13" HorizontalAlignment="Left" VerticalAlignment="Bottom">
             <Hyperlink RequestNavigate="Hyperlink_RequestNavigate_Icon" NavigateUri="">아이콘</Hyperlink>
         </TextBlock>
