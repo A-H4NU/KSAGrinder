@@ -823,6 +823,7 @@ namespace KSAGrinder.Pages
                         break;
                 }
             }
+            _data.Dispose();
         }
 
         #endregion
