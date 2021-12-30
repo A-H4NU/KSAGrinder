@@ -11,4 +11,5 @@ This includes a developer tool for formatting information provided by the Office
 * Find all trading options to make the most favorable schedule (classes and their numbers, current and targeting ones, must be specified)
 
 ## How to use?
-TBA
+
+Refer to this [this manual(kor)](https://drive.google.com/file/d/1C4VUWx1e7CIcYHdCBf2nzULvRDlZXJzs/view?usp=sharing).
