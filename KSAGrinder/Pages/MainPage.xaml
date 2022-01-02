@@ -222,7 +222,7 @@
                 <DataGrid x:Name="SchedulesTable" ItemsSource="{Binding ScheduleCollection}" AutoGenerateColumns="False" IsReadOnly="True"
                           Style="{StaticResource LectureTableDataGridStyle}"
                           ColumnHeaderStyle="{StaticResource LectureTableColumnHeaderStyle}" CellStyle="{StaticResource TimetableDataGridCellStyle}"
-                          HeadersVisibility="Column" CanUserReorderColumns="False" >
+                          HeadersVisibility="Column" CanUserReorderColumns="False" Sorting="SchedulesTable_Sorting" >
                     <DataGrid.Columns>
                         <DataGridTextColumn Width="*" Header="1공강" Binding="{Binding Evaluate1Empty}">
                             <DataGridTextColumn.CellStyle>

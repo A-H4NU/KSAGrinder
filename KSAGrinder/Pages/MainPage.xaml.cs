@@ -775,6 +775,13 @@ namespace KSAGrinder.Pages
             }
         }
 
+        private void SchedulesTable_Sorting(object sender, DataGridSortingEventArgs e)
+        {
+            if (e.Column.SortDirection == null)
+                e.Column.SortDirection = ListSortDirection.Ascending;
+            e.Handled = false;
+        }
+
         private void SchedulesTableRow_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (sender is DataGridRow && (sender as DataGridRow).Item is Schedule schedule)
