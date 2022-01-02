@@ -618,6 +618,11 @@ namespace KSAGrinder.Pages
 
         private void MenuSaveAs_Click(object sender, RoutedEventArgs e) => TrySaveDialog();
 
+        private void MenuOption_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("안녕");
+        }
+
         private void CmbDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e) => LoadLectures();
 
         private void LectureTable_SelectionChanged(object sender, SelectionChangedEventArgs e)

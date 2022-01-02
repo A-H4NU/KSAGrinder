@@ -72,6 +72,9 @@
                 <MenuItem Header="저장 (Ctrl+S)" Click="MenuSave_Click"/>
                 <MenuItem Header="다른 이름으로 저장" Click="MenuSaveAs_Click"/>
             </MenuItem>
+            <MenuItem Header="도구">
+                <MenuItem Header="설정 (Ctrl+I)" Click="MenuOption_Click"/>
+            </MenuItem>
         </Menu>
         <Grid DockPanel.Dock="Bottom" Margin="10">
             <Grid.RowDefinitions>
