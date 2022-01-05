@@ -11,5 +11,17 @@
     <Setting Name="DetailFontSize" Type="System.Double" Scope="User">
       <Value Profile="(Default)">16</Value>
     </Setting>
+    <Setting Name="RememberDataset" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="RememberSave" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Theme" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Black</Value>
+    </Setting>
+    <Setting Name="Language" Type="System.String" Scope="User">
+      <Value Profile="(Default)">한국어</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

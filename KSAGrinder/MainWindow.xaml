@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:KSAGrinder"
         xmlns:statics="clr-namespace:KSAGrinder.Statics"
         mc:Ignorable="d"
-        Title="KSAGrinder" Height="768" Width="1366">
+        Title="KSAGrinder" Height="768" Width="1366"
+        Style="{StaticResource WindowStyle}">
     <Grid>
         <Frame NavigationUIVisibility="Hidden" statics:DisableNavigation.Disable="True" Name="Main"/>
     </Grid>

@@ -8,6 +8,7 @@ using System.Data;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Controls;
@@ -26,6 +27,8 @@ namespace KSAGrinder.Pages
             InitializeComponent();
 
             _main = main;
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            LblVersion.Content = $"KSAGrinder v{version.Major}.{version.Minor}.{version.Build}";
         }
 
         public static void ClearLastFileSettings()

@@ -620,7 +620,8 @@ namespace KSAGrinder.Pages
 
         private void MenuOption_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("안녕");
+            OptionWindow optionWindow = new OptionWindow();
+            optionWindow.ShowDialog();
         }
 
         private void CmbDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e) => LoadLectures();
@@ -783,8 +784,10 @@ namespace KSAGrinder.Pages
         private void SchedulesTable_Sorting(object sender, DataGridSortingEventArgs e)
         {
             if (e.Column.SortDirection == null)
+            {
                 e.Column.SortDirection = ListSortDirection.Ascending;
-            e.Handled = false;
+                e.Handled = false;
+            }
         }
 
         private void SchedulesTableRow_MouseDoubleClick(object sender, MouseButtonEventArgs e)

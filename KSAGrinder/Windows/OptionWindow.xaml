@@ -1,0 +1,35 @@
+﻿<Window x:Class="KSAGrinder.Windows.OptionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:KSAGrinder.Windows"
+        xmlns:base="clr-namespace:KSAGrinder"
+        mc:Ignorable="d"
+        Title="옵션" Height="200" Width="300"
+        Style="{StaticResource WindowStyle}">
+    <StackPanel Margin="10" Orientation="Vertical">
+        <CheckBox x:Name="ChkRememberDataset" Content="마지막으로 연 데이터셋 기억"
+                  IsEnabledChanged="ChkRememberDataset_IsEnabledChanged"/>
+        <CheckBox x:Name="ChkRememberSave"  Content="마지막으로 연 저장본 기억" Margin="0,10,0,0"
+                  IsEnabledChanged="ChkRememberSave_IsEnabledChanged"/>
+        <DockPanel Margin="0,10,0,0">
+            <TextBlock DockPanel.Dock="Left" Text="상세 정보 창 폰트 크기"/>
+            <TextBlock DockPanel.Dock="Right" Margin="10,0,0,0" Text="{Binding Value, ElementName=SldFontSize}" TextAlignment="Right" MinWidth="14"/>
+            <Slider x:Name= "SldFontSize" DockPanel.Dock="Left" Minimum="6" Maximum="30" Margin="10,0,0,0" HorizontalAlignment="Stretch"
+                    IsSnapToTickEnabled="True" TickFrequency="2" ValueChanged="SldFontSize_ValueChanged"/>
+        </DockPanel>
+        <DockPanel Margin="0,10,0,0">
+            <TextBlock DockPanel.Dock="Left" Text="테마" VerticalAlignment="Center"/>
+            <ComboBox x:Name="CmbTheme" Margin="10,0,0,0" SelectionChanged="CmbTheme_SelectionChanged">
+                <ComboBoxItem Content="Light"/>
+                <ComboBoxItem Content="Dark"/>
+                <ComboBoxItem Content="Black"/>
+            </ComboBox>
+        </DockPanel>
+        <DockPanel Margin="0,10,0,0">
+            <TextBlock DockPanel.Dock="Left" Text="언어" VerticalAlignment="Center"/>
+            <ComboBox x:Name="CmbLang" Margin="10,0,0,0" SelectionChanged="CmbLang_SelectionChanged"/>
+        </DockPanel>
+    </StackPanel>
+</Window>

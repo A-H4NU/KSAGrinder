@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace KSAGrinder.ValueConverters
 {
@@ -23,11 +24,23 @@ namespace KSAGrinder.ValueConverters
                 CollectionView cv = _dg.Items;
                 int rowIndex = cv.IndexOf(value) + 1;
 
+                Color foreground;
+                switch (Properties.Settings.Default.Theme)
+                {
+                    case "Light":
+                        foreground = Colors.Black;
+                        break;
+                    default:
+                        foreground = Colors.White;
+                        break;
+                }
                 Label label = new Label
                 {
                     Content = rowIndex.ToString(),
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    HorizontalContentAlignment = HorizontalAlignment.Center
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    //Background = new SolidColorBrush(Colors.Red),
+                    Foreground = new SolidColorBrush(foreground)
                 };
                 return label;
             }
