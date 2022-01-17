@@ -425,7 +425,7 @@ namespace KSAGrinder.Pages
             OriginalScheduleID = root.Attributes.GetNamedItem("OriginalID").Value;
         }
 
-        private void InvalidateStyles()
+        public void InvalidateStyles()
         {
             Style lectureRowStyle = LectureTable.RowStyle;
             LectureTable.RowStyle = null;
@@ -503,7 +503,7 @@ namespace KSAGrinder.Pages
 
         private void Timetable_Loaded(object sender, RoutedEventArgs e)
         {
-            Style dataGridElementStyle = (Style)Resources["TextBoxStyle"];
+            Style dataGridElementStyle = (Style)Resources["LectureTableTextBlockStyle"];
             foreach (DataGridColumn column in Timetable.Columns.Concat(LectureTable.Columns))
             {
                 if (column is DataGridTextColumn textColumn)
@@ -585,6 +585,7 @@ namespace KSAGrinder.Pages
                 {
                     LoadXmlInBinary(ofd.FileName);
                     WorkingWith = ofd.FileName;
+                    Modified = false;
                 }
                 Settings.Default.LastFile = ofd.FileName;
                 Settings.Default.Save();
@@ -620,7 +621,7 @@ namespace KSAGrinder.Pages
 
         private void MenuOption_Click(object sender, RoutedEventArgs e)
         {
-            OptionWindow optionWindow = new OptionWindow();
+            OptionWindow optionWindow = new OptionWindow(this);
             optionWindow.ShowDialog();
         }
 

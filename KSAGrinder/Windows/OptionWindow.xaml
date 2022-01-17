@@ -5,19 +5,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KSAGrinder.Windows"
         xmlns:base="clr-namespace:KSAGrinder"
+        xmlns:properties="clr-namespace:KSAGrinder.Properties"
         mc:Ignorable="d"
         Title="옵션" Height="200" Width="300"
         Style="{StaticResource WindowStyle}">
     <StackPanel Margin="10" Orientation="Vertical">
-        <CheckBox x:Name="ChkRememberDataset" Content="마지막으로 연 데이터셋 기억"
+        <CheckBox x:Name="ChkRememberDataset" Content="마지막으로 연 데이터셋 기억" Style="{StaticResource CheckBoxStyle}"
                   IsEnabledChanged="ChkRememberDataset_IsEnabledChanged"/>
-        <CheckBox x:Name="ChkRememberSave"  Content="마지막으로 연 저장본 기억" Margin="0,10,0,0"
+        <CheckBox x:Name="ChkRememberSave"  Content="마지막으로 연 저장본 기억" Margin="0,10,0,0" Style="{StaticResource CheckBoxStyle}"
                   IsEnabledChanged="ChkRememberSave_IsEnabledChanged"/>
         <DockPanel Margin="0,10,0,0">
             <TextBlock DockPanel.Dock="Left" Text="상세 정보 창 폰트 크기"/>
             <TextBlock DockPanel.Dock="Right" Margin="10,0,0,0" Text="{Binding Value, ElementName=SldFontSize}" TextAlignment="Right" MinWidth="14"/>
             <Slider x:Name= "SldFontSize" DockPanel.Dock="Left" Minimum="6" Maximum="30" Margin="10,0,0,0" HorizontalAlignment="Stretch"
-                    IsSnapToTickEnabled="True" TickFrequency="2" ValueChanged="SldFontSize_ValueChanged"/>
+                    IsSnapToTickEnabled="True" TickFrequency="2"/>
         </DockPanel>
         <DockPanel Margin="0,10,0,0">
             <TextBlock DockPanel.Dock="Left" Text="테마" VerticalAlignment="Center"/>

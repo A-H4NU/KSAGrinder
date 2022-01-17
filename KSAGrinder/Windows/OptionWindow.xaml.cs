@@ -1,4 +1,5 @@
-﻿using KSAGrinder.Properties;
+﻿using KSAGrinder.Pages;
+using KSAGrinder.Properties;
 using KSAGrinder.Statics;
 
 using System;
@@ -22,13 +23,19 @@ namespace KSAGrinder.Windows
     /// </summary>
     public partial class OptionWindow : Window
     {
-        public OptionWindow()
+        private readonly MainPage _mainPage;
+
+        public OptionWindow(MainPage mainPage)
         {
             InitializeComponent();
+
+            _mainPage = mainPage;
 
             ChkRememberDataset.IsChecked = Settings.Default.RememberDataset;
             ChkRememberSave.IsChecked = Settings.Default.RememberSave;
             SldFontSize.Value = Settings.Default.DetailFontSize;
+
+            SldFontSize.ValueChanged += SldFontSize_ValueChanged;
 
             //foreach (var themeName in ColorFromTheme.ThemeNames)
             //    CmbTheme.Items.Add(themeName);
@@ -57,6 +64,7 @@ namespace KSAGrinder.Windows
         {
             Settings.Default.Theme = (string)((ComboBoxItem)CmbTheme.SelectedItem).Content;
             Settings.Default.Save();
+            _mainPage.InvalidateStyles();
         }
 
         private void CmbLang_SelectionChanged(object sender, SelectionChangedEventArgs e)

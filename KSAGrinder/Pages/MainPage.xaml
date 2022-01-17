@@ -110,6 +110,27 @@
 
         <!-- Timetable Styles -->
         <Style x:Key="TimetableDataGridStyle" TargetType="{x:Type DataGrid}">
+            <Style.Resources>
+                <!--#region Style the select all button -->
+                <Style x:Key="{ComponentResourceKey ResourceId=DataGridSelectAllButtonStyle, TypeInTargetAssembly={x:Type DataGrid}}" TargetType="{x:Type Button}">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Border Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+                <!--#endregion-->
+            </Style.Resources>
             <Setter Property="ColumnHeaderStyle" Value="{DynamicResource TimetableColumnHeaderStyle}"/>
             <Setter Property="RowHeaderStyle" Value="{DynamicResource TimetableRowHeaderStyle}"/>
             <Setter Property="CellStyle" Value="{DynamicResource TimetableDataGridCellStyle}"/>
@@ -119,21 +140,21 @@
                     <Setter Property="Foreground" Value="Black"/>
                     <Setter Property="HorizontalGridLinesBrush" Value="LightGray"/>
                     <Setter Property="VerticalGridLinesBrush" Value="LightGray"/>
-                    <Setter Property="BorderBrush" Value="#0078d7"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource BlueBorder}"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Dark">
                     <Setter Property="Background" Value="#2e2e2e"/>
                     <Setter Property="Foreground" Value="White"/>
                     <Setter Property="HorizontalGridLinesBrush" Value="#4d4d4d"/>
                     <Setter Property="VerticalGridLinesBrush" Value="#4d4d4d"/>
-                    <Setter Property="BorderBrush" Value="#004d8a"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource DarkBlueBorder}"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Black">
                     <Setter Property="Background" Value="Black"/>
                     <Setter Property="Foreground" Value="White"/>
                     <Setter Property="HorizontalGridLinesBrush" Value="#2e2e2e"/>
                     <Setter Property="VerticalGridLinesBrush" Value="#2e2e2e"/>
-                    <Setter Property="BorderBrush" Value="#004d8a"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource DarkBlueBorder}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -157,10 +178,9 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        
+
         <Style x:Key="TimetableRowHeaderStyle" TargetType="{x:Type DataGridRowHeader}">
             <Setter Property="Content" Value="{Binding Converter={StaticResource IndexConverter}}" />
-            <Setter Property="Width" Value="30"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -180,56 +200,86 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        
-        <Style x:Key="TimetableDataGridCellStyle" TargetType="{x:Type DataGridCell}">
+
+        <Style x:Key="DataGridCellStyle" TargetType="{x:Type DataGridCell}">
             <Setter Property="TextBlock.TextAlignment" Value="Center"/>
             <Setter Property="TextBlock.HorizontalAlignment" Value="Stretch"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Light">
                     <Setter Property="Background" Value="White"/>
-                    <Setter Property="Foreground" Value="Black"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Dark">
                     <Setter Property="Background" Value="#2e2e2e"/>
-                    <Setter Property="Foreground" Value="White"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Black">
                     <Setter Property="Background" Value="Black"/>
-                    <Setter Property="Foreground" Value="White"/>
                 </DataTrigger>
                 <Trigger Property="IsSelected" Value="True">
                     <Setter Property="Background" Value="#0078d7"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="TimetableDataGridCellStyle" TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource DataGridCellStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Light">
+                    <!--<Setter Property="Background" Value="White"/>-->
+                    <Setter Property="Foreground" Value="Black"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Dark">
+                    <!--<Setter Property="Background" Value="#2e2e2e"/>-->
+                    <Setter Property="Foreground" Value="White"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Black">
+                    <!--<Setter Property="Background" Value="Black"/>-->
+                    <Setter Property="Foreground" Value="White"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
         
         <!-- LectureTable Styles -->
-        <Style x:Key="LectureTableDataGridStyle" TargetType="{x:Type DataGrid}">
+        <Style x:Key="DataGridStyle" TargetType="{x:Type DataGrid}">
             <Setter Property="ColumnHeaderStyle" Value="{DynamicResource LectureTableColumnHeaderStyle}"/>
-            <Setter Property="CellStyle" Value="{DynamicResource TimetableDataGridCellStyle}"/>
+            <Setter Property="CellStyle" Value="{DynamicResource DataGridCellStyle}"/>
             <Setter Property="HorizontalGridLinesBrush" Value="Gray"/>
             <Setter Property="VerticalGridLinesBrush" Value="Gray"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Light">
                     <Setter Property="Background" Value="#f3f0f0"/>
-                    <Setter Property="Foreground" Value="Black"/>
                     <Setter Property="BorderBrush" Value="#0078d7"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Dark">
                     <Setter Property="Background" Value="#262626"/>
-                    <Setter Property="Foreground" Value="White"/>
                     <Setter Property="BorderBrush" Value="#004d8a"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Black">
                     <Setter Property="Background" Value="Black"/>
-                    <Setter Property="Foreground" Value="White"/>
                     <Setter Property="BorderBrush" Value="#004d8a"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="CurrentClassDataGridStyle" TargetType="{x:Type DataGrid}" BasedOn="{StaticResource DataGridStyle}">
+            <Style.Resources>
+                <SolidColorBrush x:Key="Black" Color="Black"/>
+                <SolidColorBrush x:Key="White" Color="White"/>
+            </Style.Resources>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Light">
+                    <Setter Property="Foreground" Value="{DynamicResource Black}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Dark">
+                    <Setter Property="Foreground" Value="{DynamicResource White}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Black">
+                    <Setter Property="Foreground" Value="{DynamicResource White}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="LectureTableColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
-            <Setter Property="Height" Value="25"/>
+            <Setter Property="Height" Value="20"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="BorderThickness" Value="0,0,1,0"/>
@@ -254,7 +304,7 @@
         </Style>
 
         <!-- Used in MainPage.xaml.cs -->
-        <Style x:Key="TextBoxStyle" TargetType="{x:Type TextBlock}">
+        <Style x:Key="LectureTableTextBlockStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
@@ -263,8 +313,8 @@
     </Page.Resources>
 
     <DockPanel>
-        <Menu Padding="5" FontSize="13" DockPanel.Dock="Top">
-            <MenuItem Header="파일">
+        <Menu Padding="5" FontSize="13" DockPanel.Dock="Top" Style="{StaticResource MenuStyle}">
+            <MenuItem Style="{DynamicResource MenuItemStyle}" Header="파일">
                 <MenuItem Header="새 시간표 (Ctrl+N)" Click="MenuNewSchedule_Click"/>
                 <MenuItem Header="열기 (Ctrl+O)" Click="MenuOpen_Click"/>
                 <MenuItem Header="학번에서 불러오기" Click="MenuLoadID_Click"/>
@@ -312,10 +362,10 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <!--<Label Content="검색: " FontSize="13" Margin="10,0,0,0"/>-->
-                    <Grid Background="White" Margin="10,0,0,0">
+                    <Grid Margin="10,0,0,0" Style="{StaticResource HintGridStyle}">
                         <TextBlock x:Name="TxtHint" Margin="5,2" FontSize="13" MinWidth="50" Text="검색 (초성 검색 지원)" VerticalAlignment="Center"
                                    Foreground="LightGray" Visibility="{Binding ElementName=TxtSearch, Path=Text, Converter={StaticResource TextToVisibility}}" IsHitTestVisible="False"/>
-                        <TextBox x:Name="TxtSearch" VerticalContentAlignment="Center" Background="Transparent" FontSize="13" TextChanged="TxtSearch_TextChanged"/>
+                        <TextBox x:Name="TxtSearch" VerticalContentAlignment="Center" Background="Transparent" FontSize="13" TextChanged="TxtSearch_TextChanged" Style="{StaticResource TextBoxStyle}"/>
                     </Grid>
                 </DockPanel>
                 <Grid Grid.Column="1" Grid.Row="0">
@@ -325,8 +375,8 @@
                     </Grid.RowDefinitions>
 
                     <DataGrid Grid.Row="0" DockPanel.Dock="Top" x:Name="LectureTable" Margin="0,0,0,10" SelectionMode="Single" MinHeight="100"
-                      Style="{DynamicResource LectureTableDataGridStyle}" ItemsSource="{Binding LectureCollection}" AutoGenerateColumns="False"
-                      AlternatingRowBackground = "#F4F4F4" HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
+                      Style="{DynamicResource DataGridStyle}" ItemsSource="{Binding LectureCollection}" AutoGenerateColumns="False"
+                      HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
                       CanUserResizeColumns="False" CanUserAddRows="False" IsReadOnly="True" SelectionChanged="LectureTable_SelectionChanged">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="학부" Width="55" Binding="{Binding Department, Converter={StaticResource DepartmentToString}}"/>
@@ -349,9 +399,9 @@
                     </DataGrid>
 
                     <DataGrid Grid.Row="1" DockPanel.Dock="Bottom" x:Name="ClassTable"
-                      Style="{DynamicResource LectureTableDataGridStyle}" ItemsSource="{Binding ClassCollection}" AutoGenerateColumns="False"
-                      AlternatingRowBackground = "#F4F4F4" HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
-                      CanUserResizeColumns="False" CanUserAddRows="False" IsReadOnly="True" CanUserSortColumns="False">
+                              Style="{StaticResource DataGridStyle}" ItemsSource="{Binding ClassCollection}" AutoGenerateColumns="False"
+                              HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
+                              CanUserResizeColumns="False" CanUserAddRows="False" IsReadOnly="True" CanUserSortColumns="False">
                         <DataGrid.Resources>
                             <ContextMenu x:Key="RowMenu">
                                 <MenuItem Header="세부 정보 보기" Click="ClassTableMenuItem_Click"/>
@@ -359,7 +409,7 @@
                         </DataGrid.Resources>
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="분반" MaxWidth="40" Binding="{Binding Number}"/>
-                            <DataGridTextColumn Header="선생님" MaxWidth="70" Binding="{Binding Teacher}"/>
+                            <DataGridTextColumn Header="선생님" Width="60" Binding="{Binding Teacher}"/>
                             <DataGridTextColumn Header="요일/시간" Width="*" Binding="{Binding DayTime}"/>
                             <DataGridTextColumn Header="신청인원" MinWidth="65" Binding="{Binding Enroll}"/>
                         </DataGrid.Columns>
@@ -385,11 +435,11 @@
             <DockPanel Margin="5,5,5,0" Grid.Column="1" Grid.Row="1">
                 <TextBlock x:Name="LblCredit" DockPanel.Dock="Top" TextAlignment="Right" Margin="0,0,0,5" Text="총 0학점" Style="{StaticResource TextStyle}"/>
                 <DataGrid x:Name="CurrentClassTable" DockPanel.Dock="Top" AutoGenerateColumns="False"
-                  Style="{DynamicResource LectureTableDataGridStyle}" ItemsSource="{Binding CurrentClassCollection}"
-                  AlternatingRowBackground = "#F4F4F4" HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
-                  CanUserResizeColumns="False" CanUserAddRows="False" CanUserSortColumns="False" >
+                  Style="{DynamicResource CurrentClassDataGridStyle}" ItemsSource="{Binding CurrentClassCollection}"
+                  HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
+                  CanUserResizeColumns="False" CanUserAddRows="False" CanUserSortColumns="False">
                     <DataGrid.Columns>
-                        <DataGridCheckBoxColumn Header="고정" Width="40"/>
+                        <DataGridCheckBoxColumn Header="고정" Width="40" ElementStyle="{StaticResource GridCheckBoxSytle}"/>
                         <DataGridTextColumn Header="강의명" Width="*" Binding="{Binding Name}" IsReadOnly="True"/>
                         <DataGridTextColumn Header="학점" Width="40" Binding="{Binding Credit}" IsReadOnly="True"/>
                         <DataGridTextColumn Header="분반" Width="40" Binding="{Binding Number}" IsReadOnly="True"/>
@@ -424,7 +474,7 @@
                        Content="총 0개의 시간표를 조합했습니다." Style="{StaticResource LabelStyle}"/>
 
                 <DataGrid x:Name="SchedulesTable" ItemsSource="{Binding ScheduleCollection}" AutoGenerateColumns="False" IsReadOnly="True"
-                          Style="{StaticResource LectureTableDataGridStyle}"
+                          Style="{StaticResource DataGridStyle}"
                           ColumnHeaderStyle="{StaticResource LectureTableColumnHeaderStyle}" CellStyle="{StaticResource TimetableDataGridCellStyle}"
                           HeadersVisibility="Column" CanUserReorderColumns="False" Sorting="SchedulesTable_Sorting"
                           HorizontalGridLinesBrush="Black" VerticalGridLinesBrush="Black">
