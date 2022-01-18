@@ -9,6 +9,13 @@
         mc:Ignorable="d"
         Title="옵션" Height="200" Width="300"
         Style="{StaticResource WindowStyle}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../ResourceDictionaries/ComboBoxStyle.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
     <StackPanel Margin="10" Orientation="Vertical">
         <CheckBox x:Name="ChkRememberDataset" Content="마지막으로 연 데이터셋 기억" Style="{StaticResource CheckBoxStyle}"
                   IsEnabledChanged="ChkRememberDataset_IsEnabledChanged"/>

@@ -29,6 +29,7 @@
     <PackageReference Include="KoreanString" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="System.IO.Compression" />
   </ItemGroup>
   <ItemGroup>

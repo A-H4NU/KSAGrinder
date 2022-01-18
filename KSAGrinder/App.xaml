@@ -10,9 +10,6 @@
         <SolidColorBrush x:Key="BlueBorder" Color="#0078d7"/>
         <SolidColorBrush x:Key="DarkBlueBorder" Color="#004d8a"/>
 
-        <SolidColorBrush x:Key="BorderColor">
-        </SolidColorBrush>
-
         <Style TargetType="{x:Type Window}" x:Key="WindowStyle">
             <!--<Setter Property="WindowChrome.WindowChrome">
                 <Setter.Value>
@@ -155,7 +152,7 @@
                                 <BulletDecorator Background="Transparent">
                                     <BulletDecorator.Bullet>
                                         <Border x:Name="Border" Width="13" Height="13" CornerRadius="0" Background="#f3f9ff" BorderThickness="1" BorderBrush="Black"  >
-                                            <Path Width="10" Height="10"  x:Name="CheckMark" SnapsToDevicePixels="False" Stroke="Black" StrokeThickness="2" Data="F1 M 10.0,1.2 L 4.7,9.1 L 4.5,9.1 L 0,5.2 L 1.3,3.5 L 4.3,6.1L 8.3,0 L 10.0,1.2 Z" />
+                                            <Path Width="10" Height="10"  x:Name="CheckMark" SnapsToDevicePixels="False" Stroke="Black" StrokeThickness="2" Data="M 1 5 L 4 8 L 9 2" />
                                         </Border>
                                     </BulletDecorator.Bullet>
                                     <ContentPresenter Margin="4,0,0,0"  VerticalAlignment="Center" HorizontalAlignment="Left" RecognizesAccessKey="True"/>
@@ -183,7 +180,7 @@
                             <ControlTemplate TargetType="CheckBox">
                                 <BulletDecorator Background="Transparent">
                                     <BulletDecorator.Bullet>
-                                        <Border x:Name="Border" Width="13" Height="13" CornerRadius="0" Background="{StaticResource LightDarkBackground}" BorderThickness="1" BorderBrush="White"  >
+                                        <Border x:Name="Border" Width="13" Height="13" CornerRadius="0" Background="{StaticResource LightDarkBackground}" BorderThickness="1" BorderBrush="DarkGray">
                                             <Path Width="10" Height="10"  x:Name="CheckMark" SnapsToDevicePixels="False" Stroke="White" StrokeThickness="2" Data="M 1 5 L 4 8 L 9 2" />
                                         </Border>
                                     </BulletDecorator.Bullet>
@@ -212,7 +209,7 @@
                             <ControlTemplate TargetType="CheckBox">
                                 <BulletDecorator Background="Transparent">
                                     <BulletDecorator.Bullet>
-                                        <Border x:Name="Border" Width="13" Height="13" CornerRadius="0" Background="{StaticResource DarkBackground}" BorderThickness="1" BorderBrush="White"  >
+                                        <Border x:Name="Border" Width="13" Height="13" CornerRadius="0" Background="{StaticResource DarkBackground}" BorderThickness="1" BorderBrush="DarkGray">
                                             <Path Width="10" Height="10"  x:Name="CheckMark" SnapsToDevicePixels="False" Stroke="White" StrokeThickness="2" Data="M 1 5 L 4 8 L 9 2" />
                                         </Border>
                                     </BulletDecorator.Bullet>
@@ -779,14 +776,17 @@
                 <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Light">
                     <Setter Property="Background" Value="White"/>
                     <Setter Property="Foreground" Value="Black"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Dark">
                     <Setter Property="Background" Value="{StaticResource LightDarkBackground}"/>
                     <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="BorderBrush" Value="DarkGray"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Black">
                     <Setter Property="Background" Value="Black"/>
                     <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="BorderBrush" Value="DarkGray"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
