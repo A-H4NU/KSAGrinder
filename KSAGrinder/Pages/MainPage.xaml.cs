@@ -51,6 +51,7 @@ namespace KSAGrinder.Pages
                 _originalScheduleID = value;
                 Schedule.OriginalScheduleID = value;
                 UpdateWindowTitle();
+                
             }
         }
 

@@ -8,11 +8,12 @@
         xmlns:properties="clr-namespace:KSAGrinder.Properties"
         mc:Ignorable="d"
         Title="옵션" Height="200" Width="300"
-        Style="{StaticResource WindowStyle}">
+        Style="{DynamicResource WindowStyle}">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../ResourceDictionaries/ComboBoxStyle.xaml"/>
+                <ResourceDictionary Source="../ResourceDictionaries/WindowStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>

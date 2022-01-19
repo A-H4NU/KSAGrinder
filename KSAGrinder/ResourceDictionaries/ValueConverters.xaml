@@ -7,4 +7,6 @@
     <valueConverters:ScoreToColor x:Key="ScoreToColor"/>
     <valueConverters:DepartmentToString x:Key="DepartmentToString"/>
     <valueConverters:TextToVisibility x:Key="TextToVisibility"/>
+    <valueConverters:ConvertItemToIndexListBox x:Key="IndexConv"/>
+    <valueConverters:TradesToSummary x:Key="TradesToSummary"/>
 </ResourceDictionary>

@@ -143,15 +143,15 @@
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Light">
                 <Setter Property="Background" Value="#f3f0f0"/>
-                <Setter Property="BorderBrush" Value="#0078d7"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BlueBorder}"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Dark">
                 <Setter Property="Background" Value="#262626"/>
-                <Setter Property="BorderBrush" Value="#004d8a"/>
+                <Setter Property="BorderBrush" Value="{StaticResource DarkBlueBorder}"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Black">
                 <Setter Property="Background" Value="Black"/>
-                <Setter Property="BorderBrush" Value="#004d8a"/>
+                <Setter Property="BorderBrush" Value="{StaticResource DarkBlueBorder}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>

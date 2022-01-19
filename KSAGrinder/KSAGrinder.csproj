@@ -10,7 +10,9 @@
     <ApplicationIcon>KSAGrinder.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="KSAGrinder.ico" />
+    <Content Include="KSAGrinder.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.editorconfig">

@@ -8,11 +8,16 @@
       mc:Ignorable="d"
       DataContext="{Binding RelativeSource={RelativeSource Self}}"
       d:DesignHeight="600" d:DesignWidth="400"
-      d:Background="White"
       Title="TradeFinderMain">
     <Page.Resources>
-        <valueConverters:ConvertItemToIndexListBox x:Key="IndexConv"/>
-        <valueConverters:TradesToSummary x:Key="tradesToSummary"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../ResourceDictionaries/ButtonStyle.xaml"/>
+                <ResourceDictionary Source="../ResourceDictionaries/ComboBoxStyle.xaml"/>
+                <ResourceDictionary Source="../ResourceDictionaries/TextStyles.xaml"/>
+                <ResourceDictionary Source="../ResourceDictionaries/ValueConverters.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Page.Resources>
     <Grid>
         <DockPanel>
@@ -38,14 +43,14 @@
                         <ComboBoxItem Content="3"/>
                     </ComboBox>
                 </DockPanel>
-                <Button x:Name="BtnSelect" Grid.Column="2" Content="과목 선택..." Margin="5,0,0,0" Click="BtnSelect_Click" Height="26" VerticalAlignment="Top"/>
+                <Button x:Name="BtnSelect" Grid.Column="2" Content="과목 선택..." Margin="5,0,0,0" Click="BtnSelect_Click" Height="26" VerticalAlignment="Top" Style="{StaticResource ButtonStyle}"/>
             </Grid>
             <TextBlock DockPanel.Dock="Top" Text="{Binding Path=SelectionMessage}" Margin="10,5,10,0" TextAlignment="Center"/>
             <TextBlock DockPanel.Dock="Top" Text="{Binding Path=WarningMessage}" TextAlignment="Center" TextWrapping="WrapWithOverflow" Margin="10,5,10,0"/>
             <UniformGrid DockPanel.Dock="Top" Margin="10,10,10,0" Columns="3" Rows="1">
-                <Button x:Name="BtnSort" Content="정렬" HorizontalAlignment="Stretch" Padding="0,2.5,0,2.5" Margin="0,0,5,0" IsEnabled="False" Click="BtnSort_Click"/>
-                <Button x:Name="BtnStop" Content="탐색 중지" HorizontalAlignment="Stretch" Padding="0,2.5,0,2.5" Margin="5,0,5,0" IsEnabled="False" Click="BtnStop_Click"/>
-                <Button x:Name="BtnFind" Content="탐색 시작" HorizontalAlignment="Stretch" Padding="0,2.5,0,2.5" Margin="5,0,0,0" Click="BtnFind_Click"/>
+                <Button x:Name="BtnSort" Content="정렬" HorizontalAlignment="Stretch" Padding="0,2.5,0,2.5" Margin="0,0,5,0" IsEnabled="False" Click="BtnSort_Click" Style="{StaticResource ButtonStyle}"/>
+                <Button x:Name="BtnStop" Content="탐색 중지" HorizontalAlignment="Stretch" Padding="0,2.5,0,2.5" Margin="5,0,5,0" IsEnabled="False" Click="BtnStop_Click" Style="{StaticResource ButtonStyle}"/>
+                <Button x:Name="BtnFind" Content="탐색 시작" HorizontalAlignment="Stretch" Padding="0,2.5,0,2.5" Margin="5,0,0,0" Click="BtnFind_Click" Style="{StaticResource ButtonStyle}"/>
             </UniformGrid>
             <ListBox x:Name="LstTrade" DockPanel.Dock="Bottom" Margin="10" ItemsSource="{Binding Path=TradeList, Mode=OneWay}" d:ItemsSource="{d:SampleData ItemCount=5}">
                 <ListBox.ItemContainerStyle>
@@ -64,8 +69,8 @@
                             <Label Content="{Binding RelativeSource={RelativeSource FindAncestor, 
                                                       AncestorType={x:Type ListBoxItem}}, Mode=OneWay, 
                                                       Converter={StaticResource IndexConv}}"
-                                       DockPanel.Dock="Left" Padding="0,0,10,0" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
-                            <TextBlock Text="{Binding ., Converter={StaticResource tradesToSummary}}"/>
+                                   DockPanel.Dock="Left" Padding="0,0,10,0" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                            <TextBlock Text="{Binding ., Converter={StaticResource TradesToSummary}}" Style="{StaticResource ResourceKey={x:Type TextBlock}}"/>
                         </DockPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

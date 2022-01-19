@@ -249,7 +249,6 @@
     </ControlTemplate>
     <Style TargetType="{x:Type ComboBox}">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource DarkBlueBorder}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
