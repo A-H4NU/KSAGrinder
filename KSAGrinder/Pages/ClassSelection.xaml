@@ -9,11 +9,19 @@
       d:DesignHeight="600" d:DesignWidth="400"
       d:Background="White"
       Title="ClassSelection">
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../ResourceDictionaries/ButtonStyle.xaml"/>
+                <ResourceDictionary Source="../ResourceDictionaries/TextStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
     <Grid Margin="10">
         <DockPanel>
             <UniformGrid DockPanel.Dock="Bottom" VerticalAlignment="Bottom" Rows="1" Columns="2">
-                <Button x:Name="BtnCancel" Content="취소" Margin="0,0,5,0" Padding="0,2.5,0,2.5" Click="BtnCancel_Click"/>
-                <Button x:Name="BtnConfirm" Content="확인" Margin="5,0,0,0" Padding="0,2.5,0,2.5" Click="BtnConfirm_Click"/>
+                <Button x:Name="BtnCancel" Content="취소" Margin="0,0,5,0" Padding="0,2.5,0,2.5" Click="BtnCancel_Click" Style="{StaticResource ButtonStyle}"/>
+                <Button x:Name="BtnConfirm" Content="확인" Margin="5,0,0,0" Padding="0,2.5,0,2.5" Click="BtnConfirm_Click" Style="{StaticResource ButtonStyle}"/>
             </UniformGrid>
             <TextBlock DockPanel.Dock="Top" FontSize="13" TextAlignment="Center" Margin="0,0,0,10">
                 <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://google.com">도움말</Hyperlink>

@@ -12,6 +12,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../ResourceDictionaries/ButtonStyle.xaml"/>
                 <ResourceDictionary Source="../ResourceDictionaries/TextStyles.xaml"/>
+                <ResourceDictionary Source="../ResourceDictionaries/TextBoxStyle.xaml"/>
                 <ResourceDictionary Source="../ResourceDictionaries/WindowStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -23,7 +24,7 @@
                 <Button x:Name="BtnZoomIn" Content="확대" Padding="0,2.5,0,2.5" Margin="5,0,0,0" Click="BtnZoomIn_Click" Style="{StaticResource ButtonStyle}"/>
             </UniformGrid>
             <Label DockPanel.Dock="Bottom" Content="드래그해서 복사할 수 있습니다." HorizontalContentAlignment="Center"/>
-            <TextBox x:Name="TxtDetail" DockPanel.Dock="Top" FontSize="16" Margin="0,0,0,5" IsReadOnly="True"/>
+            <TextBox x:Name="TxtDetail" DockPanel.Dock="Top" FontSize="16" Margin="0,0,0,5" Padding="2.5" IsReadOnly="True"/>
         </DockPanel>
     </Grid>
 </Window>
