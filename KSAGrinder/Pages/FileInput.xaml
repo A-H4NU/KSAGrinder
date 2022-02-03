@@ -13,6 +13,7 @@
     <Page.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../ResourceDictionaries/ButtonStyle.xaml"/>
                 <ResourceDictionary Source="../ResourceDictionaries/TextStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -22,7 +23,7 @@
         <WrapPanel Background="Transparent" Drop="Page_Drop" AllowDrop="True"/>
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Drop="Page_Drop" AllowDrop="True">
             <Label Content="제공된 데이터셋을 선택하거나 드래그 앤 드롭하세요." FontSize="20" Margin="0,0,0,10"/>
-            <Button x:Name="BtnSelect" MaxWidth="100" Height="25" Content="선택" Click="BtnSelect_Click"/>
+            <Button x:Name="BtnSelect" MaxWidth="100" Height="25" Content="선택" Click="BtnSelect_Click" Style="{StaticResource ButtonStyle}"/>
             <TextBlock TextAlignment="Center" FontSize="15" Margin="0,20,0,0">
                 <Hyperlink RequestNavigate="Hyperlink_RequestNavigate_Newbie"
                            NavigateUri="">
