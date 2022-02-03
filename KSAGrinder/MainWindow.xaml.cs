@@ -1,6 +1,8 @@
 ﻿using KSAGrinder.Pages;
+using KSAGrinder.Properties;
 
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Windows;
 
@@ -15,6 +17,13 @@ namespace KSAGrinder
 
         public MainWindow()
         {
+            string[] themes = new[] { "Light", "Dark", "Black" };
+            if (!themes.Contains(Settings.Default.Theme))
+            {
+                MessageBox.Show($"테마 {Settings.Default.Theme}는 없는 테마입니다.");
+                Settings.Default.Theme = themes[0];
+            }
+
             InitializeComponent();
 
             Main.Content = new FileInput(this);

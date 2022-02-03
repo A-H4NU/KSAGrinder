@@ -53,7 +53,7 @@
                 <Button x:Name="BtnStop" Content="탐색 중지" HorizontalAlignment="Stretch" Padding="0,2.5,0,2.5" Margin="5,0,5,0" IsEnabled="False" Click="BtnStop_Click" Style="{StaticResource ButtonStyle}"/>
                 <Button x:Name="BtnFind" Content="탐색 시작" HorizontalAlignment="Stretch" Padding="0,2.5,0,2.5" Margin="5,0,0,0" Click="BtnFind_Click" Style="{StaticResource ButtonStyle}"/>
             </UniformGrid>
-            <ListBox x:Name="LstTrade" DockPanel.Dock="Bottom" Margin="10" ItemsSource="{Binding Path=TradeList, Mode=OneWay}" Style="{DynamicResource TradeFinderListBoxStyle}" d:ItemsSource="{d:SampleData ItemCount=5}">
+            <ListBox x:Name="LstTrade" DockPanel.Dock="Bottom" Margin="10" ItemsSource="{Binding Path=TradeList, Mode=OneWay}" Style="{StaticResource ListBoxStyle}" d:ItemsSource="{d:SampleData ItemCount=5}">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>

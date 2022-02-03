@@ -66,10 +66,10 @@ namespace KSAGrinder.Pages
                 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16
             };
 
-        private string WorkingWith
+        public string WorkingWith
         {
             get => _workingWith;
-            set
+            private set
             {
                 _workingWith = value;
                 UpdateWindowTitle();
@@ -87,6 +87,10 @@ namespace KSAGrinder.Pages
                 UpdateWindowTitle();
             }
         }
+
+        private readonly string _dataSetPath;
+
+        public string DataSetPath { get => _dataSetPath; }
 
         #region ObservableCollection
 
@@ -114,12 +118,13 @@ namespace KSAGrinder.Pages
 
         public const int NRow = 14;
 
-        public MainPage(MainWindow main, DataSet data, string hash, string filePathToOpen = null)
+        public MainPage(MainWindow main, string dataSetPath, DataSet data, string hash, string filePathToOpen = null)
         {
             _main = main;
             _data = data;
             _hash = hash;
             _windowTitle = _main.Title;
+            _dataSetPath = dataSetPath;
 
             DataManager.SetData(data);
 
@@ -588,8 +593,11 @@ namespace KSAGrinder.Pages
                     WorkingWith = ofd.FileName;
                     Modified = false;
                 }
-                Settings.Default.LastFile = ofd.FileName;
-                Settings.Default.Save();
+                if (Settings.Default.RememberSave)
+                {
+                    Settings.Default.LastFile = ofd.FileName;
+                    Settings.Default.Save();
+                }
             }
             catch (Exception ex)
             {

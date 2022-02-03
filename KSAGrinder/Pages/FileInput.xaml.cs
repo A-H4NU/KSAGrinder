@@ -49,9 +49,12 @@ namespace KSAGrinder.Pages
             {
                 if (TryUnzip(ofd.FileName, out DataSet result, out string hash))
                 {
-                    Settings.Default.LastDataset = ofd.FileName;
-                    Settings.Default.Save();
-                    _main.Main.Navigate(new MainPage(_main, result, hash));
+                    if (Settings.Default.RememberDataset)
+                    {
+                        Settings.Default.LastDataset = ofd.FileName;
+                        Settings.Default.Save();
+                    }
+                    _main.Main.Navigate(new MainPage(_main, ofd.FileName, result, hash));
                 }
                 else
                 {
@@ -69,9 +72,12 @@ namespace KSAGrinder.Pages
 
             if (TryUnzip(files[0], out DataSet result, out string hash))
             {
-                Settings.Default.LastDataset = files[0];
-                Settings.Default.Save();
-                _main.Main.Navigate(new MainPage(_main, result, hash));
+                if (Settings.Default.RememberDataset)
+                {
+                    Settings.Default.LastDataset = files[0];
+                    Settings.Default.Save();
+                }
+                _main.Main.Navigate(new MainPage(_main, files[0], result, hash));
             }
             else
             {
@@ -185,7 +191,7 @@ namespace KSAGrinder.Pages
                     {
                         if (TryUnzip(Settings.Default.LastDataset, out DataSet result, out string hash))
                         {
-                            MainPage mainPage = new MainPage(_main, result, hash, Settings.Default.LastFile);
+                            MainPage mainPage = new MainPage(_main, Settings.Default.LastDataset, result, hash, Settings.Default.LastFile);
                             _main.Main.Navigate(mainPage);
                         }
                         else
@@ -211,7 +217,7 @@ namespace KSAGrinder.Pages
                     {
                         if (TryUnzip(Settings.Default.LastDataset, out DataSet result, out string hash))
                         {
-                            MainPage mainPage = new MainPage(_main, result, hash);
+                            MainPage mainPage = new MainPage(_main, Settings.Default.LastDataset, result, hash);
                             _main.Main.Navigate(mainPage);
                         }
                         else
