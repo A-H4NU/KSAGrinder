@@ -44,7 +44,7 @@ namespace KSAGrinder.Pages
             {
                 //Title = "제공된 데이터셋을 선택하세요.",
                 Filter = "Dataset files (*.ds)|*.ds"
-            };                
+            };
             if (ofd.ShowDialog() == true)
             {
                 if (TryUnzip(ofd.FileName, out DataSet result, out string hash))

@@ -1,25 +1,12 @@
-﻿using KSAGrinder.Components;
-using KSAGrinder.Properties;
-using KSAGrinder.Statics;
+﻿using KSAGrinder.Statics;
 using KSAGrinder.Windows;
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace KSAGrinder.Pages
 {
@@ -41,7 +28,7 @@ namespace KSAGrinder.Pages
             _main = main;
             _previousPage = previousPage;
 
-            foreach (var (code, grade) in previousPage.LecturesToMove.Keys)
+            foreach ((string code, int grade) in previousPage.LecturesToMove.Keys)
                 _classCheckBoxes.Add(new ClassCheckBox(
                     code,
                     grade,
@@ -51,7 +38,7 @@ namespace KSAGrinder.Pages
 
         private void BtnConfirm_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var ccb in _classCheckBoxes)
+            foreach (ClassCheckBox ccb in _classCheckBoxes)
             {
                 _previousPage.LecturesToMove[(ccb.Code, ccb.Grade)] = ccb.IsChecked;
             }
@@ -61,7 +48,7 @@ namespace KSAGrinder.Pages
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var ccb in _classCheckBoxes)
+            foreach (ClassCheckBox ccb in _classCheckBoxes)
             {
                 ccb.IsChecked = _previousPage.LecturesToMove[(ccb.Code, ccb.Grade)];
             }
@@ -100,7 +87,7 @@ namespace KSAGrinder.Pages
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
-            var help = new DetailView(
+            DetailView help = new DetailView(
                 String.Format(
                     Properties.Resources.ResourceManager.GetString("ClassSelectionHelp"),
                     $"{_previousPage.StudentId} {DataManager.GetNameFromStudentID(_previousPage.StudentId)}"),

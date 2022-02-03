@@ -1,5 +1,4 @@
-﻿using KoreanText;
-
+﻿
 using KSAGrinder.Components;
 using KSAGrinder.Exceptions;
 using KSAGrinder.Extensions;
@@ -17,13 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace KSAGrinder.Pages
 {
@@ -70,7 +63,7 @@ namespace KSAGrinder.Pages
             {
                 int selected = LecturesToMove.Where(pair => pair.Value).Count();
                 int total = LecturesToMove.Count;
-                var res = $"총 {selected}/{total}개 강의 선택됨{Environment.NewLine}";
+                string res = $"총 {selected}/{total}개 강의 선택됨{Environment.NewLine}";
                 if (selected < total)
                     res += $"{total - selected}개 강의는 탐색에서 무시됩니다.";
                 else
@@ -115,7 +108,7 @@ namespace KSAGrinder.Pages
                 Components.TradeCapture tradeCapture = new Components.TradeCapture();
                 List<Class> originalSchedule = DataManager.GetScheduleFromStudentID(StudentId).ToList();
                 List<Class> targetSchedule = _schedule.ToList();
-                foreach (var pair in LecturesToMove)
+                foreach (KeyValuePair<(string, int), bool> pair in LecturesToMove)
                 {
                     ((string code, int grade), bool willMove) = (pair.Key, pair.Value);
                     if (!willMove) continue;
@@ -167,10 +160,10 @@ namespace KSAGrinder.Pages
             int GetNStudentsInvolved(IEnumerable<ClassMove> moves)
                 => moves.Select(move => move.StudentId).ToHashSet().Count();
 
-            var sorted = TradeList.ToList();
+            List<ReadOnlyCollection<ClassMove>> sorted = TradeList.ToList();
             sorted.Sort((a, b) => GetNStudentsInvolved(a) - GetNStudentsInvolved(b));
             TradeList.Clear();
-            foreach (var move in sorted)
+            foreach (ReadOnlyCollection<ClassMove> move in sorted)
                 TradeList.Add(move);
             BtnSort.IsEnabled = false;
         }
@@ -182,7 +175,7 @@ namespace KSAGrinder.Pages
             {
                 Dispatcher.Invoke(() =>
                 {
-                    var list = moves.ToList();
+                    List<ClassMove> list = moves.ToList();
                     if (list.Count > 0)
                         _tradeList.Add(new ReadOnlyCollection<ClassMove>(list));
                 });
@@ -200,7 +193,7 @@ namespace KSAGrinder.Pages
         {
             if (tradeCapture.DoesFormTrade() &&
                 targets.All(tuple => tuple.Schedule.Equals(tradeCapture.GetScheduleOf(tuple.StudentId)))) //&&
-                //tradeCapture.AreAllSchedulesValid(LecturesToMove.Values.All(b => b) ? null : StudentId))
+                                                                                                          //tradeCapture.AreAllSchedulesValid(LecturesToMove.Values.All(b => b) ? null : StudentId))
             {
                 bool okay = true;
                 //foreach ((var studentId, var schedule) in tradeCapture.GetCapturedSchedules())
@@ -226,7 +219,7 @@ namespace KSAGrinder.Pages
 
             if (depth >= maxDepth) return;
 
-            var sequences = new List<List<(IEnumerable<ClassMove>, Schedule)>>();
+            List<List<(IEnumerable<ClassMove>, Schedule)>> sequences = new List<List<(IEnumerable<ClassMove>, Schedule)>>();
             long card = 1;
             foreach ((ClassMove head, ClassMove tail) in tradeCapture.HeadTailTuplesOfNoncycles())
             //foreach (ClassMove tail in tradeCapture.TailsOfNonCycles())
@@ -240,7 +233,7 @@ namespace KSAGrinder.Pages
                                                    where (move.Code, move.Grade) == (tail.Code, tail.Grade)
                                                    select move.NumberTo;
                 IEnumerable<string> studentsInvolved = tradeCapture.InvolvedStudents();
-                var currentList = new List<(IEnumerable<ClassMove>, Schedule)>();
+                List<(IEnumerable<ClassMove>, Schedule)> currentList = new List<(IEnumerable<ClassMove>, Schedule)>();
 
                 // For each class numbers of tailMove.LectureCode but not involved
                 foreach (int numberTo in RangeWithPreference(numberOfClasses, head.NumberFrom).Except(numbersInvolved))
@@ -253,7 +246,7 @@ namespace KSAGrinder.Pages
                         if (_cts.IsCancellationRequested) return;
                         Schedule schedule = new Schedule(tradeCapture.GetScheduleOf(studentId));
                         schedule.MoveClass(tail.Code, tail.Grade, numberTo);
-                        var thisMove = new ClassMove(studentId, tail.Code, tail.Grade, tail.NumberTo, numberTo);
+                        ClassMove thisMove = new ClassMove(studentId, tail.Code, tail.Grade, tail.NumberTo, numberTo);
                         IEnumerable<Schedule> options = schedule.Combination(
                             tradeCapture.InvolvedLecturesOf(studentId)
                                         .Append((tail.Code, tail.Grade)),
@@ -279,9 +272,9 @@ namespace KSAGrinder.Pages
             {
                 //int originalNumMoves = localTradeCapture.Count;
                 //List<IEnumerable<ClassMove>> result = new List<IEnumerable<ClassMove>>();
-                foreach (var optionToTry in batch)
+                foreach (IEnumerable<(IEnumerable<ClassMove>, Schedule)> optionToTry in batch)
                 {
-                    var validOptionToTry = MakeValid(optionToTry);
+                    IEnumerable<(IEnumerable<ClassMove>, Schedule)> validOptionToTry = MakeValid(optionToTry);
                     if (validOptionToTry == null) continue;
 
                     TradeCapture localTradeCapture = tradeCapture.Clone();
@@ -291,7 +284,7 @@ namespace KSAGrinder.Pages
                     {
                         try
                         {
-                            foreach (var move in moves)
+                            foreach (ClassMove move in moves)
                                 localTradeCapture.Add(move);
                         }
                         catch (TradeInvalidException)
@@ -314,19 +307,19 @@ namespace KSAGrinder.Pages
 
             IEnumerable<(IEnumerable<ClassMove>, Schedule)> MakeValid(IEnumerable<(IEnumerable<ClassMove> Moves, Schedule Schedule)> option)
             {
-                var res = new List<(IEnumerable<ClassMove>, Schedule)>();
-                var optionArr = option.ToArray();
+                List<(IEnumerable<ClassMove>, Schedule)> res = new List<(IEnumerable<ClassMove>, Schedule)>();
+                (IEnumerable<ClassMove> Moves, Schedule Schedule)[] optionArr = option.ToArray();
 
                 for (int i = 0; i < optionArr.Length; i++)
                 {
                     bool overlapping = false;
                     for (int j = 0; j < i; j++)
                     {
-                        var std1 = optionArr[i].Moves.First().StudentId;
-                        var std2 = optionArr[j].Moves.First().StudentId;
+                        string std1 = optionArr[i].Moves.First().StudentId;
+                        string std2 = optionArr[j].Moves.First().StudentId;
                         if (std1 != std2) continue;
-                        var moves1 = optionArr[i].Moves.ToHashSet();
-                        var moves2 = optionArr[j].Moves.ToHashSet();
+                        HashSet<ClassMove> moves1 = optionArr[i].Moves.ToHashSet();
+                        HashSet<ClassMove> moves2 = optionArr[j].Moves.ToHashSet();
                         if (moves1.SetEquals(moves2))
                         {
                             overlapping = true;
@@ -345,7 +338,7 @@ namespace KSAGrinder.Pages
 
             numThreads = (int)Math.Min(Math.Ceiling((double)card / batchSize), numThreads);
             Task[] tasks = new Task[numThreads];
-            foreach (var batch in sequences.CartesianProduct().Batch(batchSize))
+            foreach (IEnumerable<IEnumerable<(IEnumerable<ClassMove>, Schedule)>> batch in sequences.CartesianProduct().Batch(batchSize))
             {
                 // Break so that the left tasks to be executed.
                 if (_cts.IsCancellationRequested)

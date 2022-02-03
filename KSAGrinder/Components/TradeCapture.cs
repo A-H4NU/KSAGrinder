@@ -34,8 +34,8 @@ namespace KSAGrinder.Components
 
         public IEnumerable<(string, IReadOnlyCollection<Class>)> GetCapturedSchedules()
         {
-            var res = new List<(string, IReadOnlyCollection<Class>)>(_capturedSchedules.Count);
-            foreach (var pair in _capturedSchedules)
+            List<(string, IReadOnlyCollection<Class>)> res = new List<(string, IReadOnlyCollection<Class>)>(_capturedSchedules.Count);
+            foreach (KeyValuePair<string, Schedule> pair in _capturedSchedules)
                 res.Add((pair.Key, pair.Value.ToList().AsReadOnly()));
             return res;
         }
@@ -51,7 +51,7 @@ namespace KSAGrinder.Components
         /// </summary>
         public IEnumerable<(string, int)> InvolvedLecturesOf(string studentId)
         {
-            var result = new List<(string, int)>();
+            List<(string, int)> result = new List<(string, int)>();
             foreach (ClassMove move in _classMoves)
             {
                 if (move.StudentId == studentId && !result.Contains((move.Code, move.Grade)))
@@ -105,7 +105,7 @@ namespace KSAGrinder.Components
         /// </example>
         public IEnumerable<(ClassMove Head, ClassMove Tail)> HeadTailTuplesOfNoncycles()
         {
-            foreach (var movesOfALecture in _classMoves.GroupBy(move => (move.Code, move.Grade)))
+            foreach (IGrouping<(string Code, int Grade), ClassMove> movesOfALecture in _classMoves.GroupBy(move => (move.Code, move.Grade)))
             {
                 if (ClassMove.IsSetOfCycles(movesOfALecture)) continue;
 
@@ -193,7 +193,7 @@ namespace KSAGrinder.Components
         public bool AreAllSchedulesValid(string exceptForThisStudentId = null)
             => _capturedSchedules.All(pair =>
             {
-                var (id, scd) = (pair.Key, pair.Value);
+                (string id, Schedule scd) = (pair.Key, pair.Value);
                 return id == exceptForThisStudentId || scd.IsValid;
             });
 

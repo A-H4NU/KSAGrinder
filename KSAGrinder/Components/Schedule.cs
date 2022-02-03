@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 
 namespace KSAGrinder.Components
 {
@@ -271,11 +270,11 @@ namespace KSAGrinder.Components
 
         public static IEnumerable<ClassMove> Difference(string studentId, Schedule from, Schedule to)
         {
-            var res = new List<ClassMove>();
-            var tolist = to.ToList();
-            foreach (var clsFrom in from)
+            List<ClassMove> res = new List<ClassMove>();
+            List<Class> tolist = to.ToList();
+            foreach (Class clsFrom in from)
             {
-                var idx = tolist.FindIndex(cls => cls.Code == clsFrom.Code && cls.Grade == clsFrom.Grade && cls.Number != clsFrom.Number);
+                int idx = tolist.FindIndex(cls => cls.Code == clsFrom.Code && cls.Grade == clsFrom.Grade && cls.Number != clsFrom.Number);
                 if (idx != -1)
                     res.Add(new ClassMove(studentId, clsFrom.Code, clsFrom.Grade, clsFrom.Number, tolist[idx].Number));
             }

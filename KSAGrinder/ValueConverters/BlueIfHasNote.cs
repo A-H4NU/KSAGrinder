@@ -2,7 +2,6 @@
 using KSAGrinder.Statics;
 
 using System;
-using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Data;

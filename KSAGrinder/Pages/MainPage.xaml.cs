@@ -51,7 +51,7 @@ namespace KSAGrinder.Pages
                 _originalScheduleID = value;
                 Schedule.OriginalScheduleID = value;
                 UpdateWindowTitle();
-                
+
             }
         }
 
@@ -230,7 +230,7 @@ namespace KSAGrinder.Pages
                     if (String.IsNullOrWhiteSpace(hours[hour - 1, (int)day - 1]))
                         hours[hour - 1, (int)day - 1] = classStr;
                     else
-                        hours[hour - 1, (int) day - 1] = "!!!!!!!!!\n겹침\n!!!!!!!!!";
+                        hours[hour - 1, (int)day - 1] = "!!!!!!!!!\n겹침\n!!!!!!!!!";
                 }
                 int idx = DataManager.ClassDict(code, grade).FindIndex((c) => c.Number == number);
                 CurrentClassCollection.Add(DataManager.ClassDict(code, grade)[idx]);
@@ -251,7 +251,7 @@ namespace KSAGrinder.Pages
             }
 
             LblValid.Content = _currentSchedule.IsValid ? String.Empty : "유효하지 않음";
-            int totalCredit =  _currentSchedule.Select(cls => DataManager.GetLecture(cls.Code, cls.Grade).Credit)
+            int totalCredit = _currentSchedule.Select(cls => DataManager.GetLecture(cls.Code, cls.Grade).Credit)
                                                .Aggregate(0, (a, b) => a + b);
             LblCredit.Text = $"총 {totalCredit}학점";
         }
@@ -658,9 +658,9 @@ namespace KSAGrinder.Pages
             {
                 string note = String.IsNullOrWhiteSpace(cls.Note) ? "없음" : cls.Note;
                 string content =
-                    $"강의명: {cls.Name}{Environment.NewLine}" + 
+                    $"강의명: {cls.Name}{Environment.NewLine}" +
                     $"학년: {cls.Grade}{Environment.NewLine}" +
-                    $"분반: {cls.Number}{Environment.NewLine}" + 
+                    $"분반: {cls.Number}{Environment.NewLine}" +
                     $"교과목코드: {cls.Code}{Environment.NewLine}" +
                     $"선생님: {cls.Teacher}{Environment.NewLine}" +
                     $"요일/시간: {cls.DayTime}{Environment.NewLine}" +
@@ -717,7 +717,7 @@ namespace KSAGrinder.Pages
         {
             if (!_currentSchedule.IsValid)
             {
-                var result = MessageBox.Show(
+                MessageBoxResult result = MessageBox.Show(
                     "현재 시간표가 유효하지 않습니다. 그래도 진행하시겠습니까?",
                     "현재 시간표가 유효하지 않음",
                     MessageBoxButton.YesNo,

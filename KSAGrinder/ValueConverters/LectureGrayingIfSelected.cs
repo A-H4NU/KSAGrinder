@@ -1,7 +1,6 @@
 ﻿using KSAGrinder.Components;
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
@@ -20,7 +19,7 @@ namespace KSAGrinder.ValueConverters
 
             if (value[0] is string code && value[1] is int grade)
             {
-                foreach (var @class in _schedule)
+                foreach (Class @class in _schedule)
                 {
                     if (@class.Code == code && @class.Grade == grade)
                         return isLightTheme ? Brushes.LightGray : new SolidColorBrush(Color.FromRgb(98, 98, 98));

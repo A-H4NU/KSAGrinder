@@ -1,5 +1,4 @@
-﻿using KoreanText;
-
+﻿
 using KSAGrinder.Components;
 
 using System;
@@ -29,7 +28,7 @@ namespace KSAGrinder.Statics
 
         public static IEnumerable<Lecture> GetLectures()
         {
-            foreach (var lecture in _lectures)
+            foreach (Lecture lecture in _lectures)
                 yield return lecture;
         }
 
@@ -105,7 +104,7 @@ namespace KSAGrinder.Statics
             DataTable tStudent = Data.Tables["Student"];
             DataColumn cApplied = tStudent.Columns["Applied"];
             DataColumn cID = tStudent.Columns["ID"];
-            var applyDict = new Dictionary<(string Code, int Grade, int Number), List<string>>();
+            Dictionary<(string Code, int Grade, int Number), List<string>> applyDict = new Dictionary<(string Code, int Grade, int Number), List<string>>();
             void AddToApplyDict(string code, int grade, int number, string student)
             {
                 if (applyDict.TryGetValue((code, grade, number), out List<string> list))
