@@ -18,6 +18,10 @@ KSAGrinder는 완벽한 시간표를 만들고 싶은 모든 학생들을 위한
 
 [이 매뉴얼(한국어)](https://drive.google.com/file/d/1C4VUWx1e7CIcYHdCBf2nzULvRDlZXJzs/view?usp=sharing)를 참고하세요.
 
+## 추후 추가될? 기능
+* 영어 지원
+* 트레이드 매칭 (실제로)
+
 ----
 
 # KSAGrinder
@@ -36,3 +40,7 @@ This repository includes a developer tool for formatting information provided by
 ## How to use?
 
 Refer to this [this manual(kor)](https://drive.google.com/file/d/1C4VUWx1e7CIcYHdCBf2nzULvRDlZXJzs/view?usp=sharing).
+
+## Features that will be added? later
+* English support
+* Matching a trade (IRL)
