@@ -1,4 +1,4 @@
-<p align="center"><img src="/KSAGrinder/KSAGrinder.png" width="200" height="200"></p>
+<p align="center"><img src="/KSAGrinder/KSAGrinder_intro.png"></p>
 
 # KSAGrinder
 KSAGrinder는 완벽한 시간표를 만들고 싶은 모든 학생들을 위한 편리한 도구입니다.
