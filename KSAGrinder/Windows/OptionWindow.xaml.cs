@@ -79,5 +79,10 @@ namespace KSAGrinder.Windows
 
             Settings.Default.Save();
         }
+
+        private void ChkInstantSearch_Checked(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

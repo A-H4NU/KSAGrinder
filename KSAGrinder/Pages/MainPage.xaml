@@ -76,9 +76,15 @@
                     </ComboBox>
                     <!--<Label Content="검색: " FontSize="13" Margin="10,0,0,0"/>-->
                     <Grid Margin="10,0,0,0" Style="{StaticResource HintGridStyle}">
-                        <TextBlock x:Name="TxtHint" Margin="5,2" FontSize="13" MinWidth="50" Text="검색 (초성 검색 지원)" VerticalAlignment="Center"
+                        <TextBlock x:Name="TxtHint" Margin="5,2" FontSize="13" MinWidth="50" Text="엔터로 검색, 초성 검색 지원" VerticalAlignment="Center"
                                    Foreground="LightGray" Visibility="{Binding ElementName=TxtSearch, Path=Text, Converter={StaticResource TextToVisibility}}" IsHitTestVisible="False"/>
-                        <TextBox x:Name="TxtSearch" VerticalContentAlignment="Center" Background="Transparent" FontSize="13" TextChanged="TxtSearch_TextChanged" Style="{StaticResource TextBoxStyle}"/>
+                        <TextBox x:Name="TxtSearch" VerticalContentAlignment="Center" Background="Transparent" FontSize="13" TextChanged="TxtSearch_TextChanged">
+                            <TextBox.Style>
+                                <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource TextBoxStyle}">
+                                    <EventSetter Event="KeyDown" Handler="TxtSearch_KeyDown"/>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
                     </Grid>
                 </DockPanel>
                 <Grid Grid.Column="1" Grid.Row="0">

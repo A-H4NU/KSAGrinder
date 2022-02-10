@@ -29,9 +29,6 @@
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="KoreanString" Version="1.0.1" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="System.IO.Compression" />
   </ItemGroup>

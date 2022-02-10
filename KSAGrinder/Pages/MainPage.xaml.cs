@@ -1,6 +1,4 @@
-﻿using KoreanText;
-
-using KSAGrinder.Components;
+﻿using KSAGrinder.Components;
 using KSAGrinder.Exceptions;
 using KSAGrinder.Extensions;
 using KSAGrinder.Properties;
@@ -275,30 +273,25 @@ namespace KSAGrinder.Pages
 
         private void LoadLectures()
         {
-            string ExtractChosung(KoreanString str)
-            {
-                string result = "";
-                for (int i = 0; i < str.Length; ++i)
-                {
-                    result += str[i].GetChoSung();
-                }
-                return result;
-            }
+            var start = DateTime.Now;
             Department department = (Department)CmbDepartment.SelectedItem;
-            string departmentStr = department.ToString();
             LectureCollection.Clear();
+            bool searchStringAllInitialConsonants = HangulDisassembler.AreInitialConsonants(TxtSearch.Text);
+            string disassembledSearchText = HangulDisassembler.Disassemble(TxtSearch.Text);
             foreach (Lecture lecture in DataManager.GetLectures())
             {
-                KoreanString kname = new KoreanString(lecture.Name);
                 bool departmentCombOk = department == Department.All || department == lecture.Department;
                 bool searchOk = String.IsNullOrEmpty(TxtSearch.Text)
                         || lecture.Name.StartsWith(TxtSearch.Text, StringComparison.OrdinalIgnoreCase)
-                        || ExtractChosung(kname).StartsWith(TxtSearch.Text);
+                        || (searchStringAllInitialConsonants
+                            ? HangulDisassembler.ExtractInitialConsonants(lecture.Name).StartsWith(TxtSearch.Text)
+                            : HangulDisassembler.Disassemble(lecture.Name).StartsWith(disassembledSearchText));
                 if (departmentCombOk && searchOk)
                 {
                     LectureCollection.Add(lecture);
                 }
             }
+            System.Diagnostics.Debug.WriteLine((DateTime.Now - start).TotalMilliseconds);
         }
 
         private void SaveXmlInBinary(string filePath)
@@ -634,7 +627,11 @@ namespace KSAGrinder.Pages
             optionWindow.ShowDialog();
         }
 
-        private void CmbDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e) => LoadLectures();
+        private void CmbDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Start");
+            LoadLectures();
+        }
 
         private void LectureTable_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -650,7 +647,17 @@ namespace KSAGrinder.Pages
             }
         }
 
-        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e) => LoadLectures();
+        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (Settings.Default.InstantSearch)
+                LoadLectures();
+        }
+
+        private void TxtSearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                LoadLectures();
+        }
 
         private void ClassTableMenuItem_Click(object sender, RoutedEventArgs e)
         {
