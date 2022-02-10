@@ -14,6 +14,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../ResourceDictionaries/ButtonStyle.xaml"/>
+                <ResourceDictionary Source="../ResourceDictionaries/CheckBoxStyles.xaml"/>
                 <ResourceDictionary Source="../ResourceDictionaries/TextStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

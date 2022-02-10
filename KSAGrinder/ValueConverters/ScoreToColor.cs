@@ -9,8 +9,8 @@ namespace KSAGrinder.ValueConverters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            Color light = Colors.LightGreen;
-            Color dark = Colors.DarkGreen;
+            Color light = Color.FromRgb(105, 173, 105);
+            Color dark = Color.FromRgb(35, 75, 35);
             if (value is double score)
             {
                 Color newColor = Color.FromRgb(

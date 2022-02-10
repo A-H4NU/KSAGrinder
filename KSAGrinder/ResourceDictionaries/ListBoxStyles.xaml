@@ -47,11 +47,11 @@
                 <Setter Property="BorderBrush" Value="{StaticResource BlueBorder}"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Dark">
-                <Setter Property="Background" Value="{StaticResource LightDarkBackground}"/>
+                <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
                 <Setter Property="BorderBrush" Value="{StaticResource DarkBlueBorder}"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Black">
-                <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+                <Setter Property="Background" Value="Black"/>
                 <Setter Property="BorderBrush" Value="{StaticResource DarkBlueBorder}"/>
             </DataTrigger>
         </Style.Triggers>

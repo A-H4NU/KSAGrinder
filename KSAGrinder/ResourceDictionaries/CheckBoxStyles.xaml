@@ -1,0 +1,196 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:properties="clr-namespace:KSAGrinder.Properties">
+    <!--Source: https://blog.2bbear.dev/entry/WPF-CheckBox-색-바꾸는-방법-->
+    <Style x:Key="CheckBoxStyle" TargetType="{x:Type CheckBox}">
+        <Setter Property="BorderBrush" Value="Black"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Light">
+                <Setter Property="Foreground" Value="Black" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <BulletDecorator Background="Transparent">
+                                <BulletDecorator.Bullet>
+                                    <Border x:Name="Border" Width="13" Height="13" CornerRadius="0" Background="#f3f9ff" BorderThickness="1" BorderBrush="Black"  >
+                                        <Path Width="10" Height="10"  x:Name="CheckMark" SnapsToDevicePixels="False" Stroke="Black" StrokeThickness="2" Data="M 1 5 L 4 8 L 9 2" />
+                                    </Border>
+                                </BulletDecorator.Bullet>
+                                <ContentPresenter Margin="4,0,0,0"  VerticalAlignment="Center" HorizontalAlignment="Left" RecognizesAccessKey="True"/>
+                            </BulletDecorator>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="false">
+                                    <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource BlueBorder}" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="true">
+                                    <Setter TargetName="Border" Property="Background" Value="#d9ecff"/>
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="#427bde" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Dark">
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <BulletDecorator Background="Transparent">
+                                <BulletDecorator.Bullet>
+                                    <Border x:Name="Border" Width="13" Height="13" CornerRadius="0" Background="{StaticResource LightDarkBackground}" BorderThickness="1" BorderBrush="DarkGray">
+                                        <Path Width="10" Height="10"  x:Name="CheckMark" SnapsToDevicePixels="False" Stroke="White" StrokeThickness="2" Data="M 1 5 L 4 8 L 9 2" />
+                                    </Border>
+                                </BulletDecorator.Bullet>
+                                <ContentPresenter Margin="4,0,0,0"  VerticalAlignment="Center" HorizontalAlignment="Left" RecognizesAccessKey="True"/>
+                            </BulletDecorator>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="false">
+                                    <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="#a1d5ff"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="true">
+                                    <Setter TargetName="Border" Property="Background" Value="{StaticResource LightDarkBackground}"/>
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="#2b5091" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Black">
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <BulletDecorator Background="Transparent">
+                                <BulletDecorator.Bullet>
+                                    <Border x:Name="Border" Width="13" Height="13" CornerRadius="0" Background="{StaticResource DarkBackground}" BorderThickness="1" BorderBrush="DarkGray">
+                                        <Path Width="10" Height="10"  x:Name="CheckMark" SnapsToDevicePixels="False" Stroke="White" StrokeThickness="2" Data="M 1 5 L 4 8 L 9 2" />
+                                    </Border>
+                                </BulletDecorator.Bullet>
+                                <ContentPresenter Margin="4,0,0,0"  VerticalAlignment="Center" HorizontalAlignment="Left" RecognizesAccessKey="True"/>
+                            </BulletDecorator>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="false">
+                                    <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="#a1d5ff"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="true">
+                                    <Setter TargetName="Border" Property="Background" Value="{StaticResource DarkBackground}"/>
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="#2b5091" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="GridCheckBoxStyle" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource CheckBoxStyle}">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="BorderBrush" Value="Black"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Light">
+                <Setter Property="Foreground" Value="Black" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <BulletDecorator Background="Transparent">
+                                <BulletDecorator.Bullet>
+                                    <Border x:Name="Border" Width="13" Height="13" CornerRadius="0" Background="#f3f9ff" BorderThickness="1" BorderBrush="Black"  >
+                                        <Path Width="10" Height="10"  x:Name="CheckMark" SnapsToDevicePixels="False" Stroke="Black" StrokeThickness="2" Data="M 1 5 L 4 8 L 9 2" />
+                                    </Border>
+                                </BulletDecorator.Bullet>
+                                <ContentPresenter Margin="0,0,0,0"  VerticalAlignment="Center" HorizontalAlignment="Left" RecognizesAccessKey="True"/>
+                            </BulletDecorator>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="false">
+                                    <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource BlueBorder}" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="true">
+                                    <Setter TargetName="Border" Property="Background" Value="#d9ecff"/>
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="#427bde" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Dark">
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <BulletDecorator Background="Transparent">
+                                <BulletDecorator.Bullet>
+                                    <Border x:Name="Border" Width="13" Height="13" CornerRadius="0" Background="{StaticResource LightDarkBackground}" BorderThickness="1" BorderBrush="Gray"  >
+                                        <Path Width="10" Height="10"  x:Name="CheckMark" SnapsToDevicePixels="False" Stroke="White" StrokeThickness="2" Data="M 1 5 L 4 8 L 9 2" />
+                                    </Border>
+                                </BulletDecorator.Bullet>
+                                <ContentPresenter Margin="0,0,0,0"  VerticalAlignment="Center" HorizontalAlignment="Left" RecognizesAccessKey="True"/>
+                            </BulletDecorator>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="false">
+                                    <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="#a1d5ff"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="true">
+                                    <Setter TargetName="Border" Property="Background" Value="{StaticResource LightDarkBackground}"/>
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="#2b5091" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=Theme}" Value="Black">
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <BulletDecorator Background="Transparent">
+                                <BulletDecorator.Bullet>
+                                    <Border x:Name="Border" Width="13" Height="13" CornerRadius="0" Background="{StaticResource DarkBackground}" BorderThickness="1" BorderBrush="Gray"  >
+                                        <Path Width="10" Height="10"  x:Name="CheckMark" SnapsToDevicePixels="False" Stroke="White" StrokeThickness="2" Data="M 1 5 L 4 8 L 9 2" />
+                                    </Border>
+                                </BulletDecorator.Bullet>
+                                <ContentPresenter Margin="0,0,0,0"  VerticalAlignment="Center" HorizontalAlignment="Left" RecognizesAccessKey="True"/>
+                            </BulletDecorator>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="false">
+                                    <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="#a1d5ff"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="true">
+                                    <Setter TargetName="Border" Property="Background" Value="{StaticResource DarkBackground}"/>
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="#2b5091" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

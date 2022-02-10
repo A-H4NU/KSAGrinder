@@ -16,6 +16,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../ResourceDictionaries/ButtonStyle.xaml"/>
+                <ResourceDictionary Source="../ResourceDictionaries/CheckBoxStyles.xaml"/>
                 <ResourceDictionary Source="../ResourceDictionaries/ComboBoxStyle.xaml"/>
                 <ResourceDictionary Source="../ResourceDictionaries/DataGridStyles.xaml"/>
                 <ResourceDictionary Source="../ResourceDictionaries/TextStyles.xaml"/>
@@ -151,7 +152,7 @@
                   HeadersVisibility="Column" CanUserReorderColumns="False" CanUserResizeRows="False"
                   CanUserResizeColumns="False" CanUserAddRows="False" CanUserSortColumns="False">
                     <DataGrid.Columns>
-                        <DataGridCheckBoxColumn Header="고정" Width="40" ElementStyle="{StaticResource GridCheckBoxSytle}"/>
+                        <DataGridCheckBoxColumn Header="고정" Width="40" ElementStyle="{StaticResource GridCheckBoxStyle}"/>
                         <DataGridTextColumn Header="강의명" Width="*" Binding="{Binding Name}" IsReadOnly="True"/>
                         <DataGridTextColumn Header="학점" Width="40" Binding="{Binding Credit}" IsReadOnly="True"/>
                         <DataGridTextColumn Header="분반" Width="40" Binding="{Binding Number}" IsReadOnly="True"/>

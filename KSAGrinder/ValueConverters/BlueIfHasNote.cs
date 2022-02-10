@@ -56,12 +56,11 @@ namespace KSAGrinder.ValueConverters
                 bool hasNote = !String.IsNullOrEmpty(DataManager.GetClass(code, grade, number).Note);
 
                 if (overlap && hasNote)
-                    //return new SolidColorBrush(Color.FromRgb(159, 50, 185));
                     return isLightTheme ? new SolidColorBrush(Color.FromRgb(171, 83, 193)) : new SolidColorBrush(Color.FromRgb(203, 117, 225));
                 if (overlap && !hasNote)
                     return Brushes.Red;
                 if (!overlap && hasNote)
-                    return isLightTheme ? Brushes.Blue : new SolidColorBrush(Color.FromRgb(64, 99, 236));
+                    return isLightTheme ? Brushes.Blue : new SolidColorBrush(Color.FromRgb(115, 140, 255));
             }
             return isLightTheme ? Brushes.Black : Brushes.White;
         }
