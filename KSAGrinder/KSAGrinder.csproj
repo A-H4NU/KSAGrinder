@@ -9,6 +9,8 @@
     <PlatformTarget>x64</PlatformTarget>
     <ApplicationIcon>KSAGrinder.ico</ApplicationIcon>
     <DebugType>portable</DebugType>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>C:\Users\HANU\source\repos\HANUPrivate.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="KSAGrinder.ico">
