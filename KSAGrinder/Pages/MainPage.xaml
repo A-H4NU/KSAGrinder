@@ -19,6 +19,7 @@
                 <ResourceDictionary Source="../ResourceDictionaries/CheckBoxStyles.xaml"/>
                 <ResourceDictionary Source="../ResourceDictionaries/ComboBoxStyle.xaml"/>
                 <ResourceDictionary Source="../ResourceDictionaries/DataGridStyles.xaml"/>
+                <ResourceDictionary Source="../ResourceDictionaries/MenuStyle.xaml"/>
                 <ResourceDictionary Source="../ResourceDictionaries/TextStyles.xaml"/>
                 <ResourceDictionary Source="../ResourceDictionaries/ValueConverters.xaml"/>
             </ResourceDictionary.MergedDictionaries>
@@ -27,14 +28,14 @@
     
     <DockPanel>
         <Menu Padding="5" FontSize="13" DockPanel.Dock="Top" Style="{StaticResource MenuStyle}">
-            <MenuItem Style="{DynamicResource MenuItemStyle}" Header="파일">
+            <MenuItem Style="{StaticResource MenuItemStyle}" Header="파일">
                 <MenuItem Header="새 시간표 (Ctrl+N)" Click="MenuNewSchedule_Click"/>
                 <MenuItem Header="열기 (Ctrl+O)" Click="MenuOpen_Click"/>
                 <MenuItem Header="학번에서 불러오기" Click="MenuLoadID_Click"/>
                 <MenuItem Header="저장 (Ctrl+S)" Click="MenuSave_Click"/>
                 <MenuItem Header="다른 이름으로 저장" Click="MenuSaveAs_Click"/>
             </MenuItem>
-            <MenuItem Style="{DynamicResource MenuItemStyle}" Header="도구">
+            <MenuItem Style="{StaticResource MenuItemStyle}" Header="도구">
                 <MenuItem Header="설정 (Ctrl+I)" Click="MenuOption_Click"/>
             </MenuItem>
         </Menu>
