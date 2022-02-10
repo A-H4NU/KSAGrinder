@@ -161,6 +161,7 @@
                     <DataGrid.RowStyle>
                         <Style TargetType="{x:Type DataGridRow}">
                             <EventSetter Event="MouseRightButtonUp" Handler="CurrentClassTableRow_RightClick"/>
+                            <EventSetter Event="MouseDoubleClick" Handler="CurrentClassTableRow_RightClick"/>
                             <EventSetter Event="KeyDown" Handler="CurrentClassTableRow_KeyDown"/>
                         </Style>
                     </DataGrid.RowStyle>
