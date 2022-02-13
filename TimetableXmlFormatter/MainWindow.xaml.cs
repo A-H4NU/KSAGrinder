@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using Microsoft.VisualBasic.FileIO;
+using Microsoft.Win32;
 
 using System;
 using System.Collections.Generic;
@@ -120,10 +121,10 @@ namespace TimetableXmlFormatter
         {
             /*
              * <교과 테이블>
-             * 교과목코드, 교과군, 교과목명, 학점, 시수
+             * 교과목코드, 교과목명, 학년, 학부, 학점, 시수
              * 
              * <분반 테이블>
-             * 교과목코드, 분반 번호, 담당교원, 요일/시간, 신청수, 비고
+             * 교과목코드, 학년, 분반 번호, 담당교원, 요일/시간, 신청수, 비고
              * 
              * <학생 테이블>
              * 학번, 이름, 듣는 과목/분반 (코드 배열)
@@ -169,12 +170,16 @@ namespace TimetableXmlFormatter
             var lectureNameToCode = new Dictionary<string, string>(); // lecture name => code
             var lectureCodeGradeSet = new HashSet<(string Code, int Grade)>();
             using (var fs = new FileStream(classCSVpath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (var sr = new StreamReader(fs))
+            using (var parser = new TextFieldParser(fs))
             {
-                sr.ReadLine(); // skip headers
-                while (!sr.EndOfStream)
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters(",");
+                parser.ReadFields(); // skip headers
+                while (!parser.EndOfData)
                 {
-                    string[] values = sr.ReadLine().Split(',');
+                    string[] values = parser.ReadFields();
+                    if (values.All(s => String.IsNullOrWhiteSpace(s)))
+                        continue;
                     string code = values[lectureColumns[0].Index];
                     string name = values[lectureColumns[1].Index];
                     int grade = Int32.Parse(values[lectureColumns[2].Index]);
@@ -235,8 +240,11 @@ namespace TimetableXmlFormatter
                 // indices of the first occurences of lecture names (on path)
                 //var firstIndex = new Dictionary<int, string>(); // (index, lecture name)
                 var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-                var sr = new StreamReader(fs);
-                string[] firstRow = sr.ReadLine().Split(',');
+                var parser = new TextFieldParser(fs);
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters(",");
+
+                string[] firstRow = parser.ReadFields();
                 //for (int i = 1; i < firstRow.Length; ++i)
                 //{
                 //    string lectureName = GetUntilOrEntire(firstRow[i], "(");
@@ -245,10 +253,10 @@ namespace TimetableXmlFormatter
                 //    else
                 //        firstIndex.Add(i, lectureName);
                 //}
-                sr.ReadLine();
-                while (!sr.EndOfStream)
+                parser.ReadFields();
+                while (!parser.EndOfData)
                 {
-                    string[] line = sr.ReadLine().Split(',');
+                    string[] line = parser.ReadFields();
                     if (line[0].Length == 0 || line[0][0] < '0' || line[0][0] > '9')
                         continue;
 
