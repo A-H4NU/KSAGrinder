@@ -4,8 +4,10 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -103,7 +105,7 @@ namespace TimetableXmlFormatter
 
         private void BtnGen_Click(object sender, RoutedEventArgs e)
         {
-            var txts = new TextBox[] { TxtClass, TxtCS1, TxtCS2 };
+            var txts = new TextBox[] { TxtClass, TxtCS1 };
             if (txts.Any((txt) => String.IsNullOrEmpty(txt.Text)))
             {
                 MessageBox.Show("Please fill in the all blanks.");
@@ -237,6 +239,8 @@ namespace TimetableXmlFormatter
 
             void ProcessStudentFile(string path)
             {
+                if (String.IsNullOrWhiteSpace(path))
+                    return;
                 // indices of the first occurences of lecture names (on path)
                 //var firstIndex = new Dictionary<int, string>(); // (index, lecture name)
                 var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -274,15 +278,26 @@ namespace TimetableXmlFormatter
                         applied = new HashSet<(string Code, int Grade, int Number)>();
                     }
 
+                    int matchingRegexNum = -1;
                     for (int i = 1; i < line.Length; ++i)
                     {
-                        if (line[i] != "1" || !firstRow[i].Contains("_"))
+                        if (line[i] != "1")
                             continue;
+                        Regex regex1 = new Regex(@"\A(.+)\(([1-3])\)_([1-9]|1[0-9])\z");
+                        Regex regex2 = new Regex(@"\A(.+)\(([1-3])\)\(([1-9]|1[0-9])\)");
+                        bool match1 = regex1.IsMatch(firstRow[i]), match2 = regex2.IsMatch(firstRow[i]);
+                        Debug.Assert(match1 ^ match2);
+                        Debug.Assert(matchingRegexNum != -1 || matchingRegexNum != (match1 ? 1 : 2));
+                        matchingRegexNum = match1 ? 1 : 2;
+                        Regex matchingRegex = matchingRegexNum == 1 ? regex1 : regex2;
+                        var matchCollection = matchingRegex.Matches(firstRow[i]);
+                        Debug.Assert(matchCollection.Count == 1);
+                        var match = matchCollection[0];
+                        Debug.Assert(match.Groups.Count == 4);
 
-                        string[] @class = firstRow[i].Split('_');
-                        string code = lectureNameToCode[@class[0].Substring(0, @class[0].LastIndexOf('('))];
-                        int grade = Int32.Parse(GetUntilOrEntire(@class[0].Substring(@class[0].LastIndexOf('(') + 1), ")"));
-                        int classNum = Int32.Parse(@class[1]);
+                        string code = lectureNameToCode[match.Groups[1].Value];
+                        int grade = Int32.Parse(match.Groups[2].Value);
+                        int classNum = Int32.Parse(match.Groups[3].Value);
                         applied.Add((code, grade, classNum));
                     }
                     idToRow[id] = new object[] { id, name, applied.ToArray() };
