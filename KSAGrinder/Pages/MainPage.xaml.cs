@@ -219,7 +219,7 @@ namespace KSAGrinder.Pages
                 int grade = @class.Grade;
                 int number = @class.Number;
 
-                string classStr = $"{DataManager.GetNameOfLectureFromCode(code)}{Environment.NewLine}"
+                string classStr = $"{DataManager.GetNameOfLectureFromCode(code)}({grade}){Environment.NewLine}"
                              + $"{number}분반{Environment.NewLine}"
                              + $"{@class.Teacher}";
 
