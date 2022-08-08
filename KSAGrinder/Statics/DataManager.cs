@@ -34,6 +34,8 @@ namespace KSAGrinder.Statics
 
         public static Lecture GetLecture(string code, int grade) => _lectures.Find(x => x.Code == code && x.Grade == grade);
 
+        public static Class GetClass(string code, int grade, int number) => _classDict[(code, grade)].Find(cls => cls.Number == number);
+
         public static bool LectureExists(string code, int grade) => _classDict.ContainsKey((code, grade));
 
         public static bool StudentExists(string id) => Data.Tables["Student"].Rows.Find(id) != null;
@@ -60,8 +62,6 @@ namespace KSAGrinder.Statics
             return classRow;
         }
 
-        public static Class GetClass(string code, int grade, int number) => _classDict[(code, grade)][number - 1];
-
         public static IEnumerable<Class> GetScheduleFromStudentID(string id)
         {
             DataRow row = Data.Tables["Student"].Rows.Find(id);
@@ -70,7 +70,7 @@ namespace KSAGrinder.Statics
             DataColumn cApplied = tStudent.Columns["Applied"];
 
             return from tuple in ((string Code, int Grade, int Number)[])row[cApplied]
-                   select _classDict[(tuple.Code, tuple.Grade)][tuple.Number - 1];
+                   select GetClass(tuple.Code, tuple.Grade, tuple.Number);
         }
 
         public static string GetNameFromStudentID(string id)
@@ -139,6 +139,10 @@ namespace KSAGrinder.Statics
                     note: row[cNote].ToString(),
                     enrolledList: applyDict[(code, grade, (int)row[cNumber])]
                 ));
+            }
+            foreach (var classList in _classDict.Values)
+            {
+                classList.Sort((a, b) => a.Number.CompareTo(b.Number));
             }
         }
 

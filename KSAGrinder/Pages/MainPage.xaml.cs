@@ -230,8 +230,7 @@ namespace KSAGrinder.Pages
                     else
                         hours[hour - 1, (int)day - 1] = "!!!!!!!!!\n겹침\n!!!!!!!!!";
                 }
-                int idx = DataManager.ClassDict(code, grade).FindIndex((c) => c.Number == number);
-                CurrentClassCollection.Add(DataManager.ClassDict(code, grade)[idx]);
+                CurrentClassCollection.Add(DataManager.GetClass(code, grade, number));
             }
 
             HourCollection.Clear();

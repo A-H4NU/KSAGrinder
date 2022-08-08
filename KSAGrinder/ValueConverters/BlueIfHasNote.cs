@@ -20,15 +20,10 @@ namespace KSAGrinder.ValueConverters
 
         private static bool DoesOverlapIfAdded(string code, int grade, int number)
         {
-            (DayOfWeek Day, int Hour)[] GetSchedule(string c, int g, int n)
-            {
-                int idx = DataManager.ClassDict(c, g).FindIndex((cls) => cls.Number == n);
-                return DataManager.ClassDict(c, g)[idx].Schedule;
-            }
-            (DayOfWeek Day, int Hour)[] schedule = GetSchedule(code, grade, number);
+            (DayOfWeek Day, int Hour)[] schedule = DataManager.GetClass(code, grade, number).Schedule;
             foreach (Class cls in _schedule)
             {
-                (DayOfWeek Day, int Hour)[] existingSchedule = GetSchedule(cls.Code, cls.Grade, cls.Number);
+                (DayOfWeek Day, int Hour)[] existingSchedule = DataManager.GetClass(cls.Code, cls.Grade, cls.Number).Schedule;
                 foreach ((DayOfWeek Day, int Hour) time in schedule)
                 {
                     if (existingSchedule.Contains(time))
