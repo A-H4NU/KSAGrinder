@@ -264,8 +264,11 @@ namespace TimetableXmlFormatter
                     if (line[0].Length == 0 || line[0][0] < '0' || line[0][0] > '9')
                         continue;
 
-                    string id = GetUntilOrEntire(line[0], "(");
-                    string name = GetUntilOrEntire(line[0].Substring(id.Length + 1), ")");
+                    //string id = GetUntilOrEntire(line[0], "(");
+                    //string name = GetUntilOrEntire(line[0].Substring(id.Length + 1), ")");
+
+                    string id = line[0];
+                    string name = line[1];
 
                     HashSet<(string Code, int Grade, int Number)> applied;
                     if (idToRow.ContainsKey(id))
@@ -279,13 +282,15 @@ namespace TimetableXmlFormatter
                     }
 
                     int matchingRegexNum = -1;
-                    for (int i = 1; i < line.Length; ++i)
+                    for (int i = 2; i < line.Length; ++i)
                     {
                         if (line[i] != "1")
                             continue;
                         Regex regex1 = new Regex(@"\A(.+)\(([1-3])\)_([1-9]|1[0-9])\z");
-                        Regex regex2 = new Regex(@"\A(.+)\(([1-3])\)\(([1-9]|1[0-9])\)");
+                        //Regex regex2 = new Regex(@"\A(.+)\(([1-3])\)\(([1-9]|1[0-9])\)");
+                        Regex regex2 = new Regex(@"\A(.+)\(([1-3])\)\z");
                         bool match1 = regex1.IsMatch(firstRow[i]), match2 = regex2.IsMatch(firstRow[i]);
+                        if (!match1) continue;
                         Debug.Assert(match1 ^ match2);
                         Debug.Assert(matchingRegexNum != -1 || matchingRegexNum != (match1 ? 1 : 2));
                         matchingRegexNum = match1 ? 1 : 2;
