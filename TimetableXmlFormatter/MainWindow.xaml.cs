@@ -281,21 +281,14 @@ namespace TimetableXmlFormatter
                         applied = new HashSet<(string Code, int Grade, int Number)>();
                     }
 
-                    int matchingRegexNum = -1;
                     for (int i = 2; i < line.Length; ++i)
                     {
                         if (line[i] != "1")
                             continue;
-                        Regex regex1 = new Regex(@"\A(.+)\(([1-3])\)_([1-9]|1[0-9])\z");
-                        //Regex regex2 = new Regex(@"\A(.+)\(([1-3])\)\(([1-9]|1[0-9])\)");
-                        Regex regex2 = new Regex(@"\A(.+)\(([1-3])\)\z");
-                        bool match1 = regex1.IsMatch(firstRow[i]), match2 = regex2.IsMatch(firstRow[i]);
-                        if (!match1) continue;
-                        Debug.Assert(match1 ^ match2);
-                        Debug.Assert(matchingRegexNum != -1 || matchingRegexNum != (match1 ? 1 : 2));
-                        matchingRegexNum = match1 ? 1 : 2;
-                        Regex matchingRegex = matchingRegexNum == 1 ? regex1 : regex2;
-                        var matchCollection = matchingRegex.Matches(firstRow[i]);
+                        Regex regex = new Regex(@"\A(.+)\(([1-3])\)_([1-9]|1[0-9])\z");
+                        if (!regex.IsMatch(firstRow[i]))
+                            continue;
+                        var matchCollection = regex.Matches(firstRow[i]);
                         Debug.Assert(matchCollection.Count == 1);
                         var match = matchCollection[0];
                         Debug.Assert(match.Groups.Count == 4);
