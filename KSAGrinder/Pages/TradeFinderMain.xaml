@@ -1,77 +1,145 @@
-﻿<Page x:Name="Page" x:Class="KSAGrinder.Pages.TradeFinderMain"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:KSAGrinder.Pages"
-      xmlns:valueConverters="clr-namespace:KSAGrinder.ValueConverters"
-      mc:Ignorable="d"
-      DataContext="{Binding RelativeSource={RelativeSource Self}}"
-      d:DesignHeight="600" d:DesignWidth="400"
-      Title="TradeFinderMain">
+﻿<Page
+    x:Class="KSAGrinder.Pages.TradeFinderMain"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:KSAGrinder.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:valueConverters="clr-namespace:KSAGrinder.ValueConverters"
+    x:Name="Page"
+    Title="TradeFinderMain"
+    d:DesignHeight="600"
+    d:DesignWidth="400"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    mc:Ignorable="d">
     <Page.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../ResourceDictionaries/ButtonStyle.xaml"/>
-                <ResourceDictionary Source="../ResourceDictionaries/ComboBoxStyle.xaml"/>
-                <ResourceDictionary Source="../ResourceDictionaries/ListBoxStyles.xaml"/>
-                <ResourceDictionary Source="../ResourceDictionaries/TextStyles.xaml"/>
-                <ResourceDictionary Source="../ResourceDictionaries/ValueConverters.xaml"/>
+                <ResourceDictionary Source="../ResourceDictionaries/ButtonStyle.xaml" />
+                <ResourceDictionary Source="../ResourceDictionaries/ComboBoxStyle.xaml" />
+                <ResourceDictionary Source="../ResourceDictionaries/ListBoxStyles.xaml" />
+                <ResourceDictionary Source="../ResourceDictionaries/TextStyles.xaml" />
+                <ResourceDictionary Source="../ResourceDictionaries/ValueConverters.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Page.Resources>
     <Grid>
         <DockPanel>
-            <Grid DockPanel.Dock="Top" Margin="10,10,10,0">
+            <Grid Margin="10,10,10,0" DockPanel.Dock="Top">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*"/>
-                    <ColumnDefinition Width="3*"/>
-                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
                 <DockPanel Grid.Column="0" HorizontalAlignment="Stretch">
-                    <Label DockPanel.Dock="Left" Content="탐색 너비" Margin="0,0,5,0"/>
-                    <ComboBox x:Name="CmbWidth" SelectedIndex="0" SelectionChanged="CmbWidth_SelectionChanged">
-                        <ComboBoxItem Content="2"/>
-                        <ComboBoxItem Content="3"/>
-                        <ComboBoxItem Content="4"/>
+                    <Label
+                        Margin="0,0,5,0"
+                        Content="탐색 너비"
+                        DockPanel.Dock="Left" />
+                    <ComboBox
+                        x:Name="CmbWidth"
+                        SelectedIndex="0"
+                        SelectionChanged="CmbWidth_SelectionChanged">
+                        <ComboBoxItem Content="2" />
+                        <ComboBoxItem Content="3" />
+                        <ComboBoxItem Content="4" />
                     </ComboBox>
                 </DockPanel>
                 <DockPanel Grid.Column="1" HorizontalAlignment="Stretch">
-                    <Label DockPanel.Dock="Left" Content="탐색 깊이" Margin="0,0,5,0"/>
-                    <ComboBox x:Name="CmbDepth" SelectedIndex="0" SelectionChanged="CmbDepth_SelectionChanged">
-                        <ComboBoxItem Content="1"/>
-                        <ComboBoxItem Content="2"/>
-                        <ComboBoxItem Content="3"/>
+                    <Label
+                        Margin="0,0,5,0"
+                        Content="탐색 깊이"
+                        DockPanel.Dock="Left" />
+                    <ComboBox
+                        x:Name="CmbDepth"
+                        SelectedIndex="0"
+                        SelectionChanged="CmbDepth_SelectionChanged">
+                        <ComboBoxItem Content="1" />
+                        <ComboBoxItem Content="2" />
+                        <ComboBoxItem Content="3" />
                     </ComboBox>
                 </DockPanel>
-                <Button x:Name="BtnSelect" Grid.Column="2" Content="과목 선택..." Margin="5,0,0,0" Click="BtnSelect_Click" Height="26" VerticalAlignment="Top" Style="{StaticResource ButtonStyle}"/>
+                <Button
+                    x:Name="BtnSelect"
+                    Grid.Column="2"
+                    Height="26"
+                    Margin="5,0,0,0"
+                    VerticalAlignment="Top"
+                    Click="BtnSelect_Click"
+                    Content="과목 선택..."
+                    Style="{StaticResource ButtonStyle}" />
             </Grid>
-            <TextBlock DockPanel.Dock="Top" Text="{Binding Path=SelectionMessage}" Margin="10,5,10,0" TextAlignment="Center"/>
-            <TextBlock DockPanel.Dock="Top" Text="{Binding Path=WarningMessage}" TextAlignment="Center" TextWrapping="WrapWithOverflow" Margin="10,5,10,0"/>
-            <UniformGrid DockPanel.Dock="Top" Margin="10,10,10,0" Columns="3" Rows="1">
-                <Button x:Name="BtnSort" Content="정렬" HorizontalAlignment="Stretch" Padding="0,2.5,0,2.5" Margin="0,0,5,0" IsEnabled="False" Click="BtnSort_Click" Style="{StaticResource ButtonStyle}"/>
-                <Button x:Name="BtnStop" Content="탐색 중지" HorizontalAlignment="Stretch" Padding="0,2.5,0,2.5" Margin="5,0,5,0" IsEnabled="False" Click="BtnStop_Click" Style="{StaticResource ButtonStyle}"/>
-                <Button x:Name="BtnFind" Content="탐색 시작" HorizontalAlignment="Stretch" Padding="0,2.5,0,2.5" Margin="5,0,0,0" Click="BtnFind_Click" Style="{StaticResource ButtonStyle}"/>
+            <TextBlock
+                Margin="10,5,10,0"
+                DockPanel.Dock="Top"
+                Text="{Binding Path=SelectionMessage}"
+                TextAlignment="Center" />
+            <TextBlock
+                Margin="10,5,10,0"
+                DockPanel.Dock="Top"
+                Text="{Binding Path=WarningMessage}"
+                TextAlignment="Center"
+                TextWrapping="WrapWithOverflow" />
+            <UniformGrid
+                Margin="10,10,10,0"
+                Columns="3"
+                DockPanel.Dock="Top"
+                Rows="1">
+                <Button
+                    x:Name="BtnSort"
+                    Margin="0,0,5,0"
+                    Padding="0,2.5,0,2.5"
+                    HorizontalAlignment="Stretch"
+                    Click="BtnSort_Click"
+                    Content="정렬"
+                    IsEnabled="False"
+                    Style="{StaticResource ButtonStyle}" />
+                <Button
+                    x:Name="BtnStop"
+                    Margin="5,0,5,0"
+                    Padding="0,2.5,0,2.5"
+                    HorizontalAlignment="Stretch"
+                    Click="BtnStop_Click"
+                    Content="탐색 중지"
+                    IsEnabled="False"
+                    Style="{StaticResource ButtonStyle}" />
+                <Button
+                    x:Name="BtnFind"
+                    Margin="5,0,0,0"
+                    Padding="0,2.5,0,2.5"
+                    HorizontalAlignment="Stretch"
+                    Click="BtnFind_Click"
+                    Content="탐색 시작"
+                    Style="{StaticResource ButtonStyle}" />
             </UniformGrid>
-            <ListBox x:Name="LstTrade" DockPanel.Dock="Bottom" Margin="10" ItemsSource="{Binding Path=TradeList, Mode=OneWay}" Style="{StaticResource ListBoxStyle}" d:ItemsSource="{d:SampleData ItemCount=5}">
+            <ListBox
+                x:Name="LstTrade"
+                Margin="10"
+                d:ItemsSource="{d:SampleData ItemCount=5}"
+                DockPanel.Dock="Bottom"
+                ItemsSource="{Binding Path=TradeList, Mode=OneWay}"
+                Style="{StaticResource ListBoxStyle}">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                     </Style>
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                             <DockPanel.InputBindings>
-                                <MouseBinding Gesture="LeftDoubleClick"
-                                              Command="{Binding DataContext.ShowDetailCommand, RelativeSource={RelativeSource AncestorType=Page, Mode=FindAncestor}}"
-                                              CommandParameter="{Binding .}"/>
+                                <MouseBinding
+                                    Command="{Binding DataContext.ShowDetailCommand, RelativeSource={RelativeSource AncestorType=Page, Mode=FindAncestor}}"
+                                    CommandParameter="{Binding .}"
+                                    Gesture="LeftDoubleClick" />
                             </DockPanel.InputBindings>
-                            <Label Content="{Binding RelativeSource={RelativeSource FindAncestor, 
-                                                      AncestorType={x:Type ListBoxItem}}, Mode=OneWay, 
-                                                      Converter={StaticResource IndexConv}}"
-                                   DockPanel.Dock="Left" Padding="0,0,10,0" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
-                            <TextBlock Text="{Binding ., Converter={StaticResource TradesToSummary}}" Style="{StaticResource ResourceKey={x:Type TextBlock}}"/>
+                            <Label
+                                Padding="0,0,10,0"
+                                VerticalAlignment="Stretch"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBoxItem}}, Mode=OneWay, Converter={StaticResource IndexConv}}"
+                                DockPanel.Dock="Left" />
+                            <TextBlock Style="{StaticResource ResourceKey={x:Type TextBlock}}" Text="{Binding ., Converter={StaticResource TradesToSummary}}" />
                         </DockPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

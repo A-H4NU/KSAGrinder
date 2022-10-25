@@ -192,27 +192,10 @@ namespace KSAGrinder.Pages
             int numThreads = 4)
         {
             if (tradeCapture.DoesFormTrade() &&
-                targets.All(tuple => tuple.Schedule.Equals(tradeCapture.GetScheduleOf(tuple.StudentId)))) //&&
-                                                                                                          //tradeCapture.AreAllSchedulesValid(LecturesToMove.Values.All(b => b) ? null : StudentId))
+                targets.All(tuple => tuple.Schedule.Equals(tradeCapture.GetScheduleOf(tuple.StudentId))))
             {
-                bool okay = true;
-                //foreach ((var studentId, var schedule) in tradeCapture.GetCapturedSchedules())
-                //{
-                //    IEnumerable<Class> toCheckValid = schedule;
-                //    if (studentId == StudentId)
-                //        toCheckValid = toCheckValid.Where(cls
-                //            => !LecturesToMove.ContainsKey((cls.Code, cls.Grade)) || LecturesToMove[(cls.Code, cls.Grade)]);
-                //    if (!Schedule.CheckValid(toCheckValid))
-                //    {
-                //        okay = false;
-                //        break;
-                //    }
-                //}
-                if (okay)
-                {
-                    processResult(tradeCapture);
-                    return;
-                }
+                processResult(tradeCapture);
+                return;
             }
 
             if (_cts.IsCancellationRequested) return;
@@ -222,7 +205,6 @@ namespace KSAGrinder.Pages
             List<List<(IEnumerable<ClassMove>, Schedule)>> sequences = new List<List<(IEnumerable<ClassMove>, Schedule)>>();
             long card = 1;
             foreach ((ClassMove head, ClassMove tail) in tradeCapture.HeadTailTuplesOfNoncycles())
-            //foreach (ClassMove tail in tradeCapture.TailsOfNonCycles())
             {
                 if (_cts.IsCancellationRequested) return;
 
