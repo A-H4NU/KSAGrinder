@@ -18,6 +18,8 @@ namespace TimetableXmlFormatter
     /// </summary>
     public partial class MainWindow : Window
     {
+        public const int ClassNameHeaderIndex = 0; // At which line are class names located?
+
         private static readonly Dictionary<string, DayOfWeek> KoreanDayToEnum = new Dictionary<string, DayOfWeek>()
         {
             { "월", DayOfWeek.Monday },
@@ -248,6 +250,8 @@ namespace TimetableXmlFormatter
                 parser.TextFieldType = FieldType.Delimited;
                 parser.SetDelimiters(",");
 
+                for (int i = 0; i < ClassNameHeaderIndex; ++i)
+                    parser.ReadLine();
                 string[] firstRow = parser.ReadFields();
                 //for (int i = 1; i < firstRow.Length; ++i)
                 //{
