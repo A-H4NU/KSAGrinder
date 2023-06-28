@@ -76,11 +76,11 @@ namespace KSAGrinder.Pages
 
         public ICommand ShowDetailCommand => _showDetail;
 
-        private readonly ObservableCollection<ReadOnlyCollection<ClassMove>> _tradeList = new ObservableCollection<ReadOnlyCollection<ClassMove>>();
+        private readonly ObservableCollection<ReadOnlyCollection<ClassMove>> _tradeList = new();
         public ObservableCollection<ReadOnlyCollection<ClassMove>> TradeList => _tradeList;
 
         // (code, grade) => bool
-        public readonly Dictionary<(string, int), bool> LecturesToMove = new Dictionary<(string, int), bool>();
+        public readonly Dictionary<(string, int), bool> LecturesToMove = new();
 
         public TradeFinderMain(TradeFinder main, string studentId, Schedule schedule)
         {
@@ -105,7 +105,7 @@ namespace KSAGrinder.Pages
         {
             void ThreadFunc()
             {
-                Components.TradeCapture tradeCapture = new Components.TradeCapture();
+                Components.TradeCapture tradeCapture = new();
                 List<Class> originalSchedule = DataManager.GetScheduleFromStudentID(StudentId).ToList();
                 List<Class> targetSchedule = _schedule.ToList();
                 foreach (KeyValuePair<(string, int), bool> pair in LecturesToMove)
@@ -168,7 +168,7 @@ namespace KSAGrinder.Pages
             BtnSort.IsEnabled = false;
         }
 
-        private readonly object _processResultLock = new object();
+        private readonly object _processResultLock = new();
         private void ProcessResult(TradeCapture moves)
         {
             lock (_processResultLock)
@@ -202,7 +202,7 @@ namespace KSAGrinder.Pages
 
             if (depth >= maxDepth) return;
 
-            List<List<(IEnumerable<ClassMove>, Schedule)>> sequences = new List<List<(IEnumerable<ClassMove>, Schedule)>>();
+            List<List<(IEnumerable<ClassMove>, Schedule)>> sequences = new();
             long card = 1;
             foreach ((ClassMove head, ClassMove tail) in tradeCapture.HeadTailTuplesOfNoncycles())
             {
@@ -215,7 +215,7 @@ namespace KSAGrinder.Pages
                                                    where (move.Code, move.Grade) == (tail.Code, tail.Grade)
                                                    select move.NumberTo;
                 IEnumerable<string> studentsInvolved = tradeCapture.InvolvedStudents();
-                List<(IEnumerable<ClassMove>, Schedule)> currentList = new List<(IEnumerable<ClassMove>, Schedule)>();
+                List<(IEnumerable<ClassMove>, Schedule)> currentList = new();
 
                 // For each class numbers of tailMove.LectureCode but not involved
                 foreach (int numberTo in RangeWithPreference(numberOfClasses, head.NumberFrom).Except(numbersInvolved))
@@ -226,9 +226,9 @@ namespace KSAGrinder.Pages
                     foreach (string studentId in tradeCapture.GetEnrollListOf(tail.Code, tail.Grade, tail.NumberTo).Except(studentsInvolved))
                     {
                         if (_cts.IsCancellationRequested) return;
-                        Schedule schedule = new Schedule(tradeCapture.GetScheduleOf(studentId));
+                        Schedule schedule = new(tradeCapture.GetScheduleOf(studentId));
                         schedule.MoveClass(tail.Code, tail.Grade, numberTo);
-                        ClassMove thisMove = new ClassMove(studentId, tail.Code, tail.Grade, tail.NumberTo, numberTo);
+                        ClassMove thisMove = new(studentId, tail.Code, tail.Grade, tail.NumberTo, numberTo);
                         IEnumerable<Schedule> options = schedule.Combination(
                             tradeCapture.InvolvedLecturesOf(studentId)
                                         .Append((tail.Code, tail.Grade)),
@@ -261,7 +261,7 @@ namespace KSAGrinder.Pages
 
                     TradeCapture localTradeCapture = tradeCapture.Clone();
                     bool good = true;
-                    List<(string, Schedule)> targetsToAdd = new List<(string, Schedule)>();
+                    List<(string, Schedule)> targetsToAdd = new();
                     foreach ((IEnumerable<ClassMove> moves, Schedule option) in validOptionToTry)
                     {
                         try
@@ -289,7 +289,7 @@ namespace KSAGrinder.Pages
 
             IEnumerable<(IEnumerable<ClassMove>, Schedule)> MakeValid(IEnumerable<(IEnumerable<ClassMove> Moves, Schedule Schedule)> option)
             {
-                List<(IEnumerable<ClassMove>, Schedule)> res = new List<(IEnumerable<ClassMove>, Schedule)>();
+                List<(IEnumerable<ClassMove>, Schedule)> res = new();
                 (IEnumerable<ClassMove> Moves, Schedule Schedule)[] optionArr = option.ToArray();
 
                 for (int i = 0; i < optionArr.Length; i++)
@@ -378,10 +378,10 @@ namespace KSAGrinder.Pages
 
         private static void ShowDetail(ReadOnlyCollection<ClassMove> tradeCapture)
         {
-            List<string> instructionsForGroup = new List<string>();
+            List<string> instructionsForGroup = new();
             foreach (IGrouping<string, ClassMove> group in tradeCapture.GroupBy(move => move.StudentId))
             {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new();
                 string name = DataManager.GetNameFromStudentID(group.Key);
                 sb.AppendLine($"{group.Key} {name}");
                 foreach (ClassMove move in group)
@@ -390,11 +390,11 @@ namespace KSAGrinder.Pages
                 }
                 instructionsForGroup.Add(sb.ToString().Replace("\0", ""));
             }
-            DetailView detailWindow = new DetailView(String.Join(Environment.NewLine, instructionsForGroup));
+            DetailView detailWindow = new(String.Join(Environment.NewLine, instructionsForGroup));
             detailWindow.Show();
         }
 
-        private readonly object _setComponentStatusLock = new object();
+        private readonly object _setComponentStatusLock = new();
         private void SetComponentStatus(bool working)
         {
             lock (_setComponentStatusLock)

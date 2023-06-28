@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace KSAGrinder.Statics
 {
@@ -27,7 +25,7 @@ namespace KSAGrinder.Statics
         /// </summary>
         public static string ExtractInitialConsonants(string str)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             foreach (char c in str)
             {
                 if (HANGUL_SYLLABLES_START <= c && c <= HANGUL_SYLLABLES_END)
@@ -53,7 +51,7 @@ namespace KSAGrinder.Statics
         /// </summary>
         public static string Disassemble(string str)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             foreach (char c in str)
             {
                 if (HANGUL_SYLLABLES_START <= c && c <= HANGUL_SYLLABLES_END)

@@ -28,7 +28,7 @@ namespace KSAGrinder.Components
             Note = note;
         }
 
-        private static readonly Dictionary<DayOfWeek, string> _dayToShortKor = new Dictionary<DayOfWeek, string>()
+        private static readonly Dictionary<DayOfWeek, string> _dayToShortKor = new()
         {
             {DayOfWeek.Monday, "월"},
             {DayOfWeek.Tuesday, "화"},
@@ -52,7 +52,7 @@ namespace KSAGrinder.Components
         {
             get
             {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new();
                 for (int i = 0; i < Schedule.Length; ++i)
                 {
                     if (i != 0) sb.Append(" ");

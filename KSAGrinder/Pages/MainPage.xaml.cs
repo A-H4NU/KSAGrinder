@@ -108,9 +108,9 @@ namespace KSAGrinder.Pages
 
         #endregion
 
-        public static readonly RoutedCommand ShortCut_CtrlN = new RoutedCommand();
-        public static readonly RoutedCommand ShortCut_CtrlO = new RoutedCommand();
-        public static readonly RoutedCommand ShortCut_CtrlS = new RoutedCommand();
+        public static readonly RoutedCommand ShortCut_CtrlN = new();
+        public static readonly RoutedCommand ShortCut_CtrlO = new();
+        public static readonly RoutedCommand ShortCut_CtrlS = new();
 
         public const double MaxRowHeight = 65.0;
 
@@ -297,7 +297,7 @@ namespace KSAGrinder.Pages
         {
             #region Construct XmlDocument 
 
-            XmlDocument xdoc = new XmlDocument();
+            XmlDocument xdoc = new();
 
             XmlElement root = xdoc.CreateElement("Timetable");
             XmlAttribute attHash = xdoc.CreateAttribute("Hash");
@@ -327,7 +327,7 @@ namespace KSAGrinder.Pages
             }
 
             string xmlStr;
-            using (StringWriter sw = new StringWriter())
+            using (StringWriter sw = new())
             using (XmlWriter xw = XmlWriter.Create(sw))
             {
                 xdoc.WriteTo(xw);
@@ -339,7 +339,7 @@ namespace KSAGrinder.Pages
 
             #region Ecrypt and save the XMLDocument in the specified path
 
-            using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (FileStream fileStream = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 using (Aes aes = Aes.Create())
                 {
@@ -347,9 +347,9 @@ namespace KSAGrinder.Pages
                     byte[] iv = aes.IV;
                     fileStream.Write(iv, 0, iv.Length);
 
-                    using (CryptoStream cryptoStream = new CryptoStream(fileStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    using (CryptoStream cryptoStream = new(fileStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
                     {
-                        using (StreamWriter encryptWriter = new StreamWriter(cryptoStream))
+                        using (StreamWriter encryptWriter = new(cryptoStream))
                         {
                             encryptWriter.Write(xmlStr);
                         }
@@ -367,9 +367,9 @@ namespace KSAGrinder.Pages
                 => node.ChildNodes.Cast<XmlNode>()
                     .First(child => String.Equals(child.Name, name, comparisonType));
 
-            XmlDocument xdoc = new XmlDocument();
+            XmlDocument xdoc = new();
 
-            using (FileStream fileStream = new FileStream(filePath, FileMode.Open))
+            using (FileStream fileStream = new(filePath, FileMode.Open))
             using (Aes aes = Aes.Create())
             {
                 byte[] iv = new byte[aes.IV.Length];
@@ -384,9 +384,9 @@ namespace KSAGrinder.Pages
                     numBytesToRead -= n;
                 }
 
-                using (CryptoStream cryptoStream = new CryptoStream(fileStream, aes.CreateDecryptor(CryptKey, iv), CryptoStreamMode.Read))
+                using (CryptoStream cryptoStream = new(fileStream, aes.CreateDecryptor(CryptKey, iv), CryptoStreamMode.Read))
                 {
-                    using (StreamReader decryptReader = new StreamReader(cryptoStream))
+                    using (StreamReader decryptReader = new(cryptoStream))
                     {
                         string decrypted = decryptReader.ReadToEnd();
                         xdoc.LoadXml(decrypted);
@@ -394,7 +394,7 @@ namespace KSAGrinder.Pages
                 }
             }
 
-            List<Class> newList = new List<Class>();
+            List<Class> newList = new();
             XmlElement root = xdoc.DocumentElement;
             string hash = root.Attributes.GetNamedItem("Hash").Value;
             if (_hash == hash)
@@ -451,7 +451,7 @@ namespace KSAGrinder.Pages
         {
             try
             {
-                SaveFileDialog sfd = new SaveFileDialog
+                SaveFileDialog sfd = new()
                 {
                     Filter = "시간표 파일 (*.sch)|*.sch"
                 };
@@ -543,7 +543,7 @@ namespace KSAGrinder.Pages
                     MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result != MessageBoxResult.Yes) return;
             }
-            LoadFromID dialog = new LoadFromID(_data);
+            LoadFromID dialog = new(_data);
             dialog.ShowDialog();
             if (dialog.ResultRow != null)
             {
@@ -575,7 +575,7 @@ namespace KSAGrinder.Pages
             }
             try
             {
-                OpenFileDialog ofd = new OpenFileDialog()
+                OpenFileDialog ofd = new()
                 {
                     Filter = "시간표 파일 (*.sch)|*.sch|모든 파일 (*.*)|*.*"
                 };
@@ -622,7 +622,7 @@ namespace KSAGrinder.Pages
 
         private void MenuOption_Click(object sender, RoutedEventArgs e)
         {
-            OptionWindow optionWindow = new OptionWindow(this);
+            OptionWindow optionWindow = new(this);
             optionWindow.ShowDialog();
         }
 
@@ -675,7 +675,7 @@ namespace KSAGrinder.Pages
                     $"신청한 학생 목록{Environment.NewLine}";
                 foreach (string student in cls.EnrolledList)
                     content += $" - {student} {DataManager.GetNameFromStudentID(student)}\n";
-                DetailView detailWindow = new DetailView(content);
+                DetailView detailWindow = new(content);
                 detailWindow.Show();
             }
             else
@@ -703,7 +703,7 @@ namespace KSAGrinder.Pages
 
         private void BtnGenerate_Click(object sender, RoutedEventArgs e)
         {
-            List<(string, int)> pinned = new List<(string, int)>();
+            List<(string, int)> pinned = new();
             for (int i = 0; i < _currentSchedule.Count; ++i)
             {
                 Class @class = (Class)CurrentClassTable.Items[i];
@@ -734,13 +734,13 @@ namespace KSAGrinder.Pages
             if (String.IsNullOrWhiteSpace(OriginalScheduleID))
             {
                 MessageBox.Show("트레이드를 탐색하기 위해서 학번을 입력해야 합니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
-                LoadFromID enterId = new LoadFromID(_data);
+                LoadFromID enterId = new(_data);
                 enterId.ShowDialog();
                 if (enterId.ResultRow == null)
                     return;
                 OriginalScheduleID = enterId.ResultID;
             }
-            TradeFinder finder = new TradeFinder(OriginalScheduleID, _currentSchedule);
+            TradeFinder finder = new(OriginalScheduleID, _currentSchedule);
             finder.ShowDialog();
             //var sch1 = new Schedule(DataManager.GetScheduleFromStudentID("20-050"));
             //Debug.Assert(sch1.MoveClass("HA1804", 6));

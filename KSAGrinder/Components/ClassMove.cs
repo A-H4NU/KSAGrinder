@@ -33,10 +33,10 @@ namespace KSAGrinder.Components
 
         public static bool IsSetOfCycles(IEnumerable<ClassMove> collection)
         {
-            List<ClassMove> leftMoves = new List<ClassMove>(collection);
+            List<ClassMove> leftMoves = new(collection);
             while (leftMoves.Count > 0)
             {
-                ClassMove root = leftMoves[leftMoves.Count - 1];
+                ClassMove root = leftMoves[^1];
                 leftMoves.RemoveAt(leftMoves.Count - 1);
                 int currentNumber = root.NumberTo;
                 while (currentNumber != root.NumberFrom)

@@ -34,7 +34,7 @@ namespace KSAGrinder.Components
 
         public IEnumerable<(string, IReadOnlyCollection<Class>)> GetCapturedSchedules()
         {
-            List<(string, IReadOnlyCollection<Class>)> res = new List<(string, IReadOnlyCollection<Class>)>(_capturedSchedules.Count);
+            List<(string, IReadOnlyCollection<Class>)> res = new(_capturedSchedules.Count);
             foreach (KeyValuePair<string, Schedule> pair in _capturedSchedules)
                 res.Add((pair.Key, pair.Value.ToList().AsReadOnly()));
             return res;
@@ -51,7 +51,7 @@ namespace KSAGrinder.Components
         /// </summary>
         public IEnumerable<(string, int)> InvolvedLecturesOf(string studentId)
         {
-            List<(string, int)> result = new List<(string, int)>();
+            List<(string, int)> result = new();
             foreach (ClassMove move in _classMoves)
             {
                 if (move.StudentId == studentId && !result.Contains((move.Code, move.Grade)))
@@ -75,7 +75,7 @@ namespace KSAGrinder.Components
         /// </summary>
         public IEnumerable<string> InvolvedStudents()
         {
-            List<string> list = new List<string>();
+            List<string> list = new();
             foreach (ClassMove move in _classMoves)
             {
                 if (!list.Contains(move.StudentId))
@@ -109,10 +109,10 @@ namespace KSAGrinder.Components
             {
                 if (ClassMove.IsSetOfCycles(movesOfALecture)) continue;
 
-                List<ClassMove> leftMoves = new List<ClassMove>(movesOfALecture);
+                List<ClassMove> leftMoves = new(movesOfALecture);
                 while (leftMoves.Count > 0)
                 {
-                    ClassMove root = leftMoves[leftMoves.Count - 1];
+                    ClassMove root = leftMoves[^1];
                     leftMoves.RemoveAt(leftMoves.Count - 1);
                     ClassMove current, tail;
 
@@ -153,10 +153,10 @@ namespace KSAGrinder.Components
             {
                 if (ClassMove.IsSetOfCycles(movesOfALecture)) continue;
 
-                List<ClassMove> leftMoves = new List<ClassMove>(movesOfALecture);
+                List<ClassMove> leftMoves = new(movesOfALecture);
                 while (leftMoves.Count > 0)
                 {
-                    ClassMove root = leftMoves[leftMoves.Count - 1];
+                    ClassMove root = leftMoves[^1];
                     leftMoves.RemoveAt(leftMoves.Count - 1);
                     ClassMove current;
 
@@ -240,7 +240,7 @@ namespace KSAGrinder.Components
             if (_classMoves.Count == 0)
                 throw new InvalidOperationException("The list is empty.");
 
-            ClassMove last = _classMoves[_classMoves.Count - 1];
+            ClassMove last = _classMoves[^1];
             _classMoves.RemoveAt(_classMoves.Count - 1);
 
             PrivateGetScheduleOf(last.StudentId, false).MoveClass(last.Code, last.Grade, last.NumberFrom);
@@ -257,7 +257,7 @@ namespace KSAGrinder.Components
         {
             if (n < 0)
                 throw new ArgumentOutOfRangeException(nameof(n), "n must be nonnegative");
-            List<ClassMove> list = new List<ClassMove>();
+            List<ClassMove> list = new();
             for (int i = 0; i < n; ++i)
             {
                 list.Add(Pop());
@@ -265,7 +265,7 @@ namespace KSAGrinder.Components
             return list;
         }
 
-        public TradeCapture Clone() => new TradeCapture(this);
+        public TradeCapture Clone() => new(this);
 
         public bool Remove(ClassMove item) => throw new NotSupportedException();
 
@@ -275,7 +275,7 @@ namespace KSAGrinder.Components
         {
             if (_capturedSchedules.TryGetValue(studentId, out Schedule value))
                 return value;
-            Schedule res = new Schedule(DataManager.GetScheduleFromStudentID(studentId));
+            Schedule res = new(DataManager.GetScheduleFromStudentID(studentId));
             if (capture) _capturedSchedules[studentId] = res;
             return res;
         }

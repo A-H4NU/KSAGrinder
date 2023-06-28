@@ -40,7 +40,7 @@ namespace KSAGrinder.Pages
 
         private void BtnSelect_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog
+            OpenFileDialog ofd = new()
             {
                 //Title = "제공된 데이터셋을 선택하세요.",
                 Filter = "Dataset files (*.ds)|*.ds"
@@ -115,12 +115,12 @@ namespace KSAGrinder.Pages
                 result = new DataSet();
                 int xmlIdx = Array.FindIndex(f, (s) => s.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
                 int xsdIdx = 1 - xmlIdx;
-                using (StreamReader sr = new StreamReader(arch.Entries[xsdIdx].Open()))
+                using (StreamReader sr = new(arch.Entries[xsdIdx].Open()))
                 {
                     result.ReadXmlSchema(sr);
                 }
 
-                using (StreamReader sr = new StreamReader(arch.Entries[xmlIdx].Open()))
+                using (StreamReader sr = new(arch.Entries[xmlIdx].Open()))
                 {
                     result.ReadXml(sr);
                 }
@@ -136,7 +136,7 @@ namespace KSAGrinder.Pages
 
         private void Hyperlink_RequestNavigate_Newbie(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
-            DetailView credit = new DetailView(
+            DetailView credit = new(
                 Properties.Resources.ResourceManager.GetString("Welcome"),
                 "환영합니다!",
                 TextWrapping.WrapWithOverflow);
@@ -157,7 +157,7 @@ namespace KSAGrinder.Pages
 
         private void Hyperlink_RequestNavigate_Credit(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
-            DetailView credit = new DetailView(
+            DetailView credit = new(
                 Properties.Resources.ResourceManager.GetString("Credit"),
                 "도움주신 분들",
                 TextWrapping.WrapWithOverflow);
@@ -167,7 +167,7 @@ namespace KSAGrinder.Pages
 
         private void Hyperlink_RequestNavigate_Icon(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
-            DetailView copyright = new DetailView(
+            DetailView copyright = new(
                 Properties.Resources.ResourceManager.GetString("IconCopyright"),
                 "아이콘",
                 TextWrapping.WrapWithOverflow);
@@ -191,7 +191,7 @@ namespace KSAGrinder.Pages
                     {
                         if (TryUnzip(Settings.Default.LastDataset, out DataSet result, out string hash))
                         {
-                            MainPage mainPage = new MainPage(_main, Settings.Default.LastDataset, result, hash, Settings.Default.LastFile);
+                            MainPage mainPage = new(_main, Settings.Default.LastDataset, result, hash, Settings.Default.LastFile);
                             _main.Main.Navigate(mainPage);
                         }
                         else
@@ -217,7 +217,7 @@ namespace KSAGrinder.Pages
                     {
                         if (TryUnzip(Settings.Default.LastDataset, out DataSet result, out string hash))
                         {
-                            MainPage mainPage = new MainPage(_main, Settings.Default.LastDataset, result, hash);
+                            MainPage mainPage = new(_main, Settings.Default.LastDataset, result, hash);
                             _main.Main.Navigate(mainPage);
                         }
                         else

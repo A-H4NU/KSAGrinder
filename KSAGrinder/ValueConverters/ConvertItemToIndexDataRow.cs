@@ -34,7 +34,7 @@ namespace KSAGrinder.ValueConverters
                         foreground = Colors.White;
                         break;
                 }
-                Label label = new Label
+                Label label = new()
                 {
                     Content = rowIndex.ToString(),
                     HorizontalAlignment = HorizontalAlignment.Center,

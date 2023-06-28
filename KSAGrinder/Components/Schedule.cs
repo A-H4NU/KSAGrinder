@@ -10,7 +10,7 @@ namespace KSAGrinder.Components
 {
     public class Schedule : ICollection<Class>, ICloneable
     {
-        private readonly List<Class> _classList = new List<Class>();
+        private readonly List<Class> _classList = new();
 
         public static string OriginalScheduleID { get; set; }
 
@@ -46,7 +46,7 @@ namespace KSAGrinder.Components
         {
             get
             {
-                HashSet<(DayOfWeek, int)> schedule = new HashSet<(DayOfWeek, int)>();
+                HashSet<(DayOfWeek, int)> schedule = new();
                 foreach (Class @class in _classList)
                 {
                     //if (@class.Schedule.ToHashSet().Count != @class.Schedule.Count())
@@ -113,7 +113,7 @@ namespace KSAGrinder.Components
 
         private double EvaluateNEmpty(int n)
         {
-            HashSet<(DayOfWeek, int)> schedule = new HashSet<(DayOfWeek, int)>();
+            HashSet<(DayOfWeek, int)> schedule = new();
             foreach (Class @class in _classList)
             {
                 foreach ((DayOfWeek, int) hour in @class.Schedule)
@@ -139,7 +139,7 @@ namespace KSAGrinder.Components
         {
             get
             {
-                Dictionary<DayOfWeek, int> lastClass = new Dictionary<DayOfWeek, int>();
+                Dictionary<DayOfWeek, int> lastClass = new();
                 for (DayOfWeek day = DayOfWeek.Monday; day <= DayOfWeek.Friday; day++)
                     lastClass[day] = 0;
                 foreach (Class @class in _classList)
@@ -184,7 +184,7 @@ namespace KSAGrinder.Components
 
         public static bool CheckValid(IEnumerable<Class> classes)
         {
-            List<(DayOfWeek, int)> schedule = new List<(DayOfWeek, int)>();
+            List<(DayOfWeek, int)> schedule = new();
             foreach (Class @class in classes)
             {
                 foreach ((DayOfWeek, int) hour in @class.Schedule)
@@ -199,9 +199,9 @@ namespace KSAGrinder.Components
 
         public static bool CheckValid(IEnumerable<Class> classes, out Schedule result)
         {
-            List<(DayOfWeek, int)> schedule = new List<(DayOfWeek, int)>();
+            List<(DayOfWeek, int)> schedule = new();
             result = null;
-            List<Class> list = new List<Class>();
+            List<Class> list = new();
             foreach (Class @class in classes)
             {
                 foreach ((DayOfWeek, int) hour in @class.Schedule)
@@ -270,7 +270,7 @@ namespace KSAGrinder.Components
 
         public static IEnumerable<ClassMove> Difference(string studentId, Schedule from, Schedule to)
         {
-            List<ClassMove> res = new List<ClassMove>();
+            List<ClassMove> res = new();
             List<Class> tolist = to.ToList();
             foreach (Class clsFrom in from)
             {

@@ -15,7 +15,7 @@ namespace KSAGrinder.Pages
     /// </summary>
     public partial class ClassSelection : Page
     {
-        private readonly ObservableCollection<ClassCheckBox> _classCheckBoxes = new ObservableCollection<ClassCheckBox>();
+        private readonly ObservableCollection<ClassCheckBox> _classCheckBoxes = new();
         public ObservableCollection<ClassCheckBox> ClassCheckBoxes => _classCheckBoxes;
 
         private readonly TradeFinder _main;
@@ -87,7 +87,7 @@ namespace KSAGrinder.Pages
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
-            DetailView help = new DetailView(
+            DetailView help = new(
                 String.Format(
                     Properties.Resources.ResourceManager.GetString("ClassSelectionHelp"),
                     $"{_previousPage.StudentId} {DataManager.GetNameFromStudentID(_previousPage.StudentId)}"),

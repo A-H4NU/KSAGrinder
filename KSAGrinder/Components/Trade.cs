@@ -69,7 +69,7 @@ namespace KSAGrinder.Components
             }
         }
 
-        public Trade Inverse => new Trade(Code, Grade, StudentA, NumberB, StudentB, NumberA);
+        public Trade Inverse => new(Code, Grade, StudentA, NumberB, StudentB, NumberA);
 
         //private static IEnumerable<Class> MoveClass(IEnumerable<Class> schedule, string code, int to)
         //{

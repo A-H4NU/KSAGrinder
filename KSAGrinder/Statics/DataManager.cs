@@ -22,9 +22,9 @@ namespace KSAGrinder.Statics
         /// <summary>
         /// correspond a code-grade tuple to a list of classes
         /// </summary>
-        private static readonly Dictionary<(string, int), List<Class>> _classDict = new Dictionary<(string, int), List<Class>>();
+        private static readonly Dictionary<(string, int), List<Class>> _classDict = new();
 
-        private static readonly List<Lecture> _lectures = new List<Lecture>();
+        private static readonly List<Lecture> _lectures = new();
 
         public static IEnumerable<Lecture> GetLectures()
         {
@@ -104,7 +104,7 @@ namespace KSAGrinder.Statics
             DataTable tStudent = Data.Tables["Student"];
             DataColumn cApplied = tStudent.Columns["Applied"];
             DataColumn cID = tStudent.Columns["ID"];
-            Dictionary<(string Code, int Grade, int Number), List<string>> applyDict = new Dictionary<(string Code, int Grade, int Number), List<string>>();
+            Dictionary<(string Code, int Grade, int Number), List<string>> applyDict = new();
             void AddToApplyDict(string code, int grade, int number, string student)
             {
                 if (applyDict.TryGetValue((code, grade, number), out List<string> list))

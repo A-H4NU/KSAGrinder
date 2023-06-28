@@ -20,7 +20,7 @@ namespace TimetableXmlFormatter
     {
         public const int ClassNameHeaderIndex = 0; // At which line are class names located?
 
-        private static readonly Dictionary<string, DayOfWeek> KoreanDayToEnum = new Dictionary<string, DayOfWeek>()
+        private static readonly Dictionary<string, DayOfWeek> KoreanDayToEnum = new()
         {
             { "월", DayOfWeek.Monday },
             { "화", DayOfWeek.Tuesday },
@@ -31,7 +31,7 @@ namespace TimetableXmlFormatter
             { "일", DayOfWeek.Sunday },
         };
 
-        private static readonly Dictionary<string, string> _departments = new Dictionary<string, string>()
+        private static readonly Dictionary<string, string> _departments = new()
         {
             {"수리정보과학부", "MathCS"},
             {"물리지구과학부", "Newton"},
@@ -45,7 +45,7 @@ namespace TimetableXmlFormatter
             double Similarity(string a, string b)
             {
                 int m = a.Length, n = b.Length;
-                int[,] dist = new int[m+1, n+1];
+                int[,] dist = new int[m + 1, n + 1];
                 for (int i = 0; i <= m; ++i) dist[i, 0] = i;
                 for (int j = 0; j <= n; ++j) dist[0, j] = j;
 
@@ -203,7 +203,7 @@ namespace TimetableXmlFormatter
                         }
                         lectureTable.Rows.Add(lectureData);
                     }
-                    
+
                     // Class
                     object[] classData = new object[classColumns.Length];
                     for (int i = 0; i < classData.Length; ++i)
@@ -289,7 +289,7 @@ namespace TimetableXmlFormatter
                     {
                         if (line[i] != "1")
                             continue;
-                        Regex regex = new Regex(@"\A(.+)\(([1-3])\)_([1-9]|1[0-9])\z");
+                        Regex regex = new(@"\A(.+)\(([1-3])\)_([1-9]|1[0-9])\z");
                         if (!regex.IsMatch(firstRow[i]))
                             continue;
                         var matchCollection = regex.Matches(firstRow[i]);
