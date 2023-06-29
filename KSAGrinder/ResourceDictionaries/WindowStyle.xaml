@@ -5,6 +5,7 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="ButtonStyle.xaml" />
         <ResourceDictionary Source="ThemeColors.xaml" />
+        <ResourceDictionary Source="Images.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <Style x:Key="WindowStyle" TargetType="{x:Type Window}">
@@ -49,7 +50,7 @@
                     Width="17"
                     Margin="8,0,0,0"
                     DockPanel.Dock="Left"
-                    Source="../KSAGrinder.ico"
+                    Source="{StaticResource AppIcon}"
                     WindowChrome.IsHitTestVisibleInChrome="True" />
                 <Button
                     Width="46"
