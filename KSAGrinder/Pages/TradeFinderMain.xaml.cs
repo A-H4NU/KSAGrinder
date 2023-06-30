@@ -219,15 +219,12 @@ namespace KSAGrinder.Pages
 
                 // For each class numbers of tailMove.LectureCode but not involved
                 foreach (int numberTo in RangeWithPreference(numberOfClasses, head.NumberFrom).Except(numbersInvolved))
-                //foreach (int numberTo in Enumerable.Range(1, numberOfClasses).Except(numbersInvolved))
                 {
-
                     // For each students in (tailMove.LectureCode, tailMove.NumberTo) but not in targets
                     foreach (string studentId in tradeCapture.GetEnrollListOf(tail.Code, tail.Grade, tail.NumberTo).Except(studentsInvolved))
                     {
                         if (_cts.IsCancellationRequested) return;
-                        Schedule schedule = new(tradeCapture.GetScheduleOf(studentId));
-                        schedule.MoveClass(tail.Code, tail.Grade, numberTo);
+                        Schedule schedule = Schedule.MovedClass(tradeCapture.GetScheduleOf(studentId), tail.Code, tail.Grade, numberTo);
                         ClassMove thisMove = new(studentId, tail.Code, tail.Grade, tail.NumberTo, numberTo);
                         IEnumerable<Schedule> options = schedule.Combination(
                             tradeCapture.InvolvedLecturesOf(studentId)
@@ -236,7 +233,9 @@ namespace KSAGrinder.Pages
                             true);
                         foreach (Schedule option in options)
                         {
-                            (IEnumerable<ClassMove>, Schedule) toAdd = (Schedule.Difference(studentId, schedule, option).Append(thisMove), option);
+                            (IEnumerable<ClassMove>, Schedule) toAdd;
+                            toAdd.Item1 = Schedule.Difference(studentId, schedule, option).Append(thisMove);
+                            toAdd.Item2 = option;
                             currentList.Add(toAdd);
                         }
                     }

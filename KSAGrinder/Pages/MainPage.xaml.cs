@@ -37,7 +37,7 @@ namespace KSAGrinder.Pages
 
         private readonly MainWindow _main;
 
-        private readonly Schedule _currentSchedule;
+        private Schedule _currentSchedule;
 
         private string _originalScheduleID = String.Empty;
 
@@ -399,8 +399,7 @@ namespace KSAGrinder.Pages
                         Int32.Parse(FindByName(cls, "Grade").InnerText),
                         Int32.Parse(FindByName(cls, "Number").InnerText)));
                 }
-                _currentSchedule.Clear();
-                _currentSchedule.AddRange(newList);
+                _currentSchedule = new(newList);
                 UpdateHourCollection();
                 ScheduleCollection.Clear();
             }
@@ -426,9 +425,11 @@ namespace KSAGrinder.Pages
             CurrentClassTable.SelectedIndex = -1;
         }
 
-        private void DeleteClassFromCurrentSchedule(Class cls)
+        private void DeleteClassFromCurrentSchedule(Class @class)
         {
-            _currentSchedule.Remove(cls);
+            _currentSchedule = new(from cls in _currentSchedule
+                                   where cls != @class
+                                   select cls);
             UpdateHourCollection();
             InvalidateStyles();
 
@@ -512,7 +513,7 @@ namespace KSAGrinder.Pages
                     MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result != MessageBoxResult.Yes) return;
             }
-            _currentSchedule.Clear();
+            _currentSchedule = new();
             Modified = false;
             OriginalScheduleID = null;
             WorkingWith = null;
@@ -539,8 +540,7 @@ namespace KSAGrinder.Pages
 
                 if (!Enumerable.SequenceEqual(newList, _currentSchedule) || OriginalScheduleID != dialog.ResultID)
                 {
-                    _currentSchedule.Clear();
-                    _currentSchedule.AddRange(newList);
+                    _currentSchedule = new(newList);
                     UpdateHourCollection();
                     InvalidateStyles();
 
@@ -753,29 +753,35 @@ namespace KSAGrinder.Pages
 
         private void DataGridRow_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (sender is DataGridRow && (sender as DataGridRow).Item is Class cls)
+            if (sender is DataGridRow && sender is DataGridRow { Item: Class clickedClass })
             {
-                Class? @class = null;
+                Class? existingClass = null;
                 foreach (Class c in _currentSchedule)
                 {
-                    if ((c.Code, c.Grade) == (cls.Code, cls.Grade))
+                    if ((c.Code, c.Grade) == (clickedClass.Code, clickedClass.Grade))
                     {
-                        @class = c;
+                        existingClass = c;
                         break;
                     }
                 }
-                if (_currentSchedule.Contains(cls))
+                /* clickedClass already exists; remove clickedClass. */
+                if (_currentSchedule.Contains(clickedClass))
                 {
-                    _currentSchedule.Remove(cls);
+                    _currentSchedule = new(from c in _currentSchedule
+                                           where c != clickedClass
+                                           select c);
                 }
-                else if (@class != null)
+                /* The same lecture already exists; replace it with clickedClass. */
+                else if (existingClass != null)
                 {
-                    _currentSchedule.Remove(@class.Value);
-                    _currentSchedule.Add(cls);
+                    _currentSchedule = new((from c in _currentSchedule
+                                            where c != existingClass
+                                            select c).Append(clickedClass));
                 }
+                /* Otherwise, just add clickedClass. */
                 else
                 {
-                    _currentSchedule.Add(cls);
+                    _currentSchedule = new(_currentSchedule.Append(clickedClass));
                 }
                 UpdateHourCollection();
                 InvalidateStyles();
@@ -802,7 +808,7 @@ namespace KSAGrinder.Pages
                                        where ((CheckBox)CurrentClassTable.GetCell(i, 0).Content).IsChecked == true
                                        select i)
                                       .ToArray();
-                schedule.CopyTo(_currentSchedule);
+                _currentSchedule = schedule;
 
                 UpdateHourCollection();
                 foreach (int pinnedIndex in pinnedIndices)

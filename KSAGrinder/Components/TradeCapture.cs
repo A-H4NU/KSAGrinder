@@ -235,35 +235,35 @@ namespace KSAGrinder.Components
 
         /// <returns>the undone move</returns>
         /// <exception cref="InvalidOperationException"/>
-        public ClassMove Pop()
-        {
-            if (_classMoves.Count == 0)
-                throw new InvalidOperationException("The list is empty.");
+        //public ClassMove Pop()
+        //{
+        //    if (_classMoves.Count == 0)
+        //        throw new InvalidOperationException("The list is empty.");
 
-            ClassMove last = _classMoves[^1];
-            _classMoves.RemoveAt(_classMoves.Count - 1);
+        //    ClassMove last = _classMoves[^1];
+        //    _classMoves.RemoveAt(_classMoves.Count - 1);
 
-            PrivateGetScheduleOf(last.StudentId, false).MoveClass(last.Code, last.Grade, last.NumberFrom);
-            PrivateGetEnrollListOf(last.Code, last.Grade, last.NumberTo, false).Remove(last.StudentId);
-            PrivateGetEnrollListOf(last.Code, last.Grade, last.NumberFrom, false).Add(last.StudentId);
+        //    PrivateGetScheduleOf(last.StudentId, false).MoveClass(last.Code, last.Grade, last.NumberFrom);
+        //    PrivateGetEnrollListOf(last.Code, last.Grade, last.NumberTo, false).Remove(last.StudentId);
+        //    PrivateGetEnrollListOf(last.Code, last.Grade, last.NumberFrom, false).Add(last.StudentId);
 
-            return last;
-        }
+        //    return last;
+        //}
 
         /// <returns>the list of undone moves</returns>
         /// <exception cref="InvalidOperationException"/>
         /// <exception cref="ArgumentOutOfRangeException"/>
-        public IEnumerable<ClassMove> Pop(int n)
-        {
-            if (n < 0)
-                throw new ArgumentOutOfRangeException(nameof(n), "n must be nonnegative");
-            List<ClassMove> list = new();
-            for (int i = 0; i < n; ++i)
-            {
-                list.Add(Pop());
-            }
-            return list;
-        }
+        //public IEnumerable<ClassMove> Pop(int n)
+        //{
+        //    if (n < 0)
+        //        throw new ArgumentOutOfRangeException(nameof(n), "n must be nonnegative");
+        //    List<ClassMove> list = new();
+        //    for (int i = 0; i < n; ++i)
+        //    {
+        //        list.Add(Pop());
+        //    }
+        //    return list;
+        //}
 
         public TradeCapture Clone() => new(this);
 
@@ -299,7 +299,8 @@ namespace KSAGrinder.Components
                 throw new TradeInvalidException(move, true);
 
             // Apply the trade
-            PrivateGetScheduleOf(move.StudentId).MoveClass(move.Code, move.Grade, move.NumberTo);
+            _capturedSchedules[move.StudentId] = PrivateGetScheduleOf(move.StudentId, capture: false)
+                                                 .MovedClass(move.Code, move.Grade, move.NumberTo);
             PrivateGetEnrollListOf(move.Code, move.Grade, move.NumberFrom).Remove(move.StudentId);
             PrivateGetEnrollListOf(move.Code, move.Grade, move.NumberTo).Add(move.StudentId);
         }
