@@ -227,10 +227,10 @@ namespace KSAGrinder.Pages
                         Schedule schedule = Schedule.MovedClass(tradeCapture.GetScheduleOf(studentId), tail.Code, tail.Grade, numberTo);
                         ClassMove thisMove = new(studentId, tail.Code, tail.Grade, tail.NumberTo, numberTo);
                         IEnumerable<Schedule> options = schedule.Combination(
-                            tradeCapture.InvolvedLecturesOf(studentId)
-                                        .Append((tail.Code, tail.Grade)),
-                            MaxLectureMoves,
-                            true);
+                            pinnedLectures: tradeCapture.InvolvedLecturesOf(studentId)
+                                                        .Append((tail.Code, tail.Grade)),
+                            maxMove:        MaxLectureMoves,
+                            onlyValid:      true);
                         foreach (Schedule option in options)
                         {
                             (IEnumerable<ClassMove>, Schedule) toAdd;
@@ -244,16 +244,17 @@ namespace KSAGrinder.Pages
                 sequences.Add(currentList);
                 card *= currentList.Count;
             }
-            //MessageBox.Show(card.ToString());
+            MessageBox.Show(card.ToString());
 
             if (_cts.IsCancellationRequested) return;
 
             void ProcessBatch(IEnumerable<IEnumerable<(IEnumerable<ClassMove>, Schedule)>> batch)
             {
-                //int originalNumMoves = localTradeCapture.Count;
-                //List<IEnumerable<ClassMove>> result = new List<IEnumerable<ClassMove>>();
                 foreach (IEnumerable<(IEnumerable<ClassMove>, Schedule)> optionToTry in batch)
                 {
+                    if (_cts.IsCancellationRequested)
+                        break;
+                    // TODO: FIX THIS
                     IEnumerable<(IEnumerable<ClassMove>, Schedule)> validOptionToTry = MakeValid(optionToTry);
                     if (validOptionToTry == null) continue;
 
@@ -281,7 +282,6 @@ namespace KSAGrinder.Pages
                     int dummy = localTradeCapture.Count;
                     GenerateClassMoves(targets.Concat(targetsToAdd), localTradeCapture, depth + 1, maxDepth, processResult);
                     Debug.Assert(dummy == localTradeCapture.Count);
-                    //localTradeCapture.Pop(localTradeCapture.Count - originalNumMoves);
                 }
             }
 
@@ -326,8 +326,6 @@ namespace KSAGrinder.Pages
                 if (tasks.All(task => task != null))
                 {
                     int index = Task.WaitAny(tasks);
-                    //foreach (var moves in await tasks[index])
-                    //    processResult(moves);
                     tasks[index] = new Task(() => ProcessBatch(batch));
                     tasks[index].Start();
                 }
