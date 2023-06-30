@@ -217,7 +217,7 @@ namespace KSAGrinder.Components
 
         public IEnumerable<Schedule> Combination(IEnumerable<(string, int)> pinnedLectures = null, int maxMove = -1, bool onlyValid = true)
         {
-            if (pinnedLectures == null) pinnedLectures = Enumerable.Empty<(string, int)>();
+            pinnedLectures ??= Enumerable.Empty<(string, int)>();
             if (maxMove == 0)
             {
                 yield return this;
@@ -226,10 +226,10 @@ namespace KSAGrinder.Components
 
             Dictionary<(string, int), int> lectureToIndex = Enumerable.Range(0, _classList.Count)
                                                                       .ToDictionary(i => (_classList[i].Code, _classList[i].Grade));
-            (string, int)[] notPinnedLectures = _classList.Select(@class => (@class.Code, @class.Grade)).Except(pinnedLectures).ToArray();
+            (string Code, int Grade)[] notPinnedLectures = _classList.Select(@class => (@class.Code, @class.Grade)).Except(pinnedLectures).ToArray();
             int n_notPinned = notPinnedLectures.Length;
             if (maxMove < 0 || maxMove > n_notPinned) maxMove = n_notPinned;
-            int[] currentNumbersNotPinned = notPinnedLectures.Select(tuple => _classList[lectureToIndex[(tuple.Item1, tuple.Item2)]].Number).ToArray();
+            int[] currentNumbersNotPinned = notPinnedLectures.Select(tuple => _classList[lectureToIndex[(tuple.Code, tuple.Grade)]].Number).ToArray();
 
             IEnumerable<Class> GenerateScheduleFromCombination((string, int)[] lecturesToMove, int[] combination)
             {
@@ -243,13 +243,24 @@ namespace KSAGrinder.Components
                 }
             }
 
+            static IEnumerable<int> RangeExceptOne(int start, int count, int except)
+            {
+                int end = start + count;
+                for (int i = start; i < end; ++i)
+                {
+                    if (i != except)
+                        yield return i;
+                }
+            }
+
             foreach (IEnumerable<int> lecturesToMove in Enumerable.Range(0, n_notPinned).GetCombsFromZeroToK(maxMove))
             {
-                (string, int)[] lecturesToMoveAsCodeGrade = lecturesToMove.Select(i => notPinnedLectures[i]).ToArray();
+                (string Code, int Grade)[] lecturesToMoveAsCodeGrade = lecturesToMove.Select(i => notPinnedLectures[i]).ToArray();
                 IEnumerable<IEnumerable<int>> sequences = lecturesToMoveAsCodeGrade.Select(tuple =>
                 {
-                    IEnumerable<int> allNumbers = Enumerable.Range(1, DataManager.GetTheNumberOfClasses(tuple.Item1, tuple.Item2));
-                    return allNumbers.Except(new int[] { _classList[lectureToIndex[tuple]].Number });
+                    int n_classes = DataManager.GetTheNumberOfClasses(tuple.Code, tuple.Grade);
+                    int cur_classNum = _classList[lectureToIndex[tuple]].Number;
+                    return RangeExceptOne(1, n_classes, cur_classNum);
                 }); // sequences.Count() == lecturesToMove.Count()
                 IEnumerable<int[]> combinations = sequences.CartesianProduct().Select(i => i.ToArray()); // dim(combinations)[1] == lecturesToMove.Count()
                 foreach (int[] combination in combinations)

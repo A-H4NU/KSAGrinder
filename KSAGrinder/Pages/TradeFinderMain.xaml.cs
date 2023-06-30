@@ -157,8 +157,8 @@ namespace KSAGrinder.Pages
 
         private void BtnSort_Click(object sender, RoutedEventArgs e)
         {
-            int GetNStudentsInvolved(IEnumerable<ClassMove> moves)
-                => moves.Select(move => move.StudentId).ToHashSet().Count();
+            static int GetNStudentsInvolved(IEnumerable<ClassMove> moves)
+                => moves.Select(move => move.StudentId).ToHashSet().Count;
 
             List<ReadOnlyCollection<ClassMove>> sorted = TradeList.ToList();
             sorted.Sort((a, b) => GetNStudentsInvolved(a) - GetNStudentsInvolved(b));
@@ -237,8 +237,7 @@ namespace KSAGrinder.Pages
                         foreach (Schedule option in options)
                         {
                             (IEnumerable<ClassMove>, Schedule) toAdd = (Schedule.Difference(studentId, schedule, option).Append(thisMove), option);
-                            if (option.IsValid) currentList.Insert(0, toAdd);
-                            else currentList.Add(toAdd);
+                            currentList.Add(toAdd);
                         }
                     }
                 }

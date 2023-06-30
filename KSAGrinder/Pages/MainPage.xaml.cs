@@ -339,23 +339,15 @@ namespace KSAGrinder.Pages
 
             #region Ecrypt and save the XMLDocument in the specified path
 
-            using (FileStream fileStream = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
-            {
-                using (Aes aes = Aes.Create())
-                {
-                    aes.Key = CryptKey;
-                    byte[] iv = aes.IV;
-                    fileStream.Write(iv, 0, iv.Length);
+            using FileStream fileStream = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+            using Aes aes = Aes.Create();
+            aes.Key = CryptKey;
+            byte[] iv = aes.IV;
+            fileStream.Write(iv, 0, iv.Length);
 
-                    using (CryptoStream cryptoStream = new(fileStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
-                    {
-                        using (StreamWriter encryptWriter = new(cryptoStream))
-                        {
-                            encryptWriter.Write(xmlStr);
-                        }
-                    }
-                }
-            }
+            using CryptoStream cryptoStream = new(fileStream, aes.CreateEncryptor(), CryptoStreamMode.Write);
+            using StreamWriter encryptWriter = new(cryptoStream);
+            encryptWriter.Write(xmlStr);
 
             #endregion
         }
@@ -384,14 +376,10 @@ namespace KSAGrinder.Pages
                     numBytesToRead -= n;
                 }
 
-                using (CryptoStream cryptoStream = new(fileStream, aes.CreateDecryptor(CryptKey, iv), CryptoStreamMode.Read))
-                {
-                    using (StreamReader decryptReader = new(cryptoStream))
-                    {
-                        string decrypted = decryptReader.ReadToEnd();
-                        xdoc.LoadXml(decrypted);
-                    }
-                }
+                using CryptoStream cryptoStream = new(fileStream, aes.CreateDecryptor(CryptKey, iv), CryptoStreamMode.Read);
+                using StreamReader decryptReader = new(cryptoStream);
+                string decrypted = decryptReader.ReadToEnd();
+                xdoc.LoadXml(decrypted);
             }
 
             List<Class> newList = new();

@@ -55,7 +55,7 @@ namespace KSAGrinder.Components
                 StringBuilder sb = new();
                 for (int i = 0; i < Schedule.Length; ++i)
                 {
-                    if (i != 0) sb.Append(" ");
+                    if (i != 0) sb.Append(' ');
                     sb.Append(_dayToShortKor[Schedule[i].Day]);
                     sb.Append(Schedule[i].Hour);
                 }
@@ -69,5 +69,13 @@ namespace KSAGrinder.Components
         public override string ToString() => $"{Code} {Name} {Number}";
 
         public bool Equals(Class other) => (Code, Grade, Number) == (other.Code, other.Grade, other.Number);
+
+        public override bool Equals(object obj) => obj is Class @class && Equals(@class);
+
+        public static bool operator ==(Class left, Class right) => left.Equals(right);
+
+        public static bool operator !=(Class left, Class right) => !(left == right);
+
+        public override int GetHashCode() => (Code, Grade, Number).GetHashCode();
     }
 }
