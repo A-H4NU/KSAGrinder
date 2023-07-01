@@ -105,7 +105,7 @@ namespace KSAGrinder.Pages
         {
             void ThreadFunc()
             {
-                Components.TradeCapture tradeCapture = new();
+                TradeCapture tradeCapture = new();
                 List<Class> originalSchedule = DataManager.GetScheduleFromStudentID(StudentId).ToList();
                 List<Class> targetSchedule = _schedule.ToList();
                 foreach (KeyValuePair<(string, int), bool> pair in LecturesToMove)
@@ -119,10 +119,11 @@ namespace KSAGrinder.Pages
                         originalSchedule.Find(cls => cls.Code == code && cls.Grade == grade).Number,
                         targetSchedule.Find(cls => cls.Code == code && cls.Grade == grade).Number));
                 }
+                Stopwatch stopwatch = Stopwatch.StartNew();
                 GenerateClassMoves(new[] { (StudentId, new Schedule(tradeCapture.GetScheduleOf(StudentId))) }, tradeCapture, 0, MaxDepth, ProcessResult);
                 if (_cts is null || !_cts.IsCancellationRequested)
                 {
-                    MessageBox.Show("탐색이 종료되었습니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"탐색이 종료되었습니다. ({stopwatch.Elapsed.TotalSeconds:F1}s)", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
                     Dispatcher.Invoke(() => SetComponentStatus(working: false));
                 }
             }
@@ -161,7 +162,14 @@ namespace KSAGrinder.Pages
                 => moves.Select(move => move.StudentId).ToHashSet().Count;
 
             List<ReadOnlyCollection<ClassMove>> sorted = TradeList.ToList();
-            sorted.Sort((a, b) => GetNStudentsInvolved(a) - GetNStudentsInvolved(b));
+            sorted.Sort((a, b) =>
+            {
+                int nStdA = GetNStudentsInvolved(a);
+                int nStdB = GetNStudentsInvolved(b);
+                if (nStdA == nStdB)
+                    return a.Count.CompareTo(b.Count);
+                return nStdA.CompareTo(nStdB);
+            });
             TradeList.Clear();
             foreach (ReadOnlyCollection<ClassMove> move in sorted)
                 TradeList.Add(move);
@@ -244,7 +252,6 @@ namespace KSAGrinder.Pages
                 sequences.Add(currentList);
                 card *= currentList.Count;
             }
-            MessageBox.Show(card.ToString());
 
             if (_cts.IsCancellationRequested) return;
 
@@ -254,41 +261,27 @@ namespace KSAGrinder.Pages
                 {
                     if (_cts.IsCancellationRequested)
                         break;
-                    // TODO: FIX THIS
                     IEnumerable<(IEnumerable<ClassMove>, Schedule)> validOptionToTry = MakeValid(optionToTry);
                     if (validOptionToTry is null) continue;
 
                     TradeCapture localTradeCapture = tradeCapture.Clone();
-                    bool good = true;
                     List<(string, Schedule)> targetsToAdd = new();
                     foreach ((IEnumerable<ClassMove> moves, Schedule option) in validOptionToTry)
                     {
-                        try
-                        {
-                            foreach (ClassMove move in moves)
-                                localTradeCapture.Add(move);
-                        }
-                        catch (TradeInvalidException)
-                        {
-                            Debug.WriteLine("Bad move.");
-                            good = false; break;
-                        }
+                        foreach (ClassMove move in moves)
+                            localTradeCapture.Add(move);
                         targetsToAdd.Add((moves.First().StudentId, option));
                     }
-                    if (!good)
-                    {
-                        continue;
-                    }
                     int dummy = localTradeCapture.Count;
-                    GenerateClassMoves(targets.Concat(targetsToAdd), localTradeCapture, depth + 1, maxDepth, processResult);
+                    GenerateClassMoves(targets.Concat(targetsToAdd), localTradeCapture, depth + 1, maxDepth, processResult, batchSize, 1);
                     Debug.Assert(dummy == localTradeCapture.Count);
                 }
             }
 
             IEnumerable<(IEnumerable<ClassMove>, Schedule)> MakeValid(IEnumerable<(IEnumerable<ClassMove> Moves, Schedule Schedule)> option)
             {
-                List<(IEnumerable<ClassMove>, Schedule)> res = new();
                 (IEnumerable<ClassMove> Moves, Schedule Schedule)[] optionArr = option.ToArray();
+                bool[] include = new bool[optionArr.Length];
 
                 for (int i = 0; i < optionArr.Length; i++)
                 {
@@ -311,34 +304,47 @@ namespace KSAGrinder.Pages
                         }
                     }
                     if (!overlapping)
-                        res.Add(optionArr[i]);
+                        include[i] = true;
                 }
-                return res;
+                return from i in Enumerable.Range(0, optionArr.Length)
+                       where include[i]
+                       select optionArr[i];
             }
 
-            numThreads = (int)Math.Min(Math.Ceiling((double)card / batchSize), numThreads);
-            Task[] tasks = new Task[numThreads];
-            foreach (IEnumerable<IEnumerable<(IEnumerable<ClassMove>, Schedule)>> batch in sequences.CartesianProduct().Batch(batchSize))
+            numThreads = Math.Max((int)Math.Min(Math.Ceiling((double)card / batchSize), numThreads), 1);
+            var batches = sequences.CartesianProduct().Batch(batchSize);
+            if (numThreads > 1)
             {
-                // Break so that the left tasks to be executed.
-                if (_cts.IsCancellationRequested)
-                    break;
-                if (tasks.All(task => task is not null))
+                Task[] tasks = new Task[numThreads];
+                foreach (IEnumerable<IEnumerable<(IEnumerable<ClassMove>, Schedule)>> batch in batches)
                 {
-                    int index = Task.WaitAny(tasks);
-                    tasks[index] = new Task(() => ProcessBatch(batch));
-                    tasks[index].Start();
+                    // Break so that the left tasks to be executed.
+                    if (_cts.IsCancellationRequested)
+                        break;
+                    if (tasks.All(task => task is not null))
+                    {
+                        int index = Task.WaitAny(tasks);
+                        if (_cts.IsCancellationRequested)
+                            break;
+                        tasks[index] = Task.Factory.StartNew(() => ProcessBatch(batch));
+                    }
+                    else
+                    {
+                        int index = 0;
+                        while (tasks[index] is not null) ++index;
+                        tasks[index] = Task.Factory.StartNew(() => ProcessBatch(batch));
+                    }
                 }
-                else
+
+                Task.WaitAll(tasks.Where(t => t is not null).ToArray());
+            }
+            else
+            {
+                foreach (IEnumerable<IEnumerable<(IEnumerable<ClassMove>, Schedule)>> batch in batches)
                 {
-                    int index = 0;
-                    while (tasks[index] is not null) ++index;
-                    tasks[index] = new Task(() => ProcessBatch(batch));
-                    tasks[index].Start();
+                    ProcessBatch(batch);
                 }
             }
-
-            Task.WaitAll(tasks.Where(t => t is not null).ToArray());
         }
 
         /// <summary>

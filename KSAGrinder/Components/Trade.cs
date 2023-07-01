@@ -11,17 +11,17 @@ namespace KSAGrinder.Components
     {
         private static DataSet _data;
 
-        public string Code { get; }
+        public string Code { get; init; }
 
-        public int Grade { get; }
+        public int Grade { get; init; }
 
-        public string StudentA { get; }
+        public string StudentA { get; init; }
 
-        public int NumberA { get; }
+        public int NumberA { get; init; }
 
-        public string StudentB { get; }
+        public string StudentB { get; init; }
 
-        public int NumberB { get; }
+        public int NumberB { get; init; }
 
         public static void SetData(DataSet data) => _data = data;
 
@@ -55,7 +55,7 @@ namespace KSAGrinder.Components
                 throw new ArgumentException("Arguments are not valid.");
         }
 
-        public bool IsValid
+        private bool IsValid
         {
             get
             {
@@ -70,72 +70,6 @@ namespace KSAGrinder.Components
         }
 
         public Trade Inverse => new(Code, Grade, StudentA, NumberB, StudentB, NumberA);
-
-        //private static IEnumerable<Class> MoveClass(IEnumerable<Class> schedule, string code, int to)
-        //{
-        //    var scheduleL = schedule.ToList();
-        //    for (int i = 0; i < scheduleL.Count; ++i)
-        //    {
-        //        if (scheduleL[i].Code == code)
-        //        {
-        //            scheduleL.RemoveAt(i);
-        //            scheduleL.Insert(i, DataManager.GetClass(code, to));
-        //            break;
-        //        }
-        //    }
-        //    return scheduleL;
-        //}
-
-
-        //public static IEnumerable<IEnumerable<Trade>> GenerateTrade(string studentID, Schedule targetSchedule)
-        //{
-        //    var reference = new Dictionary<string, Schedule>();
-        //    Schedule GetCurrentSchedule(string student)
-        //    {
-        //        if (reference.ContainsKey(student))
-        //            return reference[student];
-        //        return new Schedule(DataManager.GetScheduleFromStudentID(student));
-        //    }
-        //    bool MoveClass(string student, string lecture, int number)
-        //    {
-        //        Schedule schedule = GetCurrentSchedule(student);
-        //        bool result = schedule.MoveClass(lecture, number);
-        //        reference[student] = schedule;
-        //        return result;
-        //    }
-
-        //    void GenerateTradesRecursive(string student, Schedule target)
-        //    {
-
-        //    }
-        //}
-
-        //public static IEnumerable<IEnumerable<Trade>> GenerateTrades(
-        //    IEnumerable<(string StudentID, Schedule Schedule)> targets,
-        //    TradeCapture tradeCapture,
-        //    int depth,
-        //    int maxDepth)
-        //{
-        //    if (targets.All(tuple => tradeCapture.GetScheduleOf(tuple.StudentID).Equals(tuple.Schedule)))
-        //    {
-        //        yield return tradeCapture;
-        //        yield break;
-        //    }
-
-        //    foreach ((string studentID, Schedule targetSchedule) in targets)
-        //    {
-        //        IEnumerable<string> lecturesToMove = from cls in tradeCapture.GetScheduleOf(studentID)
-        //                                             where targetSchedule.GetClassNumber(cls.Code) != cls.Number
-        //                                             select cls.Code;
-        //        foreach (string lecture in lecturesToMove)
-        //        {
-        //            IEnumerable<string> studentsToTryTrading = from std in tradeCapture.GetEnrollListOf(lecture, targetSchedule.GetClassNumber(lecture))
-        //                                                       where targets.Any(tuple => std != tuple.StudentID)
-        //                                                       select std;
-
-        //        }
-        //    }
-        //}
 
         public override string ToString() => $"{{ Trade {Code} between {StudentA}, {NumberA} and {StudentB}, {NumberB} }}";
 

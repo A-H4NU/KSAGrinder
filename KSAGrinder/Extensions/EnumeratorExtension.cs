@@ -24,8 +24,7 @@ namespace KSAGrinder.Extensions
 
             foreach (T item in source)
             {
-                if (bucket is null)
-                    bucket = new T[size];
+                bucket ??= new T[size];
 
                 bucket[count++] = item;
                 if (count != size)
