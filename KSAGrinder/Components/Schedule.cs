@@ -6,6 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+using _Schedule = System.Collections.Generic.IEnumerable<KSAGrinder.Components.Class>;
+
 namespace KSAGrinder.Components
 {
     public readonly struct Schedule : IReadOnlyCollection<Class>, ICloneable, IEquatable<Schedule>
@@ -16,7 +18,7 @@ namespace KSAGrinder.Components
 
         public Schedule() : this(Enumerable.Empty<Class>()) { }
 
-        public Schedule(IEnumerable<Class> classes)
+        public Schedule(_Schedule classes)
         {
             _classList = classes.ToArray();
             IsValid = CheckValid(classes);
@@ -44,7 +46,7 @@ namespace KSAGrinder.Components
         /// <summary>
         /// Static version of <see cref="MovedClass(String, Int32, Int32)"/>.
         /// </summary>
-        public static Schedule MovedClass(IEnumerable<Class> schedule, string code, int grade, int number)
+        public static Schedule MovedClass(_Schedule schedule, string code, int grade, int number)
         {
             return new(schedule.Select(@class =>
             {
@@ -106,7 +108,7 @@ namespace KSAGrinder.Components
         {
             get
             {
-                IEnumerable<Class> original = DataManager.GetScheduleFromStudentID(OriginalScheduleID);
+                _Schedule original = DataManager.GetScheduleFromStudentID(OriginalScheduleID);
                 if (original is null) return 0;
                 int count = 0;
                 foreach (Class cls1 in original)
@@ -125,7 +127,7 @@ namespace KSAGrinder.Components
             }
         }
 
-        public static bool CheckValid(IEnumerable<Class> classes)
+        public static bool CheckValid(_Schedule classes)
         {
             List<(DayOfWeek, int)> schedule = new();
             foreach (Class @class in classes)
@@ -140,7 +142,7 @@ namespace KSAGrinder.Components
             return true;
         }
 
-        public static bool CheckValid(IEnumerable<Class> classes, out Schedule result)
+        public static bool CheckValid(_Schedule classes, out Schedule result)
         {
             List<(DayOfWeek, int)> schedule = new();
             result = default;
@@ -181,7 +183,7 @@ namespace KSAGrinder.Components
                                              select classList[lectureToIndex[(tuple.Code, tuple.Grade)]].Number)
                                             .ToArray();
 
-            IEnumerable<Class> GenerateScheduleFromCombination((string, int)[] lecturesToMove, int[] combination)
+            _Schedule GenerateScheduleFromCombination((string, int)[] lecturesToMove, int[] combination)
             {
                 int index = 0;
                 Class[] classesOfSchedule = new Class[classList.Length];
@@ -217,7 +219,7 @@ namespace KSAGrinder.Components
                 IEnumerable<int[]> combinations = sequences.CartesianProduct().Select(i => i.ToArray()); // dim(combinations)[1] == lecturesToMove.Count()
                 foreach (int[] combination in combinations)
                 {
-                    IEnumerable<Class> schedule = GenerateScheduleFromCombination(lecturesToMove, combination);
+                    _Schedule schedule = GenerateScheduleFromCombination(lecturesToMove, combination);
                     if (onlyValid)
                     {
                         if (CheckValid(schedule, out Schedule result))
@@ -249,7 +251,7 @@ namespace KSAGrinder.Components
 
         public override bool Equals(object obj)
         {
-            if (obj is IEnumerable<Class> other)
+            if (obj is _Schedule other)
             {
                 return this.ToHashSet().SetEquals(other);
             }
