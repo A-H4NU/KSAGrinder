@@ -88,7 +88,7 @@ namespace KSAGrinder.Pages
         private static bool TryUnzip(string fileName, out DataSet result, out string hash)
         {
             result = null; hash = null;
-            if (fileName == null) return false;
+            if (fileName is null) return false;
             try
             {
                 using (FileStream fs = File.OpenRead(fileName))

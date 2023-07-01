@@ -27,7 +27,7 @@ namespace KSAGrinder
 
         public bool CanExecute(object parameter)
         {
-            return _canExecute == null || _canExecute();
+            return _canExecute is null || _canExecute();
         }
 
         public void Execute(object parameter)
@@ -65,7 +65,7 @@ namespace KSAGrinder
         {
             if (!(parameter is T))
                 return false;
-            if (_canExecute == null)
+            if (_canExecute is null)
                 return true;
             return _canExecute();
         }

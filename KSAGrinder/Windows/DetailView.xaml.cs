@@ -13,7 +13,7 @@ namespace KSAGrinder.Windows
             InitializeComponent();
             TxtDetail.Text = detail;
             TxtDetail.FontSize = Properties.Settings.Default.DetailFontSize;
-            if (title != null)
+            if (title is not null)
                 Title = title;
             TxtDetail.TextWrapping = wrapping;
         }

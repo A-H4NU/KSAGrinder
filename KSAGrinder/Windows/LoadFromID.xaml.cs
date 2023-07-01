@@ -27,7 +27,7 @@ namespace KSAGrinder.Windows
         {
             DataTable tableStudent = _data.Tables["Student"];
             DataRow row = tableStudent.Rows.Find(TxtID.Text);
-            if (row != null)
+            if (row is not null)
             {
                 ResultRow = row;
                 ResultID = TxtID.Text;

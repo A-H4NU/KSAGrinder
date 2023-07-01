@@ -41,7 +41,7 @@ namespace KSAGrinder.Properties
         {
             get
             {
-                if ((resourceMan == null))
+                if ((resourceMan is null))
                 {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("KSAGrinder.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;

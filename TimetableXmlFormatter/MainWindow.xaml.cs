@@ -88,7 +88,7 @@ namespace TimetableXmlFormatter
         private void SelectFileWithButton(Button button)
         {
             string filename = GetCsvFile();
-            if (filename == null)
+            if (filename is null)
             {
                 return;
             }

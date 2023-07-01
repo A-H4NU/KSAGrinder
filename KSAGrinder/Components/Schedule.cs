@@ -131,7 +131,7 @@ namespace KSAGrinder.Components
             get
             {
                 IEnumerable<Class> original = DataManager.GetScheduleFromStudentID(OriginalScheduleID);
-                if (original == null) return 0;
+                if (original is null) return 0;
                 int count = 0;
                 foreach (Class cls1 in original)
                 {

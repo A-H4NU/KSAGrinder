@@ -38,7 +38,7 @@ namespace KSAGrinder.Statics
 
         public static bool LectureExists(string code, int grade) => _classDict.ContainsKey((code, grade));
 
-        public static bool StudentExists(string id) => Data.Tables["Student"].Rows.Find(id) != null;
+        public static bool StudentExists(string id) => Data.Tables["Student"].Rows.Find(id) is not null;
 
         public static bool ClassExists(string code, int grade, int number) => LectureExists(code, grade) && 1 <= number && number <= _classDict[(code, grade)].Count;
 
@@ -65,7 +65,7 @@ namespace KSAGrinder.Statics
         public static IEnumerable<Class> GetScheduleFromStudentID(string id)
         {
             DataRow row = Data.Tables["Student"].Rows.Find(id);
-            if (row == null) return null;
+            if (row is null) return null;
             DataTable tStudent = Data.Tables["Student"];
             DataColumn cApplied = tStudent.Columns["Applied"];
 
@@ -76,7 +76,7 @@ namespace KSAGrinder.Statics
         public static string GetNameFromStudentID(string id)
         {
             DataRow row = Data.Tables["Student"].Rows.Find(id);
-            if (row == null) return null;
+            if (row is null) return null;
             DataTable tStudent = Data.Tables["Student"];
             DataColumn cName = tStudent.Columns["Name"];
             return row[cName].ToString();

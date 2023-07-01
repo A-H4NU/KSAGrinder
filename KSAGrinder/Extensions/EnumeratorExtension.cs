@@ -24,7 +24,7 @@ namespace KSAGrinder.Extensions
 
             foreach (T item in source)
             {
-                if (bucket == null)
+                if (bucket is null)
                     bucket = new T[size];
 
                 bucket[count++] = item;
@@ -37,7 +37,7 @@ namespace KSAGrinder.Extensions
                 count = 0;
             }
 
-            if (bucket != null && count > 0)
+            if (bucket is not null && count > 0)
                 yield return bucket.Take(count).ToArray();
         }
     }

@@ -120,14 +120,14 @@ namespace KSAGrinder.Pages
                         targetSchedule.Find(cls => cls.Code == code && cls.Grade == grade).Number));
                 }
                 GenerateClassMoves(new[] { (StudentId, new Schedule(tradeCapture.GetScheduleOf(StudentId))) }, tradeCapture, 0, MaxDepth, ProcessResult);
-                if (_cts == null || !_cts.IsCancellationRequested)
+                if (_cts is null || !_cts.IsCancellationRequested)
                 {
                     MessageBox.Show("탐색이 종료되었습니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
                     Dispatcher.Invoke(() => SetComponentStatus(working: false));
                 }
             }
 
-            if (_thread != null && _thread.IsAlive)
+            if (_thread is not null && _thread.IsAlive)
                 return;
 
             SetComponentStatus(working: true);
@@ -256,7 +256,7 @@ namespace KSAGrinder.Pages
                         break;
                     // TODO: FIX THIS
                     IEnumerable<(IEnumerable<ClassMove>, Schedule)> validOptionToTry = MakeValid(optionToTry);
-                    if (validOptionToTry == null) continue;
+                    if (validOptionToTry is null) continue;
 
                     TradeCapture localTradeCapture = tradeCapture.Clone();
                     bool good = true;
@@ -323,7 +323,7 @@ namespace KSAGrinder.Pages
                 // Break so that the left tasks to be executed.
                 if (_cts.IsCancellationRequested)
                     break;
-                if (tasks.All(task => task != null))
+                if (tasks.All(task => task is not null))
                 {
                     int index = Task.WaitAny(tasks);
                     tasks[index] = new Task(() => ProcessBatch(batch));
@@ -332,13 +332,13 @@ namespace KSAGrinder.Pages
                 else
                 {
                     int index = 0;
-                    while (tasks[index] != null) ++index;
+                    while (tasks[index] is not null) ++index;
                     tasks[index] = new Task(() => ProcessBatch(batch));
                     tasks[index].Start();
                 }
             }
 
-            Task.WaitAll(tasks.Where(t => t != null).ToArray());
+            Task.WaitAll(tasks.Where(t => t is not null).ToArray());
         }
 
         /// <summary>
@@ -406,7 +406,7 @@ namespace KSAGrinder.Pages
 
         public void StopWorking()
         {
-            if (_thread != null && _thread.IsAlive)
+            if (_thread is not null && _thread.IsAlive)
             {
                 _cts.Cancel();
                 _thread.Join(1000);

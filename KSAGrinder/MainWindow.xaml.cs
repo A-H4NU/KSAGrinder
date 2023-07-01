@@ -28,7 +28,7 @@ namespace KSAGrinder
 
             Main.Content = new FileInput(this);
             _menuDropAlignmentField = typeof(SystemParameters).GetField("_menuDropAlignment", BindingFlags.NonPublic | BindingFlags.Static);
-            System.Diagnostics.Debug.Assert(_menuDropAlignmentField != null);
+            System.Diagnostics.Debug.Assert(_menuDropAlignmentField is not null);
 
             EnsureStandardPopupAlignment();
             SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
@@ -41,7 +41,7 @@ namespace KSAGrinder
 
         private void EnsureStandardPopupAlignment()
         {
-            if (SystemParameters.MenuDropAlignment && _menuDropAlignmentField != null)
+            if (SystemParameters.MenuDropAlignment && _menuDropAlignmentField is not null)
             {
                 _menuDropAlignmentField.SetValue(null, false);
             }

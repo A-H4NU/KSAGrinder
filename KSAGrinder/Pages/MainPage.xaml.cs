@@ -534,7 +534,7 @@ namespace KSAGrinder.Pages
             }
             LoadFromID dialog = new(_data);
             dialog.ShowDialog();
-            if (dialog.ResultRow != null)
+            if (dialog.ResultRow is not null)
             {
                 IEnumerable<Class> newList = DataManager.GetScheduleFromStudentID(dialog.ResultID);
 
@@ -622,7 +622,7 @@ namespace KSAGrinder.Pages
 
         private void LectureTable_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (LectureTable.SelectedItem == null)
+            if (LectureTable.SelectedItem is null)
             {
                 return;
             }
@@ -724,7 +724,7 @@ namespace KSAGrinder.Pages
                 MessageBox.Show("트레이드를 탐색하기 위해서 학번을 입력해야 합니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadFromID enterId = new(_data);
                 enterId.ShowDialog();
-                if (enterId.ResultRow == null)
+                if (enterId.ResultRow is null)
                     return;
                 OriginalScheduleID = enterId.ResultID;
             }
@@ -772,7 +772,7 @@ namespace KSAGrinder.Pages
                                            select c);
                 }
                 /* The same lecture already exists; replace it with clickedClass. */
-                else if (existingClass != null)
+                else if (existingClass is not null)
                 {
                     _currentSchedule = new((from c in _currentSchedule
                                             where c != existingClass
@@ -793,7 +793,7 @@ namespace KSAGrinder.Pages
 
         private void SchedulesTable_Sorting(object sender, DataGridSortingEventArgs e)
         {
-            if (e.Column.SortDirection == null)
+            if (e.Column.SortDirection is null)
             {
                 e.Column.SortDirection = ListSortDirection.Ascending;
                 e.Handled = false;

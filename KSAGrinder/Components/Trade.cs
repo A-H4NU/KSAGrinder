@@ -27,7 +27,7 @@ namespace KSAGrinder.Components
 
         public Trade(string code, int grade, string studentA, int numberA, string studentB, int numberB)
         {
-            if (_data == null)
+            if (_data is null)
                 throw new NoDataException("Data must be provided before any initialization of an instance!");
             Code = code;
             Grade = grade;
@@ -41,7 +41,7 @@ namespace KSAGrinder.Components
 
         public Trade(string studentA, in Class classA, string studentB, in Class classB)
         {
-            if (_data == null)
+            if (_data is null)
                 throw new NoDataException("Data must be provided before any initialization of an instance!");
             if (classA.Code != classB.Code || classA.Grade != classB.Grade)
                 throw new ArgumentException("Codes and grades of fromClass and toClass must be same!");
@@ -59,7 +59,7 @@ namespace KSAGrinder.Components
         {
             get
             {
-                if (_data == null)
+                if (_data is null)
                     throw new NoDataException("Data must be provided.");
                 if (NumberA == NumberB) return false;
                 return DataManager.StudentExists(StudentA)

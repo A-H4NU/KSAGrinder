@@ -41,7 +41,7 @@ namespace TimetableXmlFormatter.Properties
         {
             get
             {
-                if ((resourceMan == null))
+                if ((resourceMan is null))
                 {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("TimetableXmlFormatter.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
