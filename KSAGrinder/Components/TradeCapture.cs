@@ -40,8 +40,8 @@ namespace KSAGrinder.Components
             return res;
         }
 
-        public IReadOnlyCollection<Class> GetScheduleOf(string studentId)
-            => PrivateGetScheduleOf(studentId, false).ToList().AsReadOnly();
+        public Schedule GetScheduleOf(string studentId)
+            => PrivateGetScheduleOf(studentId, false);
 
         public IReadOnlyCollection<string> GetEnrollListOf(string lectureCode, int grade, int number)
             => PrivateGetEnrollListOf(lectureCode, grade, number, false).AsReadOnly();
@@ -88,7 +88,7 @@ namespace KSAGrinder.Components
         ///     Regardless of whether the resulting schedules are valid,
         ///     check that the set of moves can be partitioned as sets of trades. (including all k-trades)
         /// </summary>
-        public bool DoesFormTrade() => _classMoves.GroupBy(move => move.Code).All(collection => ClassMove.IsSetOfCycles(collection));
+        public bool DoesFormTrade() => _classMoves.GroupBy(move => move.Code).All(ClassMove.IsSetOfCycles);
 
         /// <summary>
         ///     Get the list of head-tail tuples of maximal simple paths.

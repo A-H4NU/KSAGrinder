@@ -4,46 +4,34 @@ using KSAGrinder.Statics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace KSAGrinder.Components
 {
     public readonly struct Schedule : IReadOnlyCollection<Class>, ICloneable, IEquatable<Schedule>
     {
-        private readonly List<Class> _classList = new();
+        private readonly Class[] _classList;
 
         public static string OriginalScheduleID { get; set; }
 
-        public Schedule() { }
+        public Schedule() : this(Enumerable.Empty<Class>()) { }
 
-        public Schedule(IEnumerable<Class> classes) => _classList.AddRange(classes);
+        public Schedule(IEnumerable<Class> classes)
+        {
+            _classList = classes.ToArray();
+            IsValid = CheckValid(classes);
+        }
 
-        public int Count => _classList.Count;
+        public int Count => _classList.Length;
 
         public bool Contains(Class item) => _classList.Contains(item);
-        public IEnumerator<Class> GetEnumerator() => _classList.GetEnumerator();
+        public IEnumerator<Class> GetEnumerator() => _classList.AsEnumerable().GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _classList.GetEnumerator();
 
         /// <summary>
         /// Checks whether the schedule has overlapping classes on the same day/time
         /// </summary>
-        public bool IsValid
-        {
-            get
-            {
-                HashSet<(DayOfWeek, int)> schedule = new();
-                foreach (Class @class in _classList)
-                {
-                    foreach ((DayOfWeek, int) hour in @class.Schedule)
-                    {
-                        if (!schedule.Add(hour))
-                            return false;
-                    }
-                }
-                return true;
-            }
-        }
+        public bool IsValid { get; init; }
 
         /// <summary>
         /// Returns a new instance that is obtained by moving a class to another.
@@ -53,6 +41,9 @@ namespace KSAGrinder.Components
             return MovedClass(this, code, grade, number);
         }
 
+        /// <summary>
+        /// Static version of <see cref="MovedClass(String, Int32, Int32)"/>.
+        /// </summary>
         public static Schedule MovedClass(IEnumerable<Class> schedule, string code, int grade, int number)
         {
             return new(schedule.Select(@class =>
@@ -61,21 +52,6 @@ namespace KSAGrinder.Components
                     return DataManager.GetClass(code, grade, number);
                 return @class;
             }));
-        }
-
-        /// <summary>
-        /// Returns the number of a lecture
-        /// </summary>
-        /// <param name="code">A lecture code to find its number</param>
-        /// <returns>The class number; -1 when it is not found</returns>
-        public int GetClassNumber(string code, int grade)
-        {
-            foreach (Class @class in _classList)
-            {
-                if (@class.Code == code && @class.Grade == grade)
-                    return @class.Number;
-            }
-            return -1;
         }
 
         private double EvaluateNEmpty(int n)
@@ -184,7 +160,7 @@ namespace KSAGrinder.Components
 
         public IEnumerable<Schedule> Combination(IEnumerable<(string, int)> pinnedLectures = null, int maxMove = -1, bool onlyValid = true)
         {
-            List<Class> classList = _classList;
+            Class[] classList = _classList;
 
             pinnedLectures ??= Enumerable.Empty<(string, int)>();
             if (maxMove == 0)
@@ -193,7 +169,7 @@ namespace KSAGrinder.Components
                 yield break;
             }
 
-            Dictionary<(string, int), int> lectureToIndex = Enumerable.Range(0, classList.Count)
+            Dictionary<(string, int), int> lectureToIndex = Enumerable.Range(0, classList.Length)
                                                                       .ToDictionary(i => (classList[i].Code, classList[i].Grade));
             (string Code, int Grade)[] notPinnedLectures = (from @class in _classList
                                                             select (@class.Code, @class.Grade))
@@ -208,8 +184,8 @@ namespace KSAGrinder.Components
             IEnumerable<Class> GenerateScheduleFromCombination((string, int)[] lecturesToMove, int[] combination)
             {
                 int index = 0;
-                Class[] classesOfSchedule = new Class[classList.Count];
-                for (int i = 0; i < classList.Count; i++)
+                Class[] classesOfSchedule = new Class[classList.Length];
+                for (int i = 0; i < classList.Length; i++)
                 {
                     string code = classList[i].Code;
                     int grade = classList[i].Grade;

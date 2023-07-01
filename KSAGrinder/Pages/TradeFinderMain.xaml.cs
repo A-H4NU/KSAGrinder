@@ -229,8 +229,8 @@ namespace KSAGrinder.Pages
                         IEnumerable<Schedule> options = schedule.Combination(
                             pinnedLectures: tradeCapture.InvolvedLecturesOf(studentId)
                                                         .Append((tail.Code, tail.Grade)),
-                            maxMove:        MaxLectureMoves,
-                            onlyValid:      true);
+                            maxMove: MaxLectureMoves,
+                            onlyValid: true);
                         foreach (Schedule option in options)
                         {
                             (IEnumerable<ClassMove>, Schedule) toAdd;
