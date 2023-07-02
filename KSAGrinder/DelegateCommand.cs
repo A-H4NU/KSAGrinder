@@ -63,7 +63,7 @@ namespace KSAGrinder
 
         public bool CanExecute(object parameter)
         {
-            if (!(parameter is T))
+            if (parameter is not T)
                 return false;
             if (_canExecute is null)
                 return true;

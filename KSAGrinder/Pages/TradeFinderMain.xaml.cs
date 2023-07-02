@@ -27,7 +27,7 @@ namespace KSAGrinder.Pages
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public delegate void ProcessResultDelegate(Components.TradeCapture result);
+        public delegate void ProcessResultDelegate(TradeCapture result);
 
         private readonly TradeFinder _main;
 
@@ -133,7 +133,6 @@ namespace KSAGrinder.Pages
 
             SetComponentStatus(working: true);
             _tradeList.Clear();
-
             _cts = new CancellationTokenSource();
 
             _thread = new Thread(ThreadFunc)
@@ -291,9 +290,7 @@ namespace KSAGrinder.Pages
                         string std1 = optionArr[i].Moves.First().StudentId;
                         string std2 = optionArr[j].Moves.First().StudentId;
                         if (std1 != std2) continue;
-                        HashSet<ClassMove> moves1 = optionArr[i].Moves.ToHashSet();
-                        HashSet<ClassMove> moves2 = optionArr[j].Moves.ToHashSet();
-                        if (moves1.SetEquals(moves2))
+                        if (optionArr[i].Moves.ToHashSet().SetEquals(optionArr[j].Moves))
                         {
                             overlapping = true;
                             break;
@@ -318,6 +315,8 @@ namespace KSAGrinder.Pages
                 Task[] tasks = new Task[numThreads];
                 foreach (IEnumerable<IEnumerable<(IEnumerable<ClassMove>, Schedule)>> batch in batches)
                 {
+                    void ProcessThisBatch() => ProcessBatch(batch);
+
                     // Break so that the left tasks to be executed.
                     if (_cts.IsCancellationRequested)
                         break;
@@ -326,13 +325,13 @@ namespace KSAGrinder.Pages
                         int index = Task.WaitAny(tasks);
                         if (_cts.IsCancellationRequested)
                             break;
-                        tasks[index] = Task.Factory.StartNew(() => ProcessBatch(batch));
+                        tasks[index] = Task.Factory.StartNew(ProcessThisBatch);
                     }
                     else
                     {
                         int index = 0;
                         while (tasks[index] is not null) ++index;
-                        tasks[index] = Task.Factory.StartNew(() => ProcessBatch(batch));
+                        tasks[index] = Task.Factory.StartNew(ProcessThisBatch);
                     }
                 }
 

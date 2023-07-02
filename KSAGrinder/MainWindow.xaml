@@ -9,6 +9,9 @@
     Title="KSAGrinder"
     Width="1366"
     Height="768"
+    MinWidth="1366"
+    MinHeight="768"
+    SizeToContent="Width"
     Style="{DynamicResource WindowStyle}"
     mc:Ignorable="d">
     <Window.Resources>

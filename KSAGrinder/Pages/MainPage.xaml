@@ -51,8 +51,8 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*" MinWidth="600" />
-                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="5*" MinWidth="600" />
+                <ColumnDefinition Width="3*" />
                 <ColumnDefinition Width="2*" />
             </Grid.ColumnDefinitions>
 
@@ -214,11 +214,11 @@
                                 Binding="{Binding Number}"
                                 Header="분반" />
                             <DataGridTextColumn
-                                Width="60"
+                                Width="*"
                                 Binding="{Binding Teacher}"
                                 Header="선생님" />
                             <DataGridTextColumn
-                                Width="*"
+                                Width="3*"
                                 Binding="{Binding DayTime}"
                                 Header="요일/시간" />
                             <DataGridTextColumn
