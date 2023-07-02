@@ -210,18 +210,19 @@
                         </DataGrid.Resources>
                         <DataGrid.Columns>
                             <DataGridTextColumn
-                                MaxWidth="40"
+                                Width="*"
                                 Binding="{Binding Number}"
                                 Header="분반" />
                             <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding Teacher}"
-                                Header="선생님" />
-                            <DataGridTextColumn
-                                Width="3*"
+                                Width="2*"
                                 Binding="{Binding DayTime}"
                                 Header="요일/시간" />
                             <DataGridTextColumn
+                                Width="4*"
+                                Binding="{Binding Teacher}"
+                                Header="선생님" />
+                            <DataGridTextColumn
+                                Width="*"
                                 MinWidth="65"
                                 Binding="{Binding Enroll}"
                                 Header="신청인원" />

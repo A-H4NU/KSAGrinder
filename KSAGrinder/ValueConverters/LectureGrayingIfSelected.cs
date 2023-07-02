@@ -1,4 +1,5 @@
 ﻿using KSAGrinder.Components;
+using KSAGrinder.Pages;
 
 using System;
 using System.Globalization;
@@ -9,9 +10,9 @@ namespace KSAGrinder.ValueConverters
 {
     public class LectureGrayingIfSelected : IMultiValueConverter
     {
-        private static Schedule _schedule;
+        private static MainPage _mainPage;
 
-        public static void Initialize(Schedule schedule) => _schedule = schedule;
+        public static void Initialize(MainPage mainPage) => _mainPage = mainPage;
 
         public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -19,7 +20,7 @@ namespace KSAGrinder.ValueConverters
 
             if (value[0] is string code && value[1] is int grade)
             {
-                foreach (Class @class in _schedule)
+                foreach (Class @class in _mainPage.CurrentClassCollection)
                 {
                     if (@class.Code == code && @class.Grade == grade)
                         return isLightTheme ? Brushes.LightGray : new SolidColorBrush(Color.FromRgb(98, 98, 98));
@@ -29,8 +30,6 @@ namespace KSAGrinder.ValueConverters
         }
 
         object[] IMultiValueConverter.ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotSupportedException();
     }
 }

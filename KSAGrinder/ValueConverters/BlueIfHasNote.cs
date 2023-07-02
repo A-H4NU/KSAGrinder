@@ -1,4 +1,5 @@
 ﻿using KSAGrinder.Components;
+using KSAGrinder.Pages;
 using KSAGrinder.Statics;
 
 using System;
@@ -11,17 +12,17 @@ namespace KSAGrinder.ValueConverters
 {
     public class BlueIfHasNote : IMultiValueConverter
     {
-        private static Schedule _schedule;
+        private static MainPage _mainPage;
 
-        public static void Initialize(Schedule schedule)
+        public static void Initialize(MainPage mainPage)
         {
-            _schedule = schedule;
+            _mainPage = mainPage;
         }
 
         private static bool DoesOverlapIfAdded(string code, int grade, int number)
         {
             (DayOfWeek Day, int Hour)[] schedule = DataManager.GetClass(code, grade, number).Schedule;
-            foreach (Class cls in _schedule)
+            foreach (Class cls in _mainPage.CurrentClassCollection)
             {
                 (DayOfWeek Day, int Hour)[] existingSchedule = DataManager.GetClass(cls.Code, cls.Grade, cls.Number).Schedule;
                 foreach ((DayOfWeek Day, int Hour) time in schedule)
@@ -41,7 +42,7 @@ namespace KSAGrinder.ValueConverters
 
             if (value[0] is string code && value[1] is int grade && value[2] is int number)
             {
-                foreach (Class @class in _schedule)
+                foreach (Class @class in _mainPage.CurrentClassCollection)
                 {
                     if ((@class.Code, @class.Grade, @class.Number) == (code, grade, number))
                         return isLightTheme ? Brushes.LightGray : new SolidColorBrush(Color.FromRgb(98, 98, 98));

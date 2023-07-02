@@ -131,8 +131,8 @@ namespace KSAGrinder.Pages
             InitializeComponent();
 
             ConvertItemToIndexDataRow.Initialize(Timetable);
-            LectureGrayingIfSelected.Initialize(_currentSchedule);
-            BlueIfHasNote.Initialize(_currentSchedule);
+            LectureGrayingIfSelected.Initialize(this);
+            BlueIfHasNote.Initialize(this);
 
             Timetable.DataContext = HourCollection;
 
