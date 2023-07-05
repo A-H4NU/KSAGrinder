@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net7.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <UseWindowsForms>False</UseWindowsForms>
@@ -11,6 +11,8 @@
     <DebugType>portable</DebugType>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>C:\Users\HANU\source\repos\HANUPrivate.snk</AssemblyOriginatorKeyFile>
+	<AssemblyVersion>1.2.0</AssemblyVersion>
+	<FileVersion>1.2.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="KSAGrinder.ico">
