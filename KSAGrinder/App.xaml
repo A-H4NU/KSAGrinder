@@ -6,6 +6,8 @@
     xmlns:properties="clr-namespace:KSAGrinder.Properties"
     StartupUri="MainWindow.xaml">
     <Application.Resources>
+        <properties:StringResource x:Key="Strings" />
+
         <SolidColorBrush x:Key="DarkBackground" Color="#2e2e2e" />
         <SolidColorBrush x:Key="LightDarkBackground" Color="#4d4d4d" />
         <SolidColorBrush x:Key="BlueBorder" Color="#0078d7" />
