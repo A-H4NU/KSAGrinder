@@ -1,4 +1,6 @@
 ﻿
+using CommunityToolkit.Diagnostics;
+
 using KSAGrinder.Components;
 using KSAGrinder.Exceptions;
 using KSAGrinder.Extensions;
@@ -25,7 +27,7 @@ namespace KSAGrinder.Pages
     /// </summary>
     public partial class TradeFinderMain : Page, INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public delegate void ProcessResultDelegate(TradeCapture result);
 
@@ -34,8 +36,8 @@ namespace KSAGrinder.Pages
         public readonly string StudentId;
         private readonly Schedule _schedule;
 
-        private CancellationTokenSource _cts;
-        private Thread _thread;
+        private CancellationTokenSource? _cts;
+        private Thread? _thread;
 
         private readonly ClassSelection _classSelection;
 
@@ -145,7 +147,7 @@ namespace KSAGrinder.Pages
         private void BtnStop_Click(object sender, RoutedEventArgs e)
         {
             _cts?.Cancel();
-            _thread.Join(5000);
+            _thread?.Join(5000);
 
             SetComponentStatus(working: false);
         }
@@ -198,6 +200,8 @@ namespace KSAGrinder.Pages
             int batchSize = 1024,
             int numThreads = 4)
         {
+            Guard.IsNotNull(_cts);
+
             if (tradeCapture.DoesFormTrade() &&
                 targets.All(tuple => tuple.Schedule.Equals(tradeCapture.GetScheduleOf(tuple.StudentId))))
             {
@@ -260,7 +264,7 @@ namespace KSAGrinder.Pages
                 {
                     if (_cts.IsCancellationRequested)
                         break;
-                    IEnumerable<(IEnumerable<ClassMove>, Schedule)> validOptionToTry = MakeValid(optionToTry);
+                    IEnumerable<(IEnumerable<ClassMove>, Schedule)>? validOptionToTry = MakeValid(optionToTry);
                     if (validOptionToTry is null) continue;
 
                     TradeCapture localTradeCapture = tradeCapture.Clone();
@@ -277,7 +281,7 @@ namespace KSAGrinder.Pages
                 }
             }
 
-            IEnumerable<(IEnumerable<ClassMove>, Schedule)> MakeValid(IEnumerable<(IEnumerable<ClassMove> Moves, Schedule Schedule)> option)
+            IEnumerable<(IEnumerable<ClassMove>, Schedule)>? MakeValid(IEnumerable<(IEnumerable<ClassMove> Moves, Schedule Schedule)> option)
             {
                 (IEnumerable<ClassMove> Moves, Schedule Schedule)[] optionArr = option.ToArray();
                 bool[] include = new bool[optionArr.Length];
@@ -365,15 +369,15 @@ namespace KSAGrinder.Pages
 
         private void CmbWidth_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ComboBoxItem selected = CmbWidth.SelectedItem as ComboBoxItem;
-            MaxLectureMoves = Int32.Parse(selected.Content.ToString()) - 1;
+            ComboBoxItem selected = (ComboBoxItem)CmbWidth.SelectedItem;
+            MaxLectureMoves = Int32.Parse(selected.Content.ToString()!) - 1;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(WarningMessage)));
         }
 
         private void CmbDepth_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ComboBoxItem selected = CmbDepth.SelectedItem as ComboBoxItem;
-            MaxDepth = Int32.Parse(selected.Content.ToString());
+            ComboBoxItem selected = (ComboBoxItem)CmbDepth.SelectedItem;
+            MaxDepth = Int32.Parse(selected.Content.ToString()!);
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(WarningMessage)));
         }
 
@@ -413,7 +417,7 @@ namespace KSAGrinder.Pages
         {
             if (_thread is not null && _thread.IsAlive)
             {
-                _cts.Cancel();
+                _cts?.Cancel();
                 _thread.Join(1000);
             }
             _cts?.Dispose();

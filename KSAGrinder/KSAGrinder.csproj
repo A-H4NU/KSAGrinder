@@ -13,6 +13,7 @@
     <AssemblyOriginatorKeyFile>C:\Users\HANU\source\repos\HANUPrivate.snk</AssemblyOriginatorKeyFile>
 	<AssemblyVersion>1.2.0</AssemblyVersion>
 	<FileVersion>1.2.0</FileVersion>
+	<Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="KSAGrinder.ico">
@@ -25,6 +26,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.0" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.421302">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

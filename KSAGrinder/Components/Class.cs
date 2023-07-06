@@ -70,7 +70,7 @@ namespace KSAGrinder.Components
 
         public bool Equals(Class other) => (Code, Grade, Number) == (other.Code, other.Grade, other.Number);
 
-        public override bool Equals(object obj) => obj is Class @class && Equals(@class);
+        public override bool Equals(object? obj) => obj is Class @class && Equals(@class);
 
         public static bool operator ==(Class left, Class right) => left.Equals(right);
 

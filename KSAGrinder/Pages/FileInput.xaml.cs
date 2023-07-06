@@ -5,6 +5,8 @@ using Microsoft.Win32;
 
 using System;
 using System.Data;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -27,7 +29,8 @@ namespace KSAGrinder.Pages
             InitializeComponent();
 
             _main = main;
-            Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            Version version = Assembly.GetExecutingAssembly().GetName().Version!;
+            Debug.Assert(version is not null);
             LblVersion.Content = $"KSAGrinder v{version.Major}.{version.Minor}.{version.Build}";
         }
 
@@ -47,7 +50,7 @@ namespace KSAGrinder.Pages
             };
             if (ofd.ShowDialog() == true)
             {
-                if (TryUnzip(ofd.FileName, out DataSet result, out string hash))
+                if (TryUnzip(ofd.FileName, out DataSet? result, out string? hash))
                 {
                     if (Settings.Default.RememberDataset)
                     {
@@ -70,7 +73,7 @@ namespace KSAGrinder.Pages
             // Note that you can have more than one file.
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
-            if (TryUnzip(files[0], out DataSet result, out string hash))
+            if (TryUnzip(files[0], out DataSet? result, out string? hash))
             {
                 if (Settings.Default.RememberDataset)
                 {
@@ -85,21 +88,23 @@ namespace KSAGrinder.Pages
             }
         }
 
-        private static bool TryUnzip(string fileName, out DataSet result, out string hash)
+        private static bool TryUnzip([NotNullWhen(true)] string? fileName, [NotNullWhen(true)] out DataSet? result, [NotNullWhen(true)] out string? hash)
         {
-            result = null; hash = null;
-            if (fileName is null) return false;
+            result = null; hash = String.Empty;
+            if (fileName is null)
+            {
+                return false;
+            }
             try
             {
                 using (FileStream fs = File.OpenRead(fileName))
                 {
                     SHA256 sha = SHA256.Create();
                     byte[] bytes = sha.ComputeHash(fs);
-                    hash = "";
                     foreach (byte b in bytes) hash += b.ToString("x2");
                 }
 
-                ZipArchive arch = ZipFile.OpenRead(fileName);
+                using ZipArchive arch = ZipFile.OpenRead(fileName);
                 if (arch.Entries.Count != 2)
                 {
                     return false;
@@ -124,8 +129,6 @@ namespace KSAGrinder.Pages
                 {
                     result.ReadXml(sr);
                 }
-
-                arch.Dispose();
                 return true;
             }
             catch
@@ -137,7 +140,7 @@ namespace KSAGrinder.Pages
         private void Hyperlink_RequestNavigate_Newbie(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
             DetailView credit = new(
-                Properties.Resources.ResourceManager.GetString("Welcome"),
+                Properties.Resources.ResourceManager.GetString("Welcome")!,
                 "환영합니다!",
                 TextWrapping.WrapWithOverflow);
             credit.ShowDialog();
@@ -158,7 +161,7 @@ namespace KSAGrinder.Pages
         private void Hyperlink_RequestNavigate_Credit(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
             DetailView credit = new(
-                Properties.Resources.ResourceManager.GetString("Credit"),
+                Properties.Resources.ResourceManager.GetString("Credit")!,
                 "도움주신 분들",
                 TextWrapping.WrapWithOverflow);
             credit.ShowDialog();
@@ -168,7 +171,7 @@ namespace KSAGrinder.Pages
         private void Hyperlink_RequestNavigate_Icon(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
             DetailView copyright = new(
-                Properties.Resources.ResourceManager.GetString("IconCopyright"),
+                Properties.Resources.ResourceManager.GetString("IconCopyright")!,
                 "아이콘",
                 TextWrapping.WrapWithOverflow);
             copyright.ShowDialog();
@@ -189,7 +192,7 @@ namespace KSAGrinder.Pages
                         MessageBoxImage.Question);
                     if (messageResult == MessageBoxResult.Yes)
                     {
-                        if (TryUnzip(Settings.Default.LastDataset, out DataSet result, out string hash))
+                        if (TryUnzip(Settings.Default.LastDataset, out DataSet? result, out string? hash))
                         {
                             MainPage mainPage = new(_main, Settings.Default.LastDataset, result, hash, Settings.Default.LastFile);
                             _main.Main.Navigate(mainPage);
@@ -215,7 +218,7 @@ namespace KSAGrinder.Pages
                         MessageBoxImage.Question);
                     if (messageResult == MessageBoxResult.Yes)
                     {
-                        if (TryUnzip(Settings.Default.LastDataset, out DataSet result, out string hash))
+                        if (TryUnzip(Settings.Default.LastDataset, out DataSet? result, out string? hash))
                         {
                             MainPage mainPage = new(_main, Settings.Default.LastDataset, result, hash);
                             _main.Main.Navigate(mainPage);

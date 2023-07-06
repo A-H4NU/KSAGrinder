@@ -1,4 +1,6 @@
-﻿using KSAGrinder.Components;
+﻿using CommunityToolkit.Diagnostics;
+
+using KSAGrinder.Components;
 using KSAGrinder.Pages;
 
 using System;
@@ -10,12 +12,13 @@ namespace KSAGrinder.ValueConverters
 {
     public class LectureGrayingIfSelected : IMultiValueConverter
     {
-        private static MainPage _mainPage;
+        private static MainPage? _mainPage;
 
         public static void Initialize(MainPage mainPage) => _mainPage = mainPage;
 
         public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture)
         {
+            Guard.IsNotNull(_mainPage);
             bool isLightTheme = Properties.Settings.Default.Theme == "Light";
 
             if (value[0] is string code && value[1] is int grade)

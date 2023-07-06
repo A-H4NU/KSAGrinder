@@ -27,14 +27,14 @@ namespace KSAGrinder
             InitializeComponent();
 
             Main.Content = new FileInput(this);
-            _menuDropAlignmentField = typeof(SystemParameters).GetField("_menuDropAlignment", BindingFlags.NonPublic | BindingFlags.Static);
+            _menuDropAlignmentField = typeof(SystemParameters).GetField("_menuDropAlignment", BindingFlags.NonPublic | BindingFlags.Static)!;
             System.Diagnostics.Debug.Assert(_menuDropAlignmentField is not null);
 
             EnsureStandardPopupAlignment();
             SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
         }
-
-        private void SystemParameters_StaticPropertyChanged(object sender, PropertyChangedEventArgs e)
+        
+        private void SystemParameters_StaticPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             EnsureStandardPopupAlignment();
         }

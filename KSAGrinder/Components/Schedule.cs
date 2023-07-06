@@ -14,7 +14,7 @@ namespace KSAGrinder.Components
     {
         private readonly Class[] _classList;
 
-        public static string OriginalScheduleID { get; set; }
+        public static string? OriginalScheduleID { get; set; }
 
         public Schedule() : this(Enumerable.Empty<Class>()) { }
 
@@ -108,6 +108,8 @@ namespace KSAGrinder.Components
         {
             get
             {
+                if (OriginalScheduleID is null)
+                    return 0;
                 _Schedule original = DataManager.GetScheduleFromStudentID(OriginalScheduleID);
                 if (original is null) return 0;
                 int count = 0;
@@ -160,7 +162,7 @@ namespace KSAGrinder.Components
             return true;
         }
 
-        public IEnumerable<Schedule> Combination(IEnumerable<(string, int)> pinnedLectures = null, int maxMove = -1, bool onlyValid = true)
+        public IEnumerable<Schedule> Combination(IEnumerable<(string, int)>? pinnedLectures = null, int maxMove = -1, bool onlyValid = true)
         {
             Class[] classList = _classList;
 
@@ -249,7 +251,7 @@ namespace KSAGrinder.Components
             return res;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is _Schedule other)
             {

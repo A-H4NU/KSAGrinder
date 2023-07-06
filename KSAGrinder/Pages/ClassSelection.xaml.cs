@@ -57,7 +57,7 @@ namespace KSAGrinder.Pages
 
         public class ClassCheckBox : INotifyPropertyChanged
         {
-            public event PropertyChangedEventHandler PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
 
             public string Code { get; private set; }
 
@@ -89,7 +89,7 @@ namespace KSAGrinder.Pages
         {
             DetailView help = new(
                 String.Format(
-                    Properties.Resources.ResourceManager.GetString("ClassSelectionHelp"),
+                    Properties.Resources.ResourceManager.GetString("ClassSelectionHelp")!,
                     $"{_previousPage.StudentId} {DataManager.GetNameFromStudentID(_previousPage.StudentId)}"),
                 "도움말",
                 TextWrapping.WrapWithOverflow);

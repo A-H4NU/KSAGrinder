@@ -9,7 +9,7 @@ namespace KSAGrinder
     {
         public delegate void CommandDelegate();
 
-        private readonly Func<bool> _canExecute;
+        private readonly Func<bool>? _canExecute;
         private readonly CommandDelegate _execute;
 
         public DelegateCommand(CommandDelegate execute) : this(execute, null)
@@ -17,20 +17,20 @@ namespace KSAGrinder
 
         }
 
-        public DelegateCommand(CommandDelegate execute, Func<bool> canExecute)
+        public DelegateCommand(CommandDelegate execute, Func<bool>? canExecute)
         {
             _execute = execute;
             _canExecute = canExecute;
         }
 
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 
-        public bool CanExecute(object parameter)
+        public bool CanExecute(object? parameter)
         {
             return _canExecute is null || _canExecute();
         }
 
-        public void Execute(object parameter)
+        public void Execute(object? parameter)
         {
             _execute();
         }
@@ -45,7 +45,7 @@ namespace KSAGrinder
     {
         public delegate void CommandDelegate(T parameter);
 
-        private readonly Func<bool> _canExecute;
+        private readonly Func<bool>? _canExecute;
         private readonly CommandDelegate _execute;
 
         public DelegateCommand(CommandDelegate execute) : this(execute, null)
@@ -53,15 +53,15 @@ namespace KSAGrinder
 
         }
 
-        public DelegateCommand(CommandDelegate execute, Func<bool> canExecute)
+        public DelegateCommand(CommandDelegate execute, Func<bool>? canExecute)
         {
             _execute = execute;
             _canExecute = canExecute;
         }
 
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 
-        public bool CanExecute(object parameter)
+        public bool CanExecute(object? parameter)
         {
             if (parameter is not T)
                 return false;
@@ -70,7 +70,7 @@ namespace KSAGrinder
             return _canExecute();
         }
 
-        public void Execute(object parameter)
+        public void Execute(object? parameter)
         {
             if (parameter is T t)
                 _execute(t);

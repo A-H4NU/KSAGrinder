@@ -12,9 +12,9 @@ namespace KSAGrinder.Properties
     // https://kaki104.tistory.com/718
     public class StringResource : DynamicObject
     {
-        public event EventHandler<string> LanguageChanged;
+        public event EventHandler<string>? LanguageChanged;
         private readonly ResourceManager _resourceManager;
-        private CultureInfo _cultureInfo;
+        private CultureInfo? _cultureInfo;
 
         public StringResource()
         {
@@ -25,8 +25,8 @@ namespace KSAGrinder.Properties
         {
             get
             {
-                if (String.IsNullOrEmpty(id)) return null;
-                string str = _resourceManager.GetString(id, _cultureInfo);
+                if (String.IsNullOrEmpty(id)) return String.Empty;
+                string? str = _resourceManager.GetString(id, _cultureInfo);
                 if (String.IsNullOrEmpty(str))
                 {
                     str = id;
@@ -38,7 +38,7 @@ namespace KSAGrinder.Properties
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             string id = binder.Name;
-            string str = _resourceManager.GetString(id, _cultureInfo);
+            string? str = _resourceManager.GetString(id, _cultureInfo);
             if (String.IsNullOrEmpty(str))
             {
                 str = id;
