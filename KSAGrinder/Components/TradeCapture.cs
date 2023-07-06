@@ -24,6 +24,19 @@ namespace KSAGrinder.Components
 
         public TradeCapture(IEnumerable<ClassMove> collection) : this() => AddRange(collection);
 
+        /// <summary>
+        /// Copies from <paramref name="copyFrom"/>.
+        /// </summary>
+        /// <param name="copyFrom"></param>
+        private TradeCapture(TradeCapture copyFrom)
+        {
+            _classMoves = new(copyFrom._classMoves);
+            _capturedSchedules = new(copyFrom._capturedSchedules);
+            _capturedClassEnrollLists = copyFrom._capturedClassEnrollLists.Keys.ToDictionary(
+                key => key,
+                key => new List<string>(copyFrom._capturedClassEnrollLists[key]));
+        }
+
         public string Summary
             => $"{InvolvedStudents().Count()}인 참여 / {_classMoves.Count}번 분반 이동{Environment.NewLine}"
                + "참여 학생: " + String.Join(", ", InvolvedStudents().Select(id => id + " " + DataManager.GetNameFromStudentID(id)));
@@ -190,13 +203,6 @@ namespace KSAGrinder.Components
             }
         }
 
-        public bool AreAllSchedulesValid(string exceptForThisStudentId = null)
-            => _capturedSchedules.All(pair =>
-            {
-                (string id, Schedule scd) = (pair.Key, pair.Value);
-                return id == exceptForThisStudentId || scd.IsValid;
-            });
-
         public int Count => _classMoves.Count;
 
         public bool IsReadOnly => false;
@@ -282,7 +288,7 @@ namespace KSAGrinder.Components
 
         private List<string> PrivateGetEnrollListOf(string lectureCode, int grade, int number, bool capture = true)
         {
-            if (_capturedClassEnrollLists.TryGetValue((lectureCode, grade, number), out List<string> value))
+            if (_capturedClassEnrollLists.TryGetValue((lectureCode, grade, number), out List<string>? value))
                 return value;
             List<string> res = DataManager.GetClass(lectureCode, grade, number).EnrolledList.Clone().ToList();
             if (capture) _capturedClassEnrollLists[(lectureCode, grade, number)] = res;
