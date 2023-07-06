@@ -9,8 +9,8 @@
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:valueConverters="clr-namespace:KSAGrinder.ValueConverters"
     Title="MainPage"
-    d:DesignHeight="720"
-    d:DesignWidth="1280"
+    d:DesignHeight="900"
+    d:DesignWidth="1600"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     mc:Ignorable="d">
 
@@ -34,15 +34,15 @@
             DockPanel.Dock="Top"
             FontSize="13"
             Style="{StaticResource MenuStyle}">
-            <MenuItem Header="파일" Style="{StaticResource MenuItemStyle}">
-                <MenuItem Click="MenuNewSchedule_Click" Header="새 시간표 (Ctrl+N)" />
-                <MenuItem Click="MenuOpen_Click" Header="열기 (Ctrl+O)" />
-                <MenuItem Click="MenuLoadID_Click" Header="학번에서 불러오기" />
-                <MenuItem Click="MenuSave_Click" Header="저장 (Ctrl+S)" />
-                <MenuItem Click="MenuSaveAs_Click" Header="다른 이름으로 저장" />
+            <MenuItem Header="{Binding [Main_File], Source={StaticResource Strings}}" Style="{StaticResource MenuItemStyle}">
+                <MenuItem Click="MenuNewSchedule_Click" Header="{Binding [Main_File_New], Source={StaticResource Strings}}" />
+                <MenuItem Click="MenuOpen_Click" Header="{Binding [Main_File_Open], Source={StaticResource Strings}}" />
+                <MenuItem Click="MenuLoadID_Click" Header="{Binding [Main_File_LoadID], Source={StaticResource Strings}}" />
+                <MenuItem Click="MenuSave_Click" Header="{Binding [Main_File_Save], Source={StaticResource Strings}}" />
+                <MenuItem Click="MenuSaveAs_Click" Header="{Binding [Main_File_SaveAs], Source={StaticResource Strings}}" />
             </MenuItem>
-            <MenuItem Header="도구" Style="{StaticResource MenuItemStyle}">
-                <MenuItem Click="MenuOption_Click" Header="설정 (Ctrl+I)" />
+            <MenuItem Header="{Binding [Main_Tools], Source={StaticResource Strings}}" Style="{StaticResource MenuItemStyle}">
+                <MenuItem Click="MenuOption_Click" Header="{Binding [Main_Tools_Settings], Source={StaticResource Strings}}" />
             </MenuItem>
         </Menu>
         <Grid Margin="10" DockPanel.Dock="Bottom">
@@ -51,7 +51,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="5*" MinWidth="600" />
+                <ColumnDefinition Width="3.5*" MinWidth="600" />
                 <ColumnDefinition Width="3*" />
                 <ColumnDefinition Width="2*" />
             </Grid.ColumnDefinitions>
@@ -63,7 +63,7 @@
                 <Grid DockPanel.Dock="Top">
                     <Label
                         HorizontalContentAlignment="Center"
-                        Content="시간표"
+                        Content="{Binding [Main_Schedule], Source={StaticResource Strings}}"
                         FontSize="22"
                         FontWeight="SemiBold" />
                     <Label
@@ -117,7 +117,7 @@
                             FontSize="13"
                             Foreground="LightGray"
                             IsHitTestVisible="False"
-                            Text="엔터로 검색, 초성 검색 지원"
+                            Text="{Binding [Main_SearchHint], Source={StaticResource Strings}}"
                             Visibility="{Binding ElementName=TxtSearch, Path=Text, Converter={StaticResource TextToVisibility}}" />
                         <TextBox
                             x:Name="TxtSearch"
@@ -158,22 +158,23 @@
                         Style="{DynamicResource DataGridStyle}">
                         <DataGrid.Columns>
                             <DataGridTextColumn
-                                Width="55"
+                                Width="*"
                                 Binding="{Binding Department, Converter={StaticResource DepartmentToString}}"
-                                Header="학부" />
+                                Header="{Binding [Main_Department], Source={StaticResource Strings}}" />
+                            <DataGridTextColumn
+                                Width="4*"
+                                MinWidth="200"
+                                Binding="{Binding Name}"
+                                Header="{Binding [Main_LectureName], Source={StaticResource Strings}}" />
                             <DataGridTextColumn
                                 Width="*"
-                                Binding="{Binding Name}"
-                                Header="강의명" />
-                            <DataGridTextColumn
-                                Width="40"
                                 Binding="{Binding Grade}"
-                                Header="학년" />
+                                Header="{Binding [Main_Grade], Source={StaticResource Strings}}" />
                             <DataGridTextColumn
-                                Width="55"
+                                Width="*"
                                 Binding="{Binding NumClass}"
                                 CanUserSort="False"
-                                Header="분반 수" />
+                                Header="{Binding [Main_NumClasses], Source={StaticResource Strings}}" />
                         </DataGrid.Columns>
                         <DataGrid.RowStyle>
                             <Style TargetType="{x:Type DataGridRow}">
@@ -212,20 +213,19 @@
                             <DataGridTextColumn
                                 Width="*"
                                 Binding="{Binding Number}"
-                                Header="분반" />
+                                Header="{Binding [Main_Class], Source={StaticResource Strings}}" />
                             <DataGridTextColumn
                                 Width="2*"
                                 Binding="{Binding DayTime}"
-                                Header="요일/시간" />
+                                Header="{Binding [Main_Time], Source={StaticResource Strings}}" />
                             <DataGridTextColumn
                                 Width="4*"
                                 Binding="{Binding Teacher}"
-                                Header="선생님" />
+                                Header="{Binding [Main_Teacher], Source={StaticResource Strings}}" />
                             <DataGridTextColumn
                                 Width="*"
-                                MinWidth="65"
                                 Binding="{Binding Enroll}"
-                                Header="신청인원" />
+                                Header="{Binding [Main_NumApplied], Source={StaticResource Strings}}" />
                         </DataGrid.Columns>
                         <DataGrid.RowStyle>
                             <Style TargetType="{x:Type DataGridRow}">
@@ -254,7 +254,8 @@
                     x:Name="LblCredit"
                     Margin="0,0,0,5"
                     DockPanel.Dock="Top"
-                    Text="총 0학점"
+                    Style="{StaticResource TextBlockStyle}"
+                    Text="-"
                     TextAlignment="Right" />
                 <DataGrid
                     x:Name="CurrentClassTable"
@@ -272,26 +273,26 @@
                         <DataGridCheckBoxColumn
                             Width="40"
                             ElementStyle="{StaticResource GridCheckBoxStyle}"
-                            Header="고정" />
+                            Header="{Binding [Main_Pin], Source={StaticResource Strings}}" />
+                        <DataGridTextColumn
+                            Width="5*"
+                            Binding="{Binding Name}"
+                            Header="{Binding [Main_LectureName], Source={StaticResource Strings}}"
+                            IsReadOnly="True" />
                         <DataGridTextColumn
                             Width="*"
-                            Binding="{Binding Name}"
-                            Header="강의명"
-                            IsReadOnly="True" />
-                        <DataGridTextColumn
-                            Width="40"
                             Binding="{Binding Credit}"
-                            Header="학점"
+                            Header="{Binding [Main_Credit], Source={StaticResource Strings}}"
                             IsReadOnly="True" />
                         <DataGridTextColumn
-                            Width="40"
+                            Width="*"
                             Binding="{Binding Number}"
-                            Header="분반"
+                            Header="{Binding [Main_Class], Source={StaticResource Strings}}"
                             IsReadOnly="True" />
                         <DataGridTextColumn
-                            Width="55"
+                            Width="*"
                             Binding="{Binding Teacher}"
-                            Header="선생님"
+                            Header="{Binding [Main_Teacher], Source={StaticResource Strings}}"
                             IsReadOnly="True" />
                     </DataGrid.Columns>
                     <DataGrid.RowStyle>
@@ -326,7 +327,7 @@
                         Height="25"
                         Margin="0,0,3,0"
                         Click="BtnGenerate_Click"
-                        Content="조합"
+                        Content="{Binding [Main_GenCombinations], Source={StaticResource Strings}}"
                         Style="{StaticResource ButtonStyle}" />
                     <Button
                         x:Name="BtnTrade"
@@ -334,7 +335,7 @@
                         Height="25"
                         Margin="3,0,0,0"
                         Click="BtnTrade_Click"
-                        Content="트레이드 탐색"
+                        Content="{Binding [Main_FindTrades], Source={StaticResource Strings}}"
                         Style="{StaticResource ButtonStyle}" />
                 </Grid>
 

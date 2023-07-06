@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:KSAGrinder.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="학번 입력"
+    Title="{Binding [LoadFromID_Title], Source={StaticResource Strings}}"
     Width="300"
     Height="120"
     Style="{DynamicResource WindowStyle}"
@@ -28,10 +28,9 @@
             Orientation="Vertical">
             <DockPanel Margin="10,0,10,0" HorizontalAlignment="Stretch">
                 <Label
-                    Content="학번"
+                    Content="{Binding [LoadFromID_ID], Source={StaticResource Strings}}"
                     DockPanel.Dock="Left"
                     FontSize="15" />
-
                 <TextBox
                     x:Name="TxtID"
                     Margin="0,2,0,2"
@@ -52,15 +51,15 @@
                     x:Name="BtnCancel"
                     Margin="0,0,5,0"
                     Padding="10,2,10,2"
-                    Click="BtnCancel_Click"
-                    Content="취소"
+                    Click="BtnLoad_Click"
+                    Content="{Binding [Confirm], Source={StaticResource Strings}}"
                     Style="{StaticResource ButtonStyle}" />
                 <Button
                     x:Name="BtnLoad"
                     Margin="5,0,0,0"
                     Padding="10,2,10,2"
-                    Click="BtnLoad_Click"
-                    Content="확인"
+                    Click="BtnCancel_Click"
+                    Content="{Binding [Cancel], Source={StaticResource Strings}}"
                     Style="{StaticResource ButtonStyle}" />
             </UniformGrid>
 

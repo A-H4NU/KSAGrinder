@@ -29,26 +29,27 @@
                 DockPanel.Dock="Bottom"
                 Rows="1">
                 <Button
-                    x:Name="BtnCancel"
+                    x:Name="BtnConfirm"
                     Margin="0,0,5,0"
                     Padding="0,2.5,0,2.5"
-                    Click="BtnCancel_Click"
-                    Content="취소"
+                    Click="BtnConfirm_Click"
+                    Content="{Binding [Confirm], Source={StaticResource Strings}}"
                     Style="{StaticResource ButtonStyle}" />
                 <Button
-                    x:Name="BtnConfirm"
+                    x:Name="BtnCancel"
                     Margin="5,0,0,0"
                     Padding="0,2.5,0,2.5"
-                    Click="BtnConfirm_Click"
-                    Content="확인"
+                    Click="BtnCancel_Click"
+                    Content="{Binding [Cancel], Source={StaticResource Strings}}"
                     Style="{StaticResource ButtonStyle}" />
             </UniformGrid>
             <TextBlock
                 Margin="0,0,0,10"
                 DockPanel.Dock="Top"
-                FontSize="13"
                 TextAlignment="Center">
-                <Hyperlink NavigateUri="https://google.com" RequestNavigate="Hyperlink_RequestNavigate">도움말</Hyperlink>
+                <Hyperlink NavigateUri="https://google.com" RequestNavigate="Hyperlink_RequestNavigate">
+                    <TextBlock FontSize="13" Text="{Binding [Help], Source={StaticResource Strings}}" />
+                </Hyperlink>
             </TextBlock>
             <ListBox
                 x:Name="LstClass"

@@ -117,25 +117,157 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="FileInput_1" xml:space="preserve">
-    <value>Select or drag and drop the provided dataset.</value>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
   </data>
-  <data name="FileInput_2" xml:space="preserve">
-    <value>Are you new here? Click this.</value>
+  <data name="Confirm" xml:space="preserve">
+    <value>Confirm</value>
   </data>
-  <data name="FileInput_3" xml:space="preserve">
-    <value>Where is the provided dataset?</value>
+  <data name="Detail_DragToCopy" xml:space="preserve">
+    <value>You may drag to select and copy the content.</value>
   </data>
-  <data name="FileInput_4" xml:space="preserve">
+  <data name="Detail_Title" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="Detail_ZoomIn" xml:space="preserve">
+    <value>Font Zoom In</value>
+  </data>
+  <data name="Detail_ZoomOut" xml:space="preserve">
+    <value>Font Zoom Out</value>
+  </data>
+  <data name="FileInput_Browse" xml:space="preserve">
+    <value>Browse . . .</value>
+  </data>
+  <data name="FileInput_Contribution" xml:space="preserve">
     <value>Who contributed to KSAGrinder?</value>
   </data>
-  <data name="FileInput_5" xml:space="preserve">
-    <value>Use by non-affiliated persons is prohibited.</value>
-  </data>
-  <data name="FileInput_6" xml:space="preserve">
+  <data name="FileInput_Icon" xml:space="preserve">
     <value>Icon</value>
   </data>
-  <data name="FileInput_7" xml:space="preserve">
-    <value>Browse . . .</value>
+  <data name="FileInput_NewHere" xml:space="preserve">
+    <value>Are you new here? Click this.</value>
+  </data>
+  <data name="FileInput_SelectOrDragDrop" xml:space="preserve">
+    <value>Select or drag and drop the provided dataset.</value>
+  </data>
+  <data name="FileInput_Warn" xml:space="preserve">
+    <value>Use by non-affiliated persons is prohibited.</value>
+  </data>
+  <data name="FileInput_Where" xml:space="preserve">
+    <value>Where is the provided dataset?</value>
+  </data>
+  <data name="FindTrades_Breadth" xml:space="preserve">
+    <value>Search Breadth</value>
+  </data>
+  <data name="FindTrades_Depth" xml:space="preserve">
+    <value>Search Depth</value>
+  </data>
+  <data name="FindTrades_SelectClasses" xml:space="preserve">
+    <value>Select Classes...</value>
+  </data>
+  <data name="FindTrades_Sort" xml:space="preserve">
+    <value>Sort</value>
+  </data>
+  <data name="FindTrades_Start" xml:space="preserve">
+    <value>Start Searching</value>
+  </data>
+  <data name="FindTrades_Stop" xml:space="preserve">
+    <value>Stop Searching</value>
+  </data>
+  <data name="FindTrades_Title" xml:space="preserve">
+    <value>Find Trades</value>
+  </data>
+  <data name="Help" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="LoadFromID_ID" xml:space="preserve">
+    <value>Student ID</value>
+  </data>
+  <data name="LoadFromID_Title" xml:space="preserve">
+    <value>Enter a student ID</value>
+  </data>
+  <data name="Main_Class" xml:space="preserve">
+    <value>Class No.</value>
+  </data>
+  <data name="Main_Credit" xml:space="preserve">
+    <value>Credit</value>
+  </data>
+  <data name="Main_Department" xml:space="preserve">
+    <value>Department</value>
+  </data>
+  <data name="Main_File" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="Main_File_LoadID" xml:space="preserve">
+    <value>Load from ID</value>
+  </data>
+  <data name="Main_File_New" xml:space="preserve">
+    <value>New (Ctrl+N)</value>
+  </data>
+  <data name="Main_File_Open" xml:space="preserve">
+    <value>Open (Ctrl+O)</value>
+  </data>
+  <data name="Main_File_Save" xml:space="preserve">
+    <value>Save (Ctrl+S)</value>
+  </data>
+  <data name="Main_File_SaveAs" xml:space="preserve">
+    <value>Save as...</value>
+  </data>
+  <data name="Main_FindTrades" xml:space="preserve">
+    <value>Find Trades</value>
+  </data>
+  <data name="Main_GenCombinations" xml:space="preserve">
+    <value>Generate Combinations</value>
+  </data>
+  <data name="Main_Grade" xml:space="preserve">
+    <value>Grade</value>
+  </data>
+  <data name="Main_LectureName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Main_NumApplied" xml:space="preserve">
+    <value># Students</value>
+  </data>
+  <data name="Main_NumClasses" xml:space="preserve">
+    <value># Classes</value>
+  </data>
+  <data name="Main_Pin" xml:space="preserve">
+    <value>Pin</value>
+  </data>
+  <data name="Main_Schedule" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="Main_SearchHint" xml:space="preserve">
+    <value>Press Enter to search. Search by initial consonant supported.</value>
+  </data>
+  <data name="Main_Teacher" xml:space="preserve">
+    <value>Teacher</value>
+  </data>
+  <data name="Main_Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="Main_Tools" xml:space="preserve">
+    <value>Tools</value>
+  </data>
+  <data name="Main_Tools_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings_DetailFontSize" xml:space="preserve">
+    <value>Detail Textbox Font Size</value>
+  </data>
+  <data name="Settings_InstantSearch" xml:space="preserve">
+    <value>Realtime Search</value>
+  </data>
+  <data name="Settings_RememberDataset" xml:space="preserve">
+    <value>Remember Last Opened Dataset</value>
+  </data>
+  <data name="Settings_RememberFile" xml:space="preserve">
+    <value>Remember Last Opened Schedule File</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Settings</value>
   </data>
 </root>

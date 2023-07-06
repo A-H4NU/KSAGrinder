@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:KSAGrinder.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="세부 정보"
+    Title="{Binding [Detail_Title], Source={StaticResource Strings}}"
     Width="400"
     Height="600"
     Style="{DynamicResource WindowStyle}"
@@ -32,19 +32,19 @@
                     Margin="0,0,5,0"
                     Padding="0,2.5,0,2.5"
                     Click="BtnZoomOut_Click"
-                    Content="축소"
+                    Content="{Binding [Detail_ZoomOut], Source={StaticResource Strings}}"
                     Style="{StaticResource ButtonStyle}" />
                 <Button
                     x:Name="BtnZoomIn"
                     Margin="5,0,0,0"
                     Padding="0,2.5,0,2.5"
                     Click="BtnZoomIn_Click"
-                    Content="확대"
+                    Content="{Binding [Detail_ZoomIn], Source={StaticResource Strings}}"
                     Style="{StaticResource ButtonStyle}" />
             </UniformGrid>
             <Label
                 HorizontalContentAlignment="Center"
-                Content="드래그해서 복사할 수 있습니다."
+                Content="{Binding [Detail_DragToCopy], Source={StaticResource Strings}}"
                 DockPanel.Dock="Bottom" />
             <TextBox
                 x:Name="TxtDetail"

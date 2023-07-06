@@ -7,11 +7,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:statics="clr-namespace:KSAGrinder.Statics"
     Title="KSAGrinder"
-    Width="1366"
-    Height="768"
+    Width="1600"
+    Height="900"
     MinWidth="1366"
     MinHeight="768"
-    SizeToContent="Width"
     Style="{DynamicResource WindowStyle}"
     mc:Ignorable="d">
     <Window.Resources>

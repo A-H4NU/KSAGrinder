@@ -117,25 +117,157 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="FileInput_1" xml:space="preserve">
-    <value>제공된 데이터셋을 선택하거나 드래그 앤 드롭하세요.</value>
+  <data name="Cancel" xml:space="preserve">
+    <value>취소</value>
   </data>
-  <data name="FileInput_2" xml:space="preserve">
-    <value>처음이신가요? 여기를 클릭해주세요.</value>
+  <data name="Confirm" xml:space="preserve">
+    <value>확인</value>
   </data>
-  <data name="FileInput_3" xml:space="preserve">
-    <value>"제공된 데이터셋"이 어디 있나요?</value>
+  <data name="Detail_DragToCopy" xml:space="preserve">
+    <value>드래그하여 텍스트를 선택하거나 복사할 수 있습니다.</value>
   </data>
-  <data name="FileInput_4" xml:space="preserve">
+  <data name="Detail_Title" xml:space="preserve">
+    <value>세부 정보</value>
+  </data>
+  <data name="Detail_ZoomIn" xml:space="preserve">
+    <value>확대</value>
+  </data>
+  <data name="Detail_ZoomOut" xml:space="preserve">
+    <value>축소</value>
+  </data>
+  <data name="FileInput_Browse" xml:space="preserve">
+    <value>선택</value>
+  </data>
+  <data name="FileInput_Contribution" xml:space="preserve">
     <value>누가 이 프로그램에 기여했나요?</value>
   </data>
-  <data name="FileInput_5" xml:space="preserve">
-    <value>한국과학영재학교 관계자 외 사용을 금지합니다.</value>
-  </data>
-  <data name="FileInput_6" xml:space="preserve">
+  <data name="FileInput_Icon" xml:space="preserve">
     <value>아이콘</value>
   </data>
-  <data name="FileInput_7" xml:space="preserve">
-    <value>선택</value>
+  <data name="FileInput_NewHere" xml:space="preserve">
+    <value>처음이신가요? 여기를 클릭해주세요.</value>
+  </data>
+  <data name="FileInput_SelectOrDragDrop" xml:space="preserve">
+    <value>제공된 데이터셋을 선택하거나 드래그 앤 드롭하세요.</value>
+  </data>
+  <data name="FileInput_Warn" xml:space="preserve">
+    <value>한국과학영재학교 관계자 외 사용을 금지합니다.</value>
+  </data>
+  <data name="FileInput_Where" xml:space="preserve">
+    <value>"제공된 데이터셋"이 어디 있나요?</value>
+  </data>
+  <data name="FindTrades_Breadth" xml:space="preserve">
+    <value>탐색 너비</value>
+  </data>
+  <data name="FindTrades_Depth" xml:space="preserve">
+    <value>탐색 깊이</value>
+  </data>
+  <data name="FindTrades_SelectClasses" xml:space="preserve">
+    <value>과목 선택...</value>
+  </data>
+  <data name="FindTrades_Sort" xml:space="preserve">
+    <value>정렬</value>
+  </data>
+  <data name="FindTrades_Start" xml:space="preserve">
+    <value>탐색 시작</value>
+  </data>
+  <data name="FindTrades_Stop" xml:space="preserve">
+    <value>탐색 중단</value>
+  </data>
+  <data name="FindTrades_Title" xml:space="preserve">
+    <value>트레이드 탐색</value>
+  </data>
+  <data name="Help" xml:space="preserve">
+    <value>도움말</value>
+  </data>
+  <data name="LoadFromID_ID" xml:space="preserve">
+    <value>학번</value>
+  </data>
+  <data name="LoadFromID_Title" xml:space="preserve">
+    <value>학번 입력</value>
+  </data>
+  <data name="Main_Class" xml:space="preserve">
+    <value>분반</value>
+  </data>
+  <data name="Main_Credit" xml:space="preserve">
+    <value>학점</value>
+  </data>
+  <data name="Main_Department" xml:space="preserve">
+    <value>학부</value>
+  </data>
+  <data name="Main_File" xml:space="preserve">
+    <value>파일</value>
+  </data>
+  <data name="Main_File_LoadID" xml:space="preserve">
+    <value>학번에서 불러오기</value>
+  </data>
+  <data name="Main_File_New" xml:space="preserve">
+    <value>새 파일 (Ctrl+N)</value>
+  </data>
+  <data name="Main_File_Open" xml:space="preserve">
+    <value>열기 (Ctrl+O)</value>
+  </data>
+  <data name="Main_File_Save" xml:space="preserve">
+    <value>저장 (Ctrl+S)</value>
+  </data>
+  <data name="Main_File_SaveAs" xml:space="preserve">
+    <value>다른 이름으로 저장</value>
+  </data>
+  <data name="Main_FindTrades" xml:space="preserve">
+    <value>트레이드 탐색</value>
+  </data>
+  <data name="Main_GenCombinations" xml:space="preserve">
+    <value>조합</value>
+  </data>
+  <data name="Main_Grade" xml:space="preserve">
+    <value>학년</value>
+  </data>
+  <data name="Main_LectureName" xml:space="preserve">
+    <value>강의명</value>
+  </data>
+  <data name="Main_NumApplied" xml:space="preserve">
+    <value>신청인원</value>
+  </data>
+  <data name="Main_NumClasses" xml:space="preserve">
+    <value>분반 수</value>
+  </data>
+  <data name="Main_Pin" xml:space="preserve">
+    <value>고정</value>
+  </data>
+  <data name="Main_Schedule" xml:space="preserve">
+    <value>시간표</value>
+  </data>
+  <data name="Main_SearchHint" xml:space="preserve">
+    <value>엔터로 검색, 초성 검색 지원</value>
+  </data>
+  <data name="Main_Teacher" xml:space="preserve">
+    <value>선생님</value>
+  </data>
+  <data name="Main_Time" xml:space="preserve">
+    <value>시간</value>
+  </data>
+  <data name="Main_Tools" xml:space="preserve">
+    <value>도구</value>
+  </data>
+  <data name="Main_Tools_Settings" xml:space="preserve">
+    <value>설정</value>
+  </data>
+  <data name="Settings_DetailFontSize" xml:space="preserve">
+    <value>상세 정보 창 글씨 크기</value>
+  </data>
+  <data name="Settings_InstantSearch" xml:space="preserve">
+    <value>검색창에서 검색어 즉각 반영</value>
+  </data>
+  <data name="Settings_RememberDataset" xml:space="preserve">
+    <value>마지막으로 연 데이터셋 기억</value>
+  </data>
+  <data name="Settings_RememberFile" xml:space="preserve">
+    <value>마지막으로 연 저장본 기억</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>테마</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>옵션</value>
   </data>
 </root>

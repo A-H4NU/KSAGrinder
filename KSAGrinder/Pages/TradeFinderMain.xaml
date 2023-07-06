@@ -7,7 +7,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:valueConverters="clr-namespace:KSAGrinder.ValueConverters"
     x:Name="Page"
-    Title="TradeFinderMain"
     d:DesignHeight="600"
     d:DesignWidth="400"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
@@ -34,7 +33,7 @@
                 <DockPanel Grid.Column="0" HorizontalAlignment="Stretch">
                     <Label
                         Margin="0,0,5,0"
-                        Content="탐색 너비"
+                        Content="{Binding [FindTrades_Breadth], Source={StaticResource Strings}}"
                         DockPanel.Dock="Left" />
                     <ComboBox
                         x:Name="CmbWidth"
@@ -48,7 +47,7 @@
                 <DockPanel Grid.Column="1" HorizontalAlignment="Stretch">
                     <Label
                         Margin="0,0,5,0"
-                        Content="탐색 깊이"
+                        Content="{Binding [FindTrades_Depth], Source={StaticResource Strings}}"
                         DockPanel.Dock="Left" />
                     <ComboBox
                         x:Name="CmbDepth"
@@ -66,17 +65,19 @@
                     Margin="5,0,0,0"
                     VerticalAlignment="Top"
                     Click="BtnSelect_Click"
-                    Content="과목 선택..."
+                    Content="{Binding [FindTrades_SelectClasses], Source={StaticResource Strings}}"
                     Style="{StaticResource ButtonStyle}" />
             </Grid>
             <TextBlock
                 Margin="10,5,10,0"
                 DockPanel.Dock="Top"
+                Style="{StaticResource TextBlockStyle}"
                 Text="{Binding Path=SelectionMessage}"
                 TextAlignment="Center" />
             <TextBlock
                 Margin="10,5,10,0"
                 DockPanel.Dock="Top"
+                Style="{StaticResource TextBlockStyle}"
                 Text="{Binding Path=WarningMessage}"
                 TextAlignment="Center"
                 TextWrapping="WrapWithOverflow" />
@@ -91,7 +92,7 @@
                     Padding="0,2.5,0,2.5"
                     HorizontalAlignment="Stretch"
                     Click="BtnSort_Click"
-                    Content="정렬"
+                    Content="{Binding [FindTrades_Sort], Source={StaticResource Strings}}"
                     IsEnabled="False"
                     Style="{StaticResource ButtonStyle}" />
                 <Button
@@ -100,7 +101,7 @@
                     Padding="0,2.5,0,2.5"
                     HorizontalAlignment="Stretch"
                     Click="BtnStop_Click"
-                    Content="탐색 중지"
+                    Content="{Binding [FindTrades_Stop], Source={StaticResource Strings}}"
                     IsEnabled="False"
                     Style="{StaticResource ButtonStyle}" />
                 <Button
@@ -109,7 +110,7 @@
                     Padding="0,2.5,0,2.5"
                     HorizontalAlignment="Stretch"
                     Click="BtnFind_Click"
-                    Content="탐색 시작"
+                    Content="{Binding [FindTrades_Start], Source={StaticResource Strings}}"
                     Style="{StaticResource ButtonStyle}" />
             </UniformGrid>
             <ListBox
@@ -139,7 +140,7 @@
                                 VerticalContentAlignment="Center"
                                 Content="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBoxItem}}, Mode=OneWay, Converter={StaticResource IndexConv}}"
                                 DockPanel.Dock="Left" />
-                            <TextBlock Style="{StaticResource ResourceKey={x:Type TextBlock}}" Text="{Binding ., Converter={StaticResource TradesToSummary}}" />
+                            <TextBlock Style="{StaticResource TextBlockStyle}" Text="{Binding ., Converter={StaticResource TradesToSummary}}" />
                         </DockPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

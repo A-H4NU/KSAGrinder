@@ -33,7 +33,7 @@ namespace KSAGrinder
             EnsureStandardPopupAlignment();
             SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
         }
-        
+
         private void SystemParameters_StaticPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             EnsureStandardPopupAlignment();
