@@ -197,7 +197,7 @@ namespace KSAGrinder.Pages
             int depth,
             int maxDepth,
             ProcessResultDelegate processResult,
-            int batchSize = 1024,
+            int batchSize = 1 << 12,
             int numThreads = 4)
         {
             Guard.IsNotNull(_cts);
