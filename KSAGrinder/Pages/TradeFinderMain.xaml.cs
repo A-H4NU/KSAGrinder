@@ -2,7 +2,6 @@
 using CommunityToolkit.Diagnostics;
 
 using KSAGrinder.Components;
-using KSAGrinder.Exceptions;
 using KSAGrinder.Extensions;
 using KSAGrinder.Statics;
 using KSAGrinder.Windows;

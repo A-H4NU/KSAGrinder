@@ -130,14 +130,14 @@ namespace KSAGrinder.Statics
                 }
 
                 _classDict[(code, grade)].Add(new Class(
-                    name: tLecture.Rows.Find(new object[] { code, grade })[cName].ToString(),
-                    code: code,
-                    grade: grade,
-                    number: Int32.Parse(row[cNumber].ToString()),
-                    teacher: row[cTeacher].ToString(),
-                    schedule: ((DayOfWeek Day, int Hour)[])row[cTime],
-                    note: row[cNote].ToString(),
-                    enrolledList: applyDict[(code, grade, (int)row[cNumber])]
+                    Name: tLecture.Rows.Find(new object[] { code, grade })[cName].ToString(),
+                    Code: code,
+                    Grade: grade,
+                    Number: Int32.Parse(row[cNumber].ToString()),
+                    Teacher: row[cTeacher].ToString(),
+                    Schedule: ((DayOfWeek Day, int Hour)[])row[cTime],
+                    Note: row[cNote].ToString(),
+                    EnrolledList: new(applyDict[(code, grade, (int)row[cNumber])])
                 ));
             }
             foreach (var classList in _classDict.Values)
@@ -160,12 +160,12 @@ namespace KSAGrinder.Statics
                 string code = row[cCode].ToString();
                 int grade = (int)row[cGrade];
                 _lectures.Add(new Lecture(
-                    code: code,
-                    department: (Department)Enum.Parse(typeof(Department), (string)row[cDepartment]),
-                    name: (string)row[cName],
-                    grade: grade,
-                    numClass: GetTheNumberOfClasses(code, grade),
-                    credit: (int)row[cCredit]
+                    Code: code,
+                    Department: (Department)Enum.Parse(typeof(Department), (string)row[cDepartment]),
+                    Name: (string)row[cName],
+                    Grade: grade,
+                    NumClass: GetTheNumberOfClasses(code, grade),
+                    Credit: (int)row[cCredit]
                 ));
             }
         }

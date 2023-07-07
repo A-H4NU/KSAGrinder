@@ -1,4 +1,6 @@
-﻿using KSAGrinder.Pages;
+﻿using CommunityToolkit.Diagnostics;
+
+using KSAGrinder.Pages;
 using KSAGrinder.Properties;
 
 using System.ComponentModel;
@@ -27,8 +29,9 @@ namespace KSAGrinder
             InitializeComponent();
 
             Main.Content = new FileInput(this);
-            _menuDropAlignmentField = typeof(SystemParameters).GetField("_menuDropAlignment", BindingFlags.NonPublic | BindingFlags.Static)!;
-            System.Diagnostics.Debug.Assert(_menuDropAlignmentField is not null);
+            var field = typeof(SystemParameters).GetField("_menuDropAlignment", BindingFlags.NonPublic | BindingFlags.Static);
+            Guard.IsNotNull(field);
+            _menuDropAlignmentField = field;
 
             EnsureStandardPopupAlignment();
             SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;

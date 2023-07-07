@@ -6,7 +6,6 @@ using System.Data;
 
 namespace KSAGrinder.Components
 {
-    [Obsolete]
     public readonly struct Trade : IEquatable<Trade>
     {
         private static DataSet _data;

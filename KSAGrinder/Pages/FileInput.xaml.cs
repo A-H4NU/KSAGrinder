@@ -1,11 +1,12 @@
-﻿using KSAGrinder.Properties;
+﻿using CommunityToolkit.Diagnostics;
+
+using KSAGrinder.Properties;
 using KSAGrinder.Windows;
 
 using Microsoft.Win32;
 
 using System;
 using System.Data;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
@@ -29,8 +30,8 @@ namespace KSAGrinder.Pages
             InitializeComponent();
 
             _main = main;
-            Version version = Assembly.GetExecutingAssembly().GetName().Version!;
-            Debug.Assert(version is not null);
+            Version? version = Assembly.GetExecutingAssembly().GetName().Version;
+            Guard.IsNotNull(version);
             LblVersion.Content = $"KSAGrinder v{version.Major}.{version.Minor}.{version.Build}";
         }
 

@@ -2,32 +2,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 
 namespace KSAGrinder.Components
 {
-    public readonly struct Class : IEquatable<Class>
+    public readonly record struct Class(
+        string Name,
+        string Code,
+        int Grade,
+        int Number,
+        string Teacher,
+        (DayOfWeek Day, int Hour)[] Schedule,
+        ReadOnlyCollection<string> EnrolledList,
+        string Note) : IEquatable<Class>
     {
-        public Class(
-            string name,
-            string code,
-            int grade,
-            int number,
-            string teacher,
-            (DayOfWeek Day, int Hour)[] schedule,
-            List<string> enrolledList,
-            string note)
-        {
-            Name = name;
-            Code = code;
-            Grade = grade;
-            Number = number;
-            Teacher = teacher;
-            Schedule = schedule;
-            EnrolledList = enrolledList;
-            Note = note;
-        }
-
         private static readonly Dictionary<DayOfWeek, string> _dayToShortKor = new()
         {
             {DayOfWeek.Monday, "월"},
@@ -39,15 +28,9 @@ namespace KSAGrinder.Components
             {DayOfWeek.Sunday, "일"},
         };
 
-        public string Name { get; }
-        public string Code { get; }
-        public int Grade { get; }
-        public int Number { get; }
-        public string Teacher { get; }
+        public int Enroll => EnrolledList.Count;
 
         public int Credit => DataManager.GetLecture(Code, Grade).Credit;
-
-        public (DayOfWeek Day, int Hour)[] Schedule { get; }
         public string DayTime
         {
             get
@@ -62,20 +45,16 @@ namespace KSAGrinder.Components
                 return sb.ToString();
             }
         }
-        public int Enroll => EnrolledList.Count;
-        public string Note { get; }
-        public List<string> EnrolledList { get; }
-
-        public override string ToString() => $"{Code} {Name} {Number}";
 
         public bool Equals(Class other) => (Code, Grade, Number) == (other.Code, other.Grade, other.Number);
 
-        public override bool Equals(object? obj) => obj is Class @class && Equals(@class);
-
-        public static bool operator ==(Class left, Class right) => left.Equals(right);
-
-        public static bool operator !=(Class left, Class right) => !(left == right);
-
         public override int GetHashCode() => (Code, Grade, Number).GetHashCode();
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
+        private bool PrintMembers(StringBuilder sb)
+        {
+            sb.Append($"Code = {Code}, Name = {Name}, Grade = {Grade}, Number = {Number}");
+            return true;
+        }
     }
 }

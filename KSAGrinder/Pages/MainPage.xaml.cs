@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -378,7 +379,9 @@ namespace KSAGrinder.Pages
 
                 using CryptoStream cryptoStream = new(fileStream, aes.CreateDecryptor(CryptKey, iv), CryptoStreamMode.Read);
                 using StreamReader decryptReader = new(cryptoStream);
+                var stopwatch = Stopwatch.StartNew();
                 string decrypted = decryptReader.ReadToEnd();
+                stopwatch.Stop();
                 xdoc.LoadXml(decrypted);
             }
 
@@ -802,7 +805,7 @@ namespace KSAGrinder.Pages
 
         private void SchedulesTableRow_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if ( sender is DataGridRow { Item: Schedule schedule })
+            if (sender is DataGridRow { Item: Schedule schedule })
             {
                 int[] pinnedIndices = (from i in Enumerable.Range(0, _currentSchedule.Count)
                                        where ((CheckBox)CurrentClassTable.GetCell(i, 0).Content).IsChecked == true
