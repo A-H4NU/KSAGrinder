@@ -8,7 +8,7 @@ namespace KSAGrinder.Windows
     /// </summary>
     public partial class DetailView : Window
     {
-        public DetailView(string detail, string title = null, TextWrapping wrapping = TextWrapping.NoWrap)
+        public DetailView(string detail, string? title = null, TextWrapping wrapping = TextWrapping.NoWrap)
         {
             InitializeComponent();
             TxtDetail.Text = detail;

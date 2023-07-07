@@ -49,7 +49,6 @@ namespace KSAGrinder.Pages
                 _originalScheduleID = value;
                 Schedule.OriginalScheduleID = value;
                 UpdateWindowTitle();
-
             }
         }
 
@@ -116,13 +115,14 @@ namespace KSAGrinder.Pages
 
         public const int NRow = 14;
 
-        public MainPage(MainWindow main, string dataSetPath, DataSet data, string hash, string filePathToOpen = null)
+        public MainPage(MainWindow main, string dataSetPath, DataSet data, string hash, string? filePathToOpen = null)
         {
             _main = main;
             _data = data;
             _hash = hash;
             _windowTitle = _main.Title;
             _dataSetPath = dataSetPath;
+            _workingWith = String.Empty;
 
             DataManager.SetData(data);
 
@@ -156,7 +156,7 @@ namespace KSAGrinder.Pages
             {
                 try
                 {
-                    FieldInfo fInfo = typeof(Preference).GetField(e.ToString());
+                    FieldInfo fInfo = typeof(Preference).GetField(e.ToString())!;
                     if (fInfo.GetCustomAttributes(typeof(DescriptionAttribute)) is DescriptionAttribute[] attributes && attributes.Any())
                     {
                         PreferenceCollection.Add(attributes.First().Description);
@@ -383,8 +383,8 @@ namespace KSAGrinder.Pages
             }
 
             List<Class> newList = new();
-            XmlElement root = xdoc.DocumentElement;
-            string hash = root.Attributes.GetNamedItem("Hash").Value;
+            XmlElement? root = xdoc.DocumentElement;
+            string? hash = (root?.Attributes.GetNamedItem("Hash")?.Value) ?? throw new Exception();
             if (_hash == hash)
             {
                 foreach (XmlNode cls in root.ChildNodes)
@@ -407,7 +407,7 @@ namespace KSAGrinder.Pages
             {
                 throw new DifferentDataSetException("다른 데이터셋에서 만든 파일입니다.");
             }
-            OriginalScheduleID = root.Attributes.GetNamedItem("OriginalID").Value;
+            OriginalScheduleID = root.Attributes.GetNamedItem("OriginalID")?.Value ?? String.Empty;
         }
 
         public void InvalidateStyles()
@@ -515,8 +515,8 @@ namespace KSAGrinder.Pages
             }
             _currentSchedule = new();
             Modified = false;
-            OriginalScheduleID = null;
-            WorkingWith = null;
+            OriginalScheduleID = String.Empty;
+            WorkingWith = String.Empty;
             ScheduleCollection.Clear();
             UpdateHourCollection();
             InvalidateStyles();
@@ -588,7 +588,7 @@ namespace KSAGrinder.Pages
             }
         }
 
-        private void MenuSave_Click(object sender, RoutedEventArgs e)
+        private void MenuSave_Click(object sender, RoutedEventArgs? e)
         {
             if (String.IsNullOrWhiteSpace(WorkingWith))
             {
@@ -802,7 +802,7 @@ namespace KSAGrinder.Pages
 
         private void SchedulesTableRow_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (sender is DataGridRow && (sender as DataGridRow).Item is Schedule schedule)
+            if ( sender is DataGridRow { Item: Schedule schedule })
             {
                 int[] pinnedIndices = (from i in Enumerable.Range(0, _currentSchedule.Count)
                                        where ((CheckBox)CurrentClassTable.GetCell(i, 0).Content).IsChecked == true
@@ -813,7 +813,7 @@ namespace KSAGrinder.Pages
                 UpdateHourCollection();
                 foreach (int pinnedIndex in pinnedIndices)
                 {
-                    CheckBox checkBox = CurrentClassTable.GetCell(pinnedIndex, 0).Content as CheckBox;
+                    CheckBox checkBox = (CheckBox)CurrentClassTable.GetCell(pinnedIndex, 0).Content;
                     checkBox.IsChecked = true;
                 }
 
@@ -823,7 +823,7 @@ namespace KSAGrinder.Pages
             }
         }
 
-        private void MainWindow_Closing(object sender, CancelEventArgs e)
+        private void MainWindow_Closing(object? sender, CancelEventArgs e)
         {
             if (Modified)
             {

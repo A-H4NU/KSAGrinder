@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Windows;
 using System.Windows.Input;
 
@@ -11,9 +12,9 @@ namespace KSAGrinder.Windows
     {
         private readonly DataSet _data;
 
-        public string ResultID { get; private set; } = null;
+        public string? ResultID { get; private set; } = null;
 
-        public DataRow ResultRow { get; private set; } = null;
+        public DataRow? ResultRow { get; private set; } = null;
 
         public LoadFromID(DataSet data)
         {
