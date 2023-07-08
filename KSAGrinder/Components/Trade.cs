@@ -79,5 +79,8 @@ namespace KSAGrinder.Components
             (string, int) otherA = (other.StudentA, other.NumberA), otherB = (other.StudentB, other.NumberB);
             return (thisA == otherA && thisB == otherB) || (thisA == otherB && thisB == otherA);
         }
+
+        public override bool Equals(object? obj)
+            => obj is Trade trade && Equals(trade);
     }
 }
