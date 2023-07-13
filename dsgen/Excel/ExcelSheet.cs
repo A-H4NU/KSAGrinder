@@ -24,8 +24,8 @@ public class ExcelSheet
 
     private ExcelSheet(int rowCount, int columnCount)
     {
-        Guard.IsGreaterThan(rowCount, 0);
-        Guard.IsGreaterThan(columnCount, 0);
+        Guard.IsGreaterThanOrEqualTo(rowCount, 0);
+        Guard.IsGreaterThanOrEqualTo(columnCount, 0);
         _array = new object?[rowCount, columnCount];
     }
 
@@ -66,8 +66,6 @@ public class ExcelSheet
             }
             currentRow++;
         }
-        Guard.IsGreaterThan(rowCount, 0);
-        Guard.IsGreaterThan(columnCount, 0);
         return new(rowCount, columnCount, array)
         {
             Hidden = reader.VisibleState != "visible"
