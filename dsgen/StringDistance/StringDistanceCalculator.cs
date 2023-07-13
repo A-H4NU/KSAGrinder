@@ -1,5 +1,11 @@
 namespace dsgen.StringDistance;
 
+/// <summary>
+/// Provide the strategy for calculating the edit distance between two strings.
+/// <p>
+/// https://en.wikipedia.org/wiki/Edit_distance
+/// </p>
+/// </summary>
 public abstract class StringDistanceCalculator
 {
     /// <summary>

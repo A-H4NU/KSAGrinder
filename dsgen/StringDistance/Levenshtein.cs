@@ -11,7 +11,11 @@ namespace dsgen.StringDistance;
 /// </summary>
 public sealed class Levenshtein : StringDistanceCalculator
 {
-    public Levenshtein() { }
+    private readonly static Levenshtein _instance = new();
+
+    private Levenshtein() { }
+
+    public static Levenshtein Instance { get => _instance; }
 
     public override unsafe int Distance(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
     {

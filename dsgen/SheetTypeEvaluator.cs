@@ -17,6 +17,12 @@ public static partial class SheetTypeEvaluator
         options: RegexOptions.Singleline)]
     private static partial Regex TimeRegex();
 
+    public static StringDistanceCalculator StringDistanceCalculator
+    {
+        get;
+        set;
+    } = Levenshtein.Instance;
+
     /// <summary>
     /// Evaluates the probability for the sheet can be used to generate class
     /// and lecture data.
