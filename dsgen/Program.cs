@@ -4,6 +4,7 @@ using Mono.Options;
 
 using System.Text;
 using System.Diagnostics.CodeAnalysis;
+using ExcelDataReader;
 
 namespace dsgen;
 
@@ -11,6 +12,7 @@ internal class Program
 {
     private static bool _showHelp = false;
     private static bool _verbose = false;
+    private static bool _showSheetList = false;
     private static string? _outputPath = null;
     private static string? _filePath = null;
 
@@ -25,6 +27,11 @@ internal class Program
             "v|verbose",
             "Be verbose",
             v => _verbose = v is not null
+        },
+        {
+            "sheet-list",
+            "Print the names of sheets in <file_path> and exit",
+            s => _showSheetList = s is not null
         },
         {
             "h|help",
@@ -63,6 +70,11 @@ internal class Program
         _filePath = extra[0];
         try
         {
+            if (_showSheetList)
+            {
+                ShowSheetNames(_filePath);
+                return;
+            }
             ExcelBook book = ExcelBook.FromFile(_filePath);
             foreach ((string name, ExcelSheet sheet) in book)
             {
@@ -88,6 +100,29 @@ internal class Program
         Console.WriteLine();
         Console.WriteLine("Options:");
         _options.WriteOptionDescriptions(Console.Out);
+    }
+
+    private static void ShowSheetNames(string path)
+    {
+        FileStream? fs = null;
+        IExcelDataReader? reader = null;
+        int index = 0;
+        try
+        {
+            fs = File.OpenRead(path);
+            reader = ExcelReaderFactory.CreateReader(fs);
+            int pad = (reader.ResultsCount - 1).ToString().Length;
+            do
+            {
+                Console.WriteLine($"[{{0:D{pad}}}] {{1}}", index, reader.Name);
+                index++;
+            } while (reader.NextResult());
+        }
+        finally
+        {
+            reader?.Dispose();
+            fs?.Dispose();
+        }
     }
 
     /// <summary>
