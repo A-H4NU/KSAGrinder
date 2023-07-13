@@ -1,4 +1,5 @@
 using dsgen.Excel;
+using dsgen.StringDistance;
 
 using System.Text.RegularExpressions;
 
@@ -21,8 +22,9 @@ public static partial class SheetTypeEvaluator
     /// and lecture data.
     /// </summary>
     /// <param name="sheet">The sheet to evaluate.</param>
+    /// <param name="calculator">The strategy used to calculate the similarity between strings.</param>
     /// <returns>Probability. Ranges from 0 to 1.</returns>
-    public static double ClassSheetProbability(ExcelSheet sheet)
+    public static float ClassSheetProbability(ExcelSheet sheet)
     {
         static int GetMax(ReadOnlySpan<int> span)
         {
@@ -33,12 +35,12 @@ public static partial class SheetTypeEvaluator
         }
 
         if (sheet.Hidden || sheet.ColumnCount < 15)
-            return 0.0;
+            return 0.0f;
 
-        const int MaxStackLimit = 1024;
-        Span<int> lectureCodeMatches = sheet.ColumnCount < MaxStackLimit ?
+        const int MaxStackLimit = 256;
+        Span<int> lectureCodeMatches = sheet.ColumnCount <= MaxStackLimit ?
             stackalloc int[sheet.ColumnCount] : new int[sheet.ColumnCount];
-        Span<int> timeMatches = sheet.ColumnCount < MaxStackLimit ?
+        Span<int> timeMatches = sheet.ColumnCount <= MaxStackLimit ?
             stackalloc int[sheet.ColumnCount] : new int[sheet.ColumnCount];
         for (int i = 0; i < sheet.RowCount; i++)
         {
@@ -53,6 +55,6 @@ public static partial class SheetTypeEvaluator
                     timeMatches[j]++;
             }
         }
-        return (double)Math.Min(GetMax(lectureCodeMatches), GetMax(timeMatches)) / sheet.RowCount;
+        return (float)Math.Min(GetMax(lectureCodeMatches), GetMax(timeMatches)) / sheet.RowCount;
     }
 }

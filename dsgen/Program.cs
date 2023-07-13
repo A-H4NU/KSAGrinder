@@ -15,23 +15,23 @@ internal class Program
     private static string? _filePath = null;
 
     private static readonly OptionSet _options = new()
-{
     {
-        "o|output=",
-        "Specify where the output file is placed",
-        o => _outputPath = o
-    },
-    {
-        "v|verbose",
-        "Be verbose",
-        v => _verbose = v is not null
-    },
-    {
-        "h|help",
-        "Show this meesage and exit",
-        h => _showHelp = h is not null
-    },
-};
+        {
+            "o|output=",
+            "Specify where the output file is placed",
+            o => _outputPath = o
+        },
+        {
+            "v|verbose",
+            "Be verbose",
+            v => _verbose = v is not null
+        },
+        {
+            "h|help",
+            "Show this meesage and exit",
+            h => _showHelp = h is not null
+        },
+    };
 
     private static void Main(string[] args)
     {
