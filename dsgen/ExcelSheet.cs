@@ -5,6 +5,20 @@ public class ExcelSheet
 {
     private readonly object?[,] _array;
 
+    public int RowCount => _array.GetLength(0);
+    public int ColumnCount => _array.GetLength(1);
+    public object? this[int row, int column]
+    {
+        get
+        {
+            Guard.IsInRange(row, 0, RowCount);
+            Guard.IsInRange(column, 0, ColumnCount);
+            return _array[row, column];
+        }
+    }
+
+    public bool Hidden { get; init; } = false;
+
     private ExcelSheet(int rowCount, int columnCount)
     {
         Guard.IsGreaterThan(rowCount, 0);
@@ -26,7 +40,7 @@ public class ExcelSheet
             {
                 _array[i, j] = array[i][j];
             }
-        } 
+        }
     }
 
     public static ExcelSheet FromExcelDataReader(IExcelDataReader reader)
@@ -51,18 +65,9 @@ public class ExcelSheet
         }
         Guard.IsGreaterThan(rowCount, 0);
         Guard.IsGreaterThan(columnCount, 0);
-        return new(rowCount, columnCount, array);
-    }
-
-    public int RowCount => _array.GetLength(0);
-    public int ColumnCount => _array.GetLength(1);
-    public object? this[int row, int column]
-    {
-        get
+        return new(rowCount, columnCount, array)
         {
-            Guard.IsInRange(row, 0, RowCount);
-            Guard.IsInRange(column, 0, ColumnCount);
-            return _array[row, column];
-        }
+            Hidden = reader.VisibleState != "visible"
+        };
     }
 }

@@ -1,7 +1,5 @@
 ﻿using Mono.Options;
 
-using ExcelDataReader;
-
 using System.Text;
 using System.Diagnostics.CodeAnalysis;
 
@@ -13,23 +11,23 @@ internal class Program
     private static string? _filePath = null;
 
     private static readonly OptionSet _options = new()
+    {
         {
-            {
-                "o|output=",
-                "Specify where the output file is placed",
-                o => _outputPath = o
-            },
-            {
-                "v|verbose",
-                "Be verbose",
-                v => _verbose = v is not null
-            },
-            {
-                "h|help",
-                "Show this meesage and exit",
-                h => _showHelp = h is not null
-            },
-        };
+            "o|output=",
+            "Specify where the output file is placed",
+            o => _outputPath = o
+        },
+        {
+            "v|verbose",
+            "Be verbose",
+            v => _verbose = v is not null
+        },
+        {
+            "h|help",
+            "Show this meesage and exit",
+            h => _showHelp = h is not null
+        },
+    };
 
     private static void Main(string[] args)
     {
@@ -62,9 +60,12 @@ internal class Program
         try
         {
             ExcelBook book = ExcelBook.FromFile(_filePath);
-            foreach (string name in book.Keys)
+            foreach ((string name, ExcelSheet sheet) in book)
             {
-                Console.WriteLine(name);
+                Console.WriteLine("{0}({2}): {1}",
+                    name,
+                    SheetTypeEvaluator.ClassSheetProbability(sheet),
+                    sheet.Hidden ? "Hidden" : "Not Hidden");
             }
         }
         catch (Exception e)
