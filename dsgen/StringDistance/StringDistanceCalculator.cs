@@ -29,7 +29,7 @@ public abstract class StringDistanceCalculator
     /// <returns>The similarity. Ranges from 0 to 1.</returns>
     public virtual float Similarity(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
     {
-        return (float)Distance(a, b) / Math.Max(a.Length, b.Length);
+        return 1f - (float)Distance(a, b) / Math.Max(a.Length, b.Length);
     }
 
     /// <summary>
