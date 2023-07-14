@@ -43,7 +43,6 @@ public static partial class SheetTypeEvaluator
     /// and lecture data.
     /// </summary>
     /// <param name="sheet">The sheet to evaluate.</param>
-    /// <param name="calculator">The strategy used to calculate the similarity between strings.</param>
     /// <returns>Probability. Ranges from 0 to 1.</returns>
     public static float ClassSheetProbability(ExcelSheet sheet)
     {
@@ -84,6 +83,19 @@ public static partial class SheetTypeEvaluator
         return (float)Math.Min(GetMax(lectureCodeMatches), GetMax(timeMatches)) / sheet.RowCount;
     }
 
+    /// <summary>
+    /// Try to match each element of <paramref name="reference"/> to one of
+    /// <paramref name="headers"/> uniquely.
+    /// <paramref name="reference"/> and <paramref name="similarities"/> are arrays of length
+    /// <see cref="reference.Length"/> where
+    /// <para>
+    ///     - <c>reference[i]</c> is matched to <c>headers[result[i]]</c>
+    ///     - <c>similarities[i]</c> is the similarity between them
+    /// </para>
+    /// for each `i` in `0..reference.Length`.
+    /// </summary>
+    /// <param name="calculator">The strategy used to calculate the similarity between strings.</param>
+    /// <returns><see cref="true"/> if matched successfully; otherwise, <see cref="false"/>.</returns>
     private static bool TryMatchHeaders(
         string[] headers,
         string[] reference,
@@ -145,39 +157,5 @@ public static partial class SheetTypeEvaluator
     )
     {
         return TryMatchHeaders(headers, ClassSheetTitles, out result, out similarities, calculator);
-    }
-
-    /// <summary>
-    /// Find the maximum similarity of <paramref name="reference"/> and
-    /// a continuous substring of <paramref name="s"/>.
-    /// </summary>
-    /// <param name="calculator">
-    /// String distance calculator used to calculate the similarity of two strings.
-    /// If <paramref name="calculator"/> is <see cref="null"/>, then this uses
-    /// <see cref="StringDistanceCalculator"/>.
-    /// </param>
-    /// <returns>
-    /// Maximum similarity. Ranges from 0 to 1.
-    /// If <paramref name="s"/> is an empty string, returns 0.
-    /// </returns>
-    private static float MaxSimilarityWithSubstring(
-        ReadOnlySpan<char> s,
-        ReadOnlySpan<char> reference,
-        StringDistanceCalculator? calculator = null
-    )
-    {
-        if (calculator is null)
-            calculator = StringDistanceCalculator;
-        float res = 0.0f;
-        for (int j = 1; j < s.Length; j++)
-        {
-            for (int i = 0; i < j; i++)
-            {
-                float similarity = calculator.Similarity(s[i..j], reference);
-                if (res < similarity)
-                    res = similarity;
-            }
-        }
-        return res;
     }
 }
