@@ -78,10 +78,8 @@ internal class Program
             ExcelBook book = ExcelBook.FromFile(_filePath);
             foreach ((string name, ExcelSheet sheet) in book)
             {
-                Console.WriteLine("{0}({2}): {1}",
-                    name,
-                    SheetTypeEvaluator.ClassSheetProbability(sheet),
-                    sheet.Hidden ? "Hidden" : "Not Hidden");
+                Console.Write("{0}({1}): ", name, sheet.Hidden ? "Hidden" : "Not Hidden");
+                Console.WriteLine(SheetTypeEvaluator.ClassSheetProbability(sheet));
             }
         }
         catch (Exception e)
