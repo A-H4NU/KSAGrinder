@@ -74,14 +74,20 @@ internal class Program
             Dictionary<string, (float ClassSheetScore, float StudentSheetScore)> scores =
                 new(book.Count);
             int pad = ToStringLength(sheetNames.Length - 1);
-            string format = $"    [{{0:D{pad}}}] \"{{1}}\"{{2}}...";
+            string format = $"    [{{0:D{pad}}}] ";
             WriteLineIfVerbose(" Done ✓");
             WriteLineIfVerbose("Evaluating sheets...");
+            ConsoleColor oldColor = Console.ForegroundColor;
             for (int i = 0; i < sheetNames.Length; i++)
             {
                 string name = sheetNames[i];
                 ExcelSheet sheet = book[name];
-                WriteIfVerbose(format, i, name, sheet.Hidden ? "(Hidden)" : "");
+                WriteIfVerbose(format, i, name);
+                if (sheet.Hidden)
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                WriteIfVerbose("\"{0}\"", name);
+                Console.ForegroundColor = oldColor;
+                WriteIfVerbose("... ");
                 scores[name] = (
                     SheetTypeEvaluator.ClassSheetScore(sheet),
                     SheetTypeEvaluator.StudentSheetScore(sheet)
@@ -121,6 +127,7 @@ internal class Program
             reader = ExcelReaderFactory.CreateReader(fs);
             Guard.IsNotEqualTo(reader.ResultsCount, 0, "The number of sheets");
             int pad = ToStringLength(reader.ResultsCount - 1);
+            string format = $"[{{0:D{pad}}}] {{1}}";
             string[] sheetNames = new string[reader.ResultsCount];
             int index = 0;
             do
@@ -131,7 +138,7 @@ internal class Program
             Array.Sort(sheetNames);
             for (int i = 0; i < sheetNames.Length; i++)
             {
-                Console.WriteLine($"[{{0:D{pad}}}] {{1}}", i, sheetNames[i]);
+                Console.WriteLine(format, i, sheetNames[i]);
             }
         }
         finally
