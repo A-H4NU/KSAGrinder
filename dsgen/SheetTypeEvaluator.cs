@@ -137,12 +137,12 @@ public static partial class SheetTypeEvaluator
             }
             if (
                 headerRow == -1
-                && Enumerable.Range(0, sheet.ColumnCount).All(j => sheet[i, j] is string)
+                && Enumerable.Range(0, sheet.ColumnCount).All(j => sheet[i, j] is null || sheet[i, j] is string)
             )
             {
-                string[] headers = Enumerable
+                string?[] headers = Enumerable
                     .Range(0, sheet.ColumnCount)
-                    .Select(j => (string)sheet[i, j]!)
+                    .Select(j => (string?)sheet[i, j])
                     .ToArray();
                 if (
                     TryMatchHeadersToClassSheetTitles(
@@ -225,7 +225,7 @@ public static partial class SheetTypeEvaluator
     /// <param name="calculator">The strategy used to calculate the similarity between strings.</param>
     /// <returns><see cref="true"/> if matched successfully; otherwise, <see cref="false"/>.</returns>
     private static bool TryMatchHeaders(
-        string[] headers,
+        string?[] headers,
         string[] reference,
         [NotNullWhen(true)] out int[]? result,
         [NotNullWhen(true)] out float[]? similarities,
@@ -234,7 +234,7 @@ public static partial class SheetTypeEvaluator
     {
         static int FindBestMatch(
             ReadOnlySpan<char> str,
-            string[] headers,
+            string?[] headers,
             StringDistanceCalculator calculator,
             out float similarity
         )
@@ -243,6 +243,8 @@ public static partial class SheetTypeEvaluator
             similarity = Single.MinValue;
             for (int i = 0; i < headers.Length; i++)
             {
+                if (headers[i] is null)
+                    continue;
                 float sim = calculator.Similarity(str, headers[i]);
                 if (similarity < sim)
                 {
@@ -267,7 +269,7 @@ public static partial class SheetTypeEvaluator
         for (int i = 0; i < reference.Length; i++)
         {
             int match = FindBestMatch(reference[i], headers, calculator, out sims[i]);
-            if (matched[match])
+            if (match == -1 || matched[match])
                 return false;
             matched[match] = true;
             res[i] = match;
@@ -278,7 +280,7 @@ public static partial class SheetTypeEvaluator
     }
 
     private static bool TryMatchHeadersToClassSheetTitles(
-        string[] headers,
+        string?[] headers,
         [NotNullWhen(true)] out int[]? result,
         [NotNullWhen(true)] out float[]? similarities,
         StringDistanceCalculator? calculator = null
