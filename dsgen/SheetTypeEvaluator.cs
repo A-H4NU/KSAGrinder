@@ -24,7 +24,11 @@ public static partial class SheetTypeEvaluator
     )]
     private static partial Regex TimeRegex();
 
-    private static readonly (string HeaderTitle, string ColumnName, IEnumerable<Type?> Types)[] ClassSheetTitles;
+    private static readonly (
+        string HeaderTitle,
+        string ColumnName,
+        IEnumerable<Type?> Types
+    )[] ClassSheetTitles;
 
     public static StringDistanceCalculator StringDistanceCalculator { get; set; } =
         Levenshtein.Instance;
@@ -68,8 +72,9 @@ public static partial class SheetTypeEvaluator
     /// and lecture data.
     /// </summary>
     /// <param name="sheet">The sheet to evaluate.</param>
+    /// <param name="calculator">The strategy used to calculate the similarity between strings.</param>
     /// <returns>Probability. Ranges from 0 to 1.</returns>
-    public static float ClassSheetProbability(
+    public static float ClassSheetScore(
         ExcelSheet sheet,
         StringDistanceCalculator? calculator = null
     )
@@ -190,6 +195,20 @@ public static partial class SheetTypeEvaluator
         }
         float matchScore = (float)matchingRows / (sheet.RowCount - headerRow - 1);
         return Enumerable.Min(new float[] { codeScore, timeScore, matchScore });
+    }
+
+    /// <summary>
+    /// Evaluates the probability for the sheet can be used to generate student data.
+    /// </summary>
+    /// <param name="sheet">The sheet to evaluate.</param>
+    /// <param name="calculator">The strategy used to calculate the similarity between strings.</param>
+    /// <returns>Probability. Ranges from 0 to 1.</returns>
+    public static float StudentSheetScore(
+        ExcelSheet sheet,
+        StringDistanceCalculator? calculator = null
+    )
+    {
+        return 0f;
     }
 
     /// <summary>

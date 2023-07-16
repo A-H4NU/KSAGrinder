@@ -1,3 +1,4 @@
+using CommunityToolkit.Diagnostics;
 using ExcelDataReader;
 
 using System.Collections;
@@ -46,6 +47,7 @@ public class ExcelBook : IDictionary<string, ExcelSheet>
         {
             fs = File.OpenRead(path);
             reader = ExcelReaderFactory.CreateReader(fs);
+            Guard.IsNotEqualTo(reader.ResultsCount, 0, "The number of sheets");
             ExcelBook res = new(reader.ResultsCount);
             do
             {
