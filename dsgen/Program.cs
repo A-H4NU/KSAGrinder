@@ -11,6 +11,8 @@ namespace dsgen;
 
 internal class Program
 {
+    private static bool _lastPrintedNewLine = true;
+
     private static bool _showHelp = false;
     private static bool _verbose = false;
     private static bool _showSheetList = false;
@@ -148,12 +150,15 @@ internal class Program
     )
     {
         ConsoleColor oldColor = Console.ForegroundColor;
-        Console.Write("{0}dsgen.exe: ", Environment.NewLine);
+        if (!_lastPrintedNewLine)
+            Console.Write(Environment.NewLine);
+        Console.Write("dsgen.exe: ");
         Console.ForegroundColor = ConsoleColor.Red;
         Console.Write("fatal error: ");
         Console.ForegroundColor = oldColor;
         Console.WriteLine(format, arg);
         Console.WriteLine("Try `dsgen.exe --help' for more information.");
+        _lastPrintedNewLine = true;
     }
 
     /// <summary>
@@ -177,8 +182,13 @@ internal class Program
         params object?[]? arg
     )
     {
-        if (_verbose)
-            Console.Write(format, arg);
+        if (!_verbose)
+            return;
+        string toWrite = arg is null ? format : String.Format(format, arg);
+        Console.Write(toWrite);
+        if (String.IsNullOrEmpty(toWrite))
+            return;
+        _lastPrintedNewLine = toWrite.EndsWith('\n') || toWrite.EndsWith('\r');
     }
 
     private static void WriteLineIfVerbose(
@@ -186,8 +196,10 @@ internal class Program
         params object?[]? arg
     )
     {
-        if (_verbose)
-            Console.WriteLine(format, arg);
+        if (!_verbose)
+            return;
+        Console.WriteLine(format, arg);
+        _lastPrintedNewLine = true;
     }
 
     private static void WriteScoreTableIfVerbose(
@@ -205,12 +217,12 @@ internal class Program
         int length = Console.WindowWidth;
         int pad = ToStringLength(sheetNames.Length - 1);
         int indexLength = Math.Max(pad, IndexHeader.Length);
-        int classSheetLength = Math.Max(4 + precision, ClassSheetHeader.Length);
-        int studentSheetLength = Math.Max(4 + precision, StudentSheetHeader.Length);
+        int classSheetLength = Math.Max(5 + precision, ClassSheetHeader.Length);
+        int studentSheetLength = Math.Max(5 + precision, StudentSheetHeader.Length);
         string headerFormat =
             $"│ {{0,{indexLength}}} │ {{1,{classSheetLength}}} │ {{2,{studentSheetLength}}} │ {{3}}";
         string tableFormat =
-            $"│ {{0,{indexLength}:D{pad}}} │ {{1,{classSheetLength - 1}:F{precision}}}% │ {{2,{studentSheetLength - 1}:F{precision}}}% │ {{3}}";
+            $"│ {{0,{indexLength}:D{pad}}} │ {{1,{classSheetLength - 2}:F{precision}}} % │ {{2,{studentSheetLength - 2}:F{precision}}} % │ {{3}}";
         Console.WriteLine(
             GetTableUpperBorder(
                 length,
@@ -245,6 +257,7 @@ internal class Program
                 studentSheetLength + 2
             )
         );
+        _lastPrintedNewLine = true;
     }
 
     private static int ToStringLength(object? obj)
