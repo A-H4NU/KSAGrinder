@@ -93,85 +93,33 @@ public static partial class SheetTypeEvaluator
         StringDistanceCalculator? calculator = null
     )
     {
-        static int GetMax(ReadOnlySpan<int> span, out int maxIndex)
-        {
-            Guard.IsNotEmpty(span);
-            int max = Int32.MinValue;
-            maxIndex = -1;
-            for (int i = 0; i < span.Length; i++)
-            {
-                if (max < span[i])
-                {
-                    max = span[i];
-                    maxIndex = i;
-                }
-            }
-            return max;
-        }
+        static bool DoesMatchRegex(Regex regex, object? obj) =>
+            obj is string str ? regex.IsMatch(str) : false;
 
         if (sheet.Hidden || sheet.ColumnCount < 9)
             return 0f;
 
-        const int MaxStackLimit = 0x100;
-        // lectureCodeMatches[i] = "# of entries in the i-th column that matches LectureCodeRegex()"
+        // codeMatches[i] = "# of entries in the i-th column that matches LectureCodeRegex()"
         // Similar for timeMatches.
-        Span<int> codeMatches =
-            sheet.ColumnCount <= MaxStackLimit
-                ? stackalloc int[sheet.ColumnCount]
-                : new int[sheet.ColumnCount];
-        BitArray[] doesMatchCode = Enumerable
-            .Range(0, sheet.ColumnCount)
-            .Select(i => new BitArray(sheet.RowCount))
-            .ToArray();
-        Span<int> timeMatches =
-            sheet.ColumnCount <= MaxStackLimit
-                ? stackalloc int[sheet.ColumnCount]
-                : new int[sheet.ColumnCount];
-        BitArray[] doesMatchTime = Enumerable
-            .Range(0, sheet.ColumnCount)
-            .Select(i => new BitArray(sheet.RowCount))
-            .ToArray();
-        // The first row that is matched to the header.
-        int headerRow = -1;
-        int[]? matchResult = null;
-        float[]? similarities = null;
-        for (int i = 0; i < sheet.RowCount; i++)
-        {
-            for (int j = 0; j < sheet.ColumnCount; j++)
-            {
-                string? str = sheet[i, j]?.ToString();
-                if (str is null)
-                    continue;
-                doesMatchCode[j].Set(i, LectureCodeRegex().IsMatch(str));
-                doesMatchTime[j].Set(i, TimeRegex().IsMatch(str));
-                if (doesMatchCode[j].Get(i))
-                    codeMatches[j]++;
-                if (doesMatchTime[j].Get(i))
-                    timeMatches[j]++;
-            }
-            if (
-                headerRow == -1
-                && Enumerable
-                    .Range(0, sheet.ColumnCount)
-                    .All(j => sheet[i, j] is null || sheet[i, j] is string)
+        int[] codeMatches = CountForEachColumn(
+            sheet,
+            obj => DoesMatchRegex(LectureCodeRegex(), obj),
+            out BitArray[] doesMatchCode
+        );
+        int[] timeMatches = CountForEachColumn(
+            sheet,
+            obj => DoesMatchRegex(TimeRegex(), obj),
+            out BitArray[] doesMatchTime
+        );
+        if (
+            !TryFindClassSheetHeaderRow(
+                sheet,
+                out int headerRow,
+                out int[]? matchResult,
+                out float[]? similarities,
+                calculator
             )
-            {
-                string?[] headers = Enumerable
-                    .Range(0, sheet.ColumnCount)
-                    .Select(j => (string?)sheet[i, j])
-                    .ToArray();
-                if (
-                    TryMatchHeadersToClassSheetTitles(
-                        headers,
-                        out matchResult,
-                        out similarities,
-                        calculator
-                    )
-                )
-                    headerRow = i;
-            }
-        }
-        if (headerRow == -1)
+        )
             return 0f;
         float codeScore = (float)GetMax(codeMatches, out int codeHeaderIdx) / sheet.RowCount;
         float timeScore = (float)GetMax(timeMatches, out int timeHeaderIdx) / sheet.RowCount;
@@ -187,9 +135,9 @@ public static partial class SheetTypeEvaluator
         );
         if (
             codeIdxInArray == -1
-            || matchResult![codeIdxInArray] != codeHeaderIdx
+            || matchResult[codeIdxInArray] != codeHeaderIdx
             || timeIdxInArray == -1
-            || matchResult![timeIdxInArray] != timeHeaderIdx
+            || matchResult[timeIdxInArray] != timeHeaderIdx
         )
             return 0f;
         float matchingRows = 0;
@@ -200,7 +148,7 @@ public static partial class SheetTypeEvaluator
             bool matching = true;
             for (int j = 0; j < ClassSheetTitles.Length; j++)
             {
-                if (!ClassSheetTitles[j].Types.Contains(sheet[i, matchResult![j]]?.GetType()))
+                if (!ClassSheetTitles[j].Types.Contains(sheet[i, matchResult[j]]?.GetType()))
                 {
                     matching = false;
                     break;
@@ -211,6 +159,108 @@ public static partial class SheetTypeEvaluator
         }
         float matchScore = (float)matchingRows / (sheet.RowCount - headerRow - 1);
         return Enumerable.Min(new float[] { codeScore, timeScore, matchScore });
+    }
+
+    /// <summary>
+    /// Return the maximum element of <paramref name="source"/>.
+    /// </summary>
+    /// <param name="maxIndex">
+    /// The index that contains the maximum element. If there are many, it is the first index.
+    /// </param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="source"/> is empty.</exception>
+    private static int GetMax(ReadOnlySpan<int> source, out int maxIndex)
+    {
+        Guard.IsNotEmpty(source);
+        int max = Int32.MinValue;
+        maxIndex = -1;
+        for (int i = 0; i < source.Length; i++)
+        {
+            if (max < source[i])
+            {
+                max = source[i];
+                maxIndex = i;
+            }
+        }
+        return max;
+    }
+
+    /// <summary>
+    /// For each column, count the number of cells that matches <paramref name="predicate"/>.
+    /// </summary>
+    /// <param name="sheet">The sheet to target and count.</param>
+    /// <param name="results">
+    /// The result of evaluating <paramref name="predicate"/> for each cell.
+    /// <c>results[j][i] := predicate(sheet[i, j])</c>
+    /// </param>
+    /// <returns>Return</returns>
+    private static int[] CountForEachColumn(
+        ExcelSheet sheet,
+        Predicate<object?> predicate,
+        out BitArray[] results
+    )
+    {
+        results = new BitArray[sheet.ColumnCount];
+        for (int j = 0; j < sheet.ColumnCount; j++)
+            results[j] = new BitArray(sheet.RowCount);
+        int[] ret = new int[sheet.ColumnCount];
+        for (int i = 0; i < sheet.RowCount; i++)
+        {
+            for (int j = 0; j < sheet.ColumnCount; j++)
+            {
+                bool b = predicate(sheet[i, j]);
+                results[j].Set(i, b);
+                if (b)
+                    ret[j]++;
+            }
+        }
+        return ret;
+    }
+
+    /// <summary>
+    /// Try finding the first row that can be considered as a header of a class sheet.
+    /// <para>
+    ///     - <c>ClassSheetTitles[i].HeaderTitle</c> is matched to <c>sheet[result, i]</c>
+    ///     - <c>similarities[i]</c> is the similarity between them
+    /// </para>
+    /// </summary>
+    /// <param name="result">
+    /// On success, contains the zero-based index of the first header row.
+    /// On failure, contains <c>-1</c>.</param>
+    /// <param name="calculator">The strategy used to calculate the similarity between strings.</param>
+    /// <returns><c>true</c> if the header row is found; otherwise, <c>false</c>.</returns>
+    private static bool TryFindClassSheetHeaderRow(
+        ExcelSheet sheet,
+        out int result,
+        [NotNullWhen(true)] out int[]? matchResult,
+        [NotNullWhen(true)] out float[]? similarities,
+        StringDistanceCalculator? calculator = null
+    )
+    {
+        result = -1;
+        matchResult = null;
+        similarities = null;
+        for (int i = 0; i < sheet.RowCount; i++)
+        {
+            if (
+                Enumerable
+                    .Range(0, sheet.ColumnCount)
+                    .All(j => sheet[i, j] is null || sheet[i, j] is string)
+                && TryMatchHeadersToClassSheetTitles(
+                    Enumerable
+                        .Range(0, sheet.ColumnCount)
+                        .Select(j => (string?)sheet[i, j])
+                        .ToArray(),
+                    out matchResult,
+                    out similarities,
+                    calculator
+                )
+            )
+            {
+                result = i;
+                return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>
