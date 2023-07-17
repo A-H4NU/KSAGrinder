@@ -277,7 +277,7 @@ internal class Program
     /// </summary>
     private static string GetTableUpperBorder(int length, params int[] headerLengths)
     {
-        return GetTableBorder(length, '\u2500', '\u256D', '\u252C', null, headerLengths);
+        return GetTableBorder(length, '\u2500', '\u250C', '\u252C', null, headerLengths);
     }
 
     /// <summary>
@@ -285,7 +285,7 @@ internal class Program
     /// </summary>
     private static string GetTableLowerBorder(int length, params int[] headerLengths)
     {
-        return GetTableBorder(length, '\u2500', '\u2570', '\u2534', null, headerLengths);
+        return GetTableBorder(length, '\u2500', '\u2514', '\u2534', null, headerLengths);
     }
 
     /// <summary>
