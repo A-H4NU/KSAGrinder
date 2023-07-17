@@ -24,6 +24,9 @@ public static partial class SheetTypeEvaluator
     )]
     private static partial Regex TimeRegex();
 
+    [GeneratedRegex(pattern: @"\A\d{2}-\d{3}\z", options: RegexOptions.Singleline)]
+    private static partial Regex StudentIdRegex();
+
     private static readonly (
         string HeaderTitle,
         string ColumnName,
@@ -93,9 +96,6 @@ public static partial class SheetTypeEvaluator
         StringDistanceCalculator? calculator = null
     )
     {
-        static bool DoesMatchRegex(Regex regex, object? obj) =>
-            obj is string str ? regex.IsMatch(str) : false;
-
         if (sheet.Hidden || sheet.ColumnCount < 9)
             return 0f;
 
@@ -162,6 +162,27 @@ public static partial class SheetTypeEvaluator
     }
 
     /// <summary>
+    /// Evaluates the probability for the sheet can be used to generate student data.
+    /// </summary>
+    /// <param name="sheet">The sheet to evaluate.</param>
+    /// <param name="calculator">The strategy used to calculate the similarity between strings.</param>
+    /// <returns>Probability. Ranges from 0 to 1.</returns>
+    public static float StudentSheetScore(
+        ExcelSheet sheet,
+        StringDistanceCalculator? calculator = null
+    )
+    {
+        if (sheet.Hidden)
+            return 0f;
+        int[] idMatches = CountForEachColumn(
+            sheet,
+            obj => DoesMatchRegex(StudentIdRegex(), obj),
+            out _
+        );
+        return (float)GetMax(idMatches, out _) / sheet.RowCount;
+    }
+
+    /// <summary>
     /// Return the maximum element of <paramref name="source"/>.
     /// </summary>
     /// <param name="maxIndex">
@@ -182,6 +203,14 @@ public static partial class SheetTypeEvaluator
             }
         }
         return max;
+    }
+
+    /// <summary>
+    /// Return true if <paramref name="obj"/> is a string that matches <paramref name="regex"/>.
+    /// </summary>
+    private static bool DoesMatchRegex(Regex regex, object? obj)
+    {
+        return obj is string str ? regex.IsMatch(str) : false;
     }
 
     /// <summary>
@@ -207,10 +236,11 @@ public static partial class SheetTypeEvaluator
         {
             for (int j = 0; j < sheet.ColumnCount; j++)
             {
-                bool b = predicate(sheet[i, j]);
-                results[j].Set(i, b);
-                if (b)
+                if (predicate(sheet[i, j]))
+                {
+                    results[j].Set(i, true);
                     ret[j]++;
+                }
             }
         }
         return ret;
@@ -261,20 +291,6 @@ public static partial class SheetTypeEvaluator
             }
         }
         return false;
-    }
-
-    /// <summary>
-    /// Evaluates the probability for the sheet can be used to generate student data.
-    /// </summary>
-    /// <param name="sheet">The sheet to evaluate.</param>
-    /// <param name="calculator">The strategy used to calculate the similarity between strings.</param>
-    /// <returns>Probability. Ranges from 0 to 1.</returns>
-    public static float StudentSheetScore(
-        ExcelSheet sheet,
-        StringDistanceCalculator? calculator = null
-    )
-    {
-        return 0f;
     }
 
     /// <summary>
