@@ -38,31 +38,45 @@ public static partial class SheetTypeEvaluator
     /// </summary>
     static SheetTypeEvaluator()
     {
+        static void SortFieldInfosByName(FieldInfo[] array) =>
+            Array.Sort(array.Select(f => f.Name).ToArray(), array);
+
         /* Initialize ClassSheetTitles with reflection. */
-        FieldInfo[] headerTitleProps = typeof(HeaderTitle).GetFields(
+        FieldInfo[] headerTitleFields = typeof(HeaderTitle).GetFields(
             BindingFlags.Public | BindingFlags.Static
         );
-        FieldInfo[] columnNameProps = typeof(ColumnName).GetFields(
+        FieldInfo[] columnNameFields = typeof(ColumnName).GetFields(
             BindingFlags.Public | BindingFlags.Static
         );
-        FieldInfo[] typesProps = typeof(Types).GetFields(BindingFlags.Public | BindingFlags.Static);
-        Guard.IsNotEmpty(columnNameProps);
-        Guard.IsEqualTo(columnNameProps.Length - headerTitleProps.Length, 0);
-        Guard.IsEqualTo(headerTitleProps.Length - typesProps.Length, 0);
-        int n = columnNameProps.Length;
+        FieldInfo[] typesFields = typeof(Types).GetFields(
+            BindingFlags.Public | BindingFlags.Static
+        );
+        Guard.IsNotEmpty(columnNameFields);
+        Debug.Assert(headerTitleFields.Length == columnNameFields.Length);
+        Debug.Assert(columnNameFields.Length == typesFields.Length);
+        /* Sort to assert the names of the fields match. */
+        SortFieldInfosByName(headerTitleFields);
+        SortFieldInfosByName(columnNameFields);
+        SortFieldInfosByName(typesFields);
+        int n = columnNameFields.Length;
+        for (int i = 0; i < n; i++)
+        {
+            Debug.Assert(headerTitleFields[i].Name == columnNameFields[i].Name);
+            Debug.Assert(columnNameFields[i].Name == typesFields[i].Name);
+        }
         ClassSheetTitles = new (string, string, IEnumerable<Type?>)[n];
         for (int i = 0; i < n; i++)
         {
-            object? h = headerTitleProps[i].GetValue(null);
-            object? c = columnNameProps[i].GetValue(null);
-            object? t = typesProps[i].GetValue(null);
+            object? h = headerTitleFields[i].GetValue(null);
+            object? c = columnNameFields[i].GetValue(null);
+            object? t = typesFields[i].GetValue(null);
             if (h is string headerTitle && c is string columnName && t is IEnumerable<Type?> types)
             {
                 ClassSheetTitles[i] = (headerTitle, columnName, types);
             }
             else
             {
-                throw new UnreachableException();
+                Debug.Fail("Unreachable.");
             }
         }
     }
@@ -137,7 +151,9 @@ public static partial class SheetTypeEvaluator
             }
             if (
                 headerRow == -1
-                && Enumerable.Range(0, sheet.ColumnCount).All(j => sheet[i, j] is null || sheet[i, j] is string)
+                && Enumerable
+                    .Range(0, sheet.ColumnCount)
+                    .All(j => sheet[i, j] is null || sheet[i, j] is string)
             )
             {
                 string?[] headers = Enumerable
