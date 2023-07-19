@@ -30,7 +30,7 @@ public static partial class SheetTypeEvaluator
     private static readonly (
         string HeaderTitle,
         string ColumnName,
-        IEnumerable<Type?> Types
+        IReadOnlyCollection<Type?> Types
     )[] ClassSheetTitles;
 
     public static StringDistanceCalculator StringDistanceCalculator { get; set; } =
@@ -67,13 +67,17 @@ public static partial class SheetTypeEvaluator
             Debug.Assert(headerTitleFields[i].Name == columnNameFields[i].Name);
             Debug.Assert(columnNameFields[i].Name == typesFields[i].Name);
         }
-        ClassSheetTitles = new (string, string, IEnumerable<Type?>)[n];
+        ClassSheetTitles = new (string, string, IReadOnlyCollection<Type?>)[n];
         for (int i = 0; i < n; i++)
         {
             object? h = headerTitleFields[i].GetValue(null);
             object? c = columnNameFields[i].GetValue(null);
             object? t = typesFields[i].GetValue(null);
-            if (h is string headerTitle && c is string columnName && t is IEnumerable<Type?> types)
+            if (
+                h is string headerTitle
+                && c is string columnName
+                && t is IReadOnlyCollection<Type?> types
+            )
             {
                 ClassSheetTitles[i] = (headerTitle, columnName, types);
             }
