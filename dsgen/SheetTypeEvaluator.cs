@@ -214,7 +214,7 @@ public static partial class SheetTypeEvaluator
     /// </summary>
     private static bool DoesMatchRegex(Regex regex, object? obj)
     {
-        return obj is string str ? regex.IsMatch(str) : false;
+        return obj is string str && regex.IsMatch(str);
     }
 
     /// <summary>
