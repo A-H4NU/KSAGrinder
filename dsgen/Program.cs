@@ -1,74 +1,63 @@
-﻿using dsgen.Excel;
-
-using Mono.Options;
-
+﻿using CommandLine;
+using dsgen.Excel;
 using System.Text;
 using System.Diagnostics.CodeAnalysis;
 using ExcelDataReader;
 using CommunityToolkit.Diagnostics;
+using CommandLine.Text;
 
 namespace dsgen;
 
 internal class Program
 {
     private static bool _lastPrintedNewLine = true;
+    private static int _verbose = 0;
 
-    private static bool _showHelp = false;
-    private static bool _verbose = false;
-    private static bool _showSheetList = false;
-    private static string? _outputPath = null;
-    private static string? _filePath = null;
-
-    private static readonly OptionSet _options =
-        new()
-        {
-            { "o|output=", "Specify where the output file is placed", o => _outputPath = o },
-            { "v|verbose", "Be verbose", v => _verbose = v is not null },
-            {
-                "l|sheet-list",
-                "Print the names of sheets in <file_path> and exit",
-                s => _showSheetList = s is not null
-            },
-            { "h|help", "Show this meesage and exit", h => _showHelp = h is not null },
-        };
-
-    private static void Main(string[] args)
+    private static int Main(string[] args)
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-        List<string> extra;
-        try
+        List<string> extra = new();
+        var parser = new Parser(config =>
         {
-            extra = _options.Parse(args);
-        }
-        catch (OptionException e)
-        {
-            WriteException(e);
-            return;
-        }
+            config.HelpWriter = null;
+        });
+        var result = parser.ParseArguments<Options>(args);
+        return result.MapResult(
+            options => RunAndGetExitCode(options, args),
+            errors => WriteHelpAndGetExitCode(result)
+        );
+    }
 
-        if (_showHelp)
-        {
-            WriteHelp();
-            return;
-        }
-
-        if (extra.Count == 0)
+    private static int RunAndGetExitCode(Options options, string[] args)
+    {
+        _verbose = options.Verbose;
+        if (String.IsNullOrEmpty(options.FilePath))
         {
             WriteError("File path is not specified.");
-            return;
+            return 1;
+        }
+        if (_verbose >= 1)
+        {
+            Console.WriteLine("Arguments:");
+            int pad = ToStringLength(args.Length - 1);
+            string format = $"    [{{0:D{pad}}}] {{1}}";
+            for (int i = 0; i < args.Length; i++)
+            {
+                Console.WriteLine(format, i, args[i]);
+            }
+            Console.WriteLine();
         }
 
-        _filePath = extra[0];
         try
         {
-            if (_showSheetList)
+            if (options.ShowSheetList)
             {
-                WriteSheetNames(_filePath);
-                return;
+                WriteSheetNames(options.FilePath);
+                return 0;
             }
             WriteIfVerbose("Loading file...");
-            ExcelBook book = ExcelBook.FromFile(_filePath);
+            ExcelBook book = ExcelBook.FromFile(options.FilePath);
             string[] sheetNames = book.Keys.ToArray();
             Array.Sort(sheetNames);
             Dictionary<string, (float ClassSheetScore, float StudentSheetScore)> scores =
@@ -100,21 +89,42 @@ internal class Program
         catch (Exception e)
         {
             WriteException(e);
+            return 1;
         }
+        return 0;
     }
 
     /// <summary>
-    /// Prints the usage.
+    /// Prints the usage and return appropriate exit code.
     /// </summary>
-    private static void WriteHelp()
+    /// <returns>
+    /// <c>0</c> if <paramref name="result"/> has no errors other than
+    /// <c>ErrorType.HelpRequestedError</c>, <c>ErrorType.HelpVerbRequestedError</c>, and
+    /// <c>ErrorType.VersionRequestedError</c>;
+    /// otherwise, <c>1</c>.
+    /// </returns>
+    private static int WriteHelpAndGetExitCode<T>(ParserResult<T> result)
     {
-        Console.WriteLine("Usage: dsgen.exe [options] <file_path>");
-        Console.WriteLine(
-            "Generate a dataset file from an Excel file provided by Office of Academic Affairs of KSA."
+        var helpText = HelpText.AutoBuild(
+            result,
+            h =>
+            {
+                h.AdditionalNewLineAfterOption = false;
+                h.AddNewLineBetweenHelpSections = true;
+                h.OptionComparison = HelpText.RequiredThenAlphaComparison;
+                return h;
+            }
         );
-        Console.WriteLine();
-        Console.WriteLine("Options:");
-        _options.WriteOptionDescriptions(Console.Out);
+        Console.WriteLine(helpText);
+        return result.Errors.All(
+            error =>
+                error.Tag
+                    is ErrorType.HelpRequestedError
+                        or ErrorType.HelpVerbRequestedError
+                        or ErrorType.VersionRequestedError
+        )
+            ? 0
+            : 1;
     }
 
     private static void WriteSheetNames(string path)
@@ -164,7 +174,7 @@ internal class Program
         Console.Write("fatal error: ");
         Console.ForegroundColor = oldColor;
         Console.WriteLine(format, arg);
-        Console.WriteLine("Try `dsgen.exe --help' for more information.");
+        Console.WriteLine("Try `dsgen --help' for more information.");
         _lastPrintedNewLine = true;
     }
 
@@ -174,7 +184,7 @@ internal class Program
     /// <param name="e">Error to print.</param>
     private static void WriteException(Exception e)
     {
-        if (_verbose)
+        if (_verbose >= 1)
         {
             WriteError("{1}{0}StackTrace:{0}{2}", Environment.NewLine, e.Message, e.StackTrace);
         }
@@ -189,7 +199,7 @@ internal class Program
         params object?[]? arg
     )
     {
-        if (!_verbose)
+        if (_verbose == 0)
             return;
         string toWrite = arg is null ? format : String.Format(format, arg);
         Console.Write(toWrite);
@@ -203,7 +213,7 @@ internal class Program
         params object?[]? arg
     )
     {
-        if (!_verbose)
+        if (_verbose == 0)
             return;
         Console.WriteLine(format, arg);
         _lastPrintedNewLine = true;
@@ -219,8 +229,10 @@ internal class Program
         const string StudentSheetHeader = "Prob. Student Sheet";
         const string SheetNameHeader = "Sheet Name";
         const int precision = 2;
-        if (!_verbose)
+
+        if (_verbose == 0)
             return;
+
         int length = Console.WindowWidth;
         int pad = ToStringLength(sheetNames.Length - 1);
         int indexLength = Math.Max(pad, IndexHeader.Length);
