@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net7.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
+	<EnableWindowsTargeting>true</EnableWindowsTargeting>
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
@@ -13,6 +14,7 @@
 	<AssemblyVersion>1.2.0</AssemblyVersion>
 	<FileVersion>1.2.0</FileVersion>
 	<Nullable>enable</Nullable>
+	<Copyright>Copyright (c) 2023 HANU. All Rights Reserved.</Copyright>
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="KSAGrinder.ico">
