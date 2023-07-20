@@ -56,7 +56,7 @@ internal class Program
                 WriteSheetNames(options.FilePath);
                 return 0;
             }
-            WriteIfVerbose("Loading file...");
+            WriteIfVerbose(1, "Loading file...");
             ExcelBook book = ExcelBook.FromFile(options.FilePath);
             string[] sheetNames = book.Keys.ToArray();
             Array.Sort(sheetNames);
@@ -64,27 +64,27 @@ internal class Program
                 new(book.Count);
             int pad = ToStringLength(sheetNames.Length - 1);
             string format = $"    [{{0:D{pad}}}] ";
-            WriteLineIfVerbose(" Done ✓");
-            WriteLineIfVerbose("Evaluating sheets...");
+            WriteLineIfVerbose(1, " Done ✓");
+            WriteLineIfVerbose(1, "Evaluating sheets...");
             ConsoleColor oldColor = Console.ForegroundColor;
             for (int i = 0; i < sheetNames.Length; i++)
             {
                 string name = sheetNames[i];
                 ExcelSheet sheet = book[name];
-                WriteIfVerbose(format, i, name);
+                WriteIfVerbose(1, format, i, name);
                 if (sheet.Hidden)
                     Console.ForegroundColor = ConsoleColor.DarkGray;
-                WriteIfVerbose("\"{0}\"", name);
+                WriteIfVerbose(1, "\"{0}\"", name);
                 Console.ForegroundColor = oldColor;
-                WriteIfVerbose("... ");
+                WriteIfVerbose(1, "... ");
                 scores[name] = (
                     SheetTypeEvaluator.ClassSheetScore(sheet),
                     SheetTypeEvaluator.StudentSheetScore(sheet)
                 );
-                WriteLineIfVerbose(" ✓");
+                WriteLineIfVerbose(1, " ✓");
             }
-            WriteLineIfVerbose("Done ✓");
-            WriteScoreTableIfVerbose(sheetNames, scores);
+            WriteLineIfVerbose(1, "Done ✓");
+            WriteScoreTableIfVerbose(2, sheetNames, scores);
         }
         catch (Exception e)
         {
@@ -194,12 +194,16 @@ internal class Program
         }
     }
 
+    /// <summary>
+    /// Write to stdout if verbosity level is not smaller than <paramref name="verbosityThreshold"/>.
+    /// </summary>
     private static void WriteIfVerbose(
+        int verbosityThreshold,
         [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
         params object?[]? arg
     )
     {
-        if (_verbose == 0)
+        if (_verbose < verbosityThreshold)
             return;
         string toWrite = arg is null ? format : String.Format(format, arg);
         Console.Write(toWrite);
@@ -208,18 +212,26 @@ internal class Program
         _lastPrintedNewLine = toWrite.EndsWith('\n') || toWrite.EndsWith('\r');
     }
 
+    /// <summary>
+    /// Write to stdout if verbosity level is not smaller than <paramref name="verbosityThreshold"/>.
+    /// </summary>
     private static void WriteLineIfVerbose(
+        int verbosityThreshold,
         [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
         params object?[]? arg
     )
     {
-        if (_verbose == 0)
+        if (_verbose < verbosityThreshold)
             return;
         Console.WriteLine(format, arg);
         _lastPrintedNewLine = true;
     }
 
+    /// <summary>
+    /// Write the score table to stdout if verbosity level is not smaller than <paramref name="verbosityThreshold"/>.
+    /// </summary>
     private static void WriteScoreTableIfVerbose(
+        int verbosityThreshold,
         string[] sheetNames,
         Dictionary<string, (float ClassSheetScore, float StudentSheetScore)> scores
     )
@@ -230,7 +242,7 @@ internal class Program
         const string SheetNameHeader = "Sheet Name";
         const int precision = 2;
 
-        if (_verbose == 0)
+        if (_verbose < verbosityThreshold)
             return;
 
         int length = Console.WindowWidth;
