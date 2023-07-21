@@ -1,15 +1,25 @@
 ﻿using CommandLine;
 using dsgen.Excel;
+using dsgen.Exceptions;
 using System.Text;
 using System.Diagnostics.CodeAnalysis;
 using ExcelDataReader;
 using CommunityToolkit.Diagnostics;
 using CommandLine.Text;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace dsgen;
 
 internal class Program
 {
+    private const string NoProperClassSheetMessage =
+        "No sheet proper for being a class sheet was found. "
+        + "Verify if the sheet is valid, or specify the class sheets via '--class-sheets'.";
+    private const string NoProperStudentSheetMessage =
+        "No sheet proper for being a student sheet was found. "
+        + "Verify if the sheet is valid, or specify the class sheets via '--student-sheets'.";
+
     private static bool _lastPrintedNewLine = true;
     private static int _verbose = 0;
 
@@ -60,8 +70,7 @@ internal class Program
             ExcelBook book = ExcelBook.FromFile(options.FilePath);
             string[] sheetNames = book.Keys.ToArray();
             Array.Sort(sheetNames);
-            Dictionary<string, (float ClassSheetScore, float StudentSheetScore)> scores =
-                new(book.Count);
+            var scores = new (float ClassSheetScore, float StudentSheetScore)[book.Count];
             int pad = ToStringLength(sheetNames.Length - 1);
             string format = $"    [{{0:D{pad}}}] ";
             WriteLineIfVerbose(1, " Done ✓");
@@ -77,7 +86,7 @@ internal class Program
                 WriteIfVerbose(1, "\"{0}\"", name);
                 Console.ForegroundColor = oldColor;
                 WriteIfVerbose(1, "... ");
-                scores[name] = (
+                scores[i] = (
                     SheetTypeEvaluator.ClassSheetScore(sheet),
                     SheetTypeEvaluator.StudentSheetScore(sheet)
                 );
@@ -85,6 +94,23 @@ internal class Program
             }
             WriteLineIfVerbose(1, "Done ✓");
             WriteScoreTableIfVerbose(2, sheetNames, scores);
+
+            Span<int> classSheets = options.ClassSheets.Any()
+                ? options.ClassSheets.ToArray()
+                : Enumerable
+                    .Range(0, sheetNames.Length)
+                    .Where(i => scores[i].ClassSheetScore > options.Threshold)
+                    .ToArray();
+            if (classSheets.Length == 0)
+                throw new NoProperSheetFoundException(NoProperClassSheetMessage);
+            Span<int> studentSheets = options.StudentSheets.Any()
+                ? options.StudentSheets.ToArray()
+                : Enumerable
+                    .Range(0, sheetNames.Length)
+                    .Where(i => scores[i].StudentSheetScore > options.Threshold)
+                    .ToArray();
+            if (studentSheets.Length == 0)
+                throw new NoProperSheetFoundException(NoProperStudentSheetMessage);
         }
         catch (Exception e)
         {
@@ -105,26 +131,77 @@ internal class Program
     /// </returns>
     private static int WriteHelpAndGetExitCode<T>(ParserResult<T> result)
     {
+        static bool IsAbnormalError(Error error)
+        {
+            bool isNormal =
+                error.Tag
+                    is ErrorType.HelpRequestedError
+                        or ErrorType.HelpVerbRequestedError
+                        or ErrorType.VersionRequestedError;
+            return !isNormal;
+        }
+
+        static int OrderOnShortName(ComparableOption attr1, ComparableOption attr2)
+        {
+            if (attr1.IsOption && attr2.IsOption)
+            {
+                if (attr1.Required && !attr2.Required)
+                    return -1;
+                else if (!attr1.Required && attr2.Required)
+                    return 1;
+                else
+                {
+                    if (
+                        string.IsNullOrEmpty(attr1.ShortName)
+                        && !string.IsNullOrEmpty(attr2.ShortName)
+                    )
+                        return 1;
+                    else if (
+                        !string.IsNullOrEmpty(attr1.ShortName)
+                        && string.IsNullOrEmpty(attr2.ShortName)
+                    )
+                        return -1;
+                    return String.Compare(
+                        attr1.ShortName,
+                        attr2.ShortName,
+                        StringComparison.Ordinal
+                    );
+                }
+            }
+            else if (attr1.IsOption && attr2.IsValue)
+            {
+                return -1;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+
+        int exitCode = result.Errors.Any(IsAbnormalError) ? 1 : 0;
+        var testbuilder = new HelpText().SentenceBuilder;
+        if (exitCode != 0)
+        {
+            Error[] errorsToPrint = result.Errors.Where(IsAbnormalError).ToArray();
+            StringBuilder sb = new();
+            sb.Append("Failed to parse the commandline arguments.");
+            for (int i = 0; i < errorsToPrint.Length; i++)
+                sb.AppendLine().Append(' ', 4).Append(testbuilder.FormatError(errorsToPrint[i]));
+            WriteError(sb.ToString());
+            return exitCode;
+        }
         var helpText = HelpText.AutoBuild(
             result,
             h =>
             {
-                h.AdditionalNewLineAfterOption = false;
+                h.MaximumDisplayWidth = 100;
                 h.AddNewLineBetweenHelpSections = true;
-                h.OptionComparison = HelpText.RequiredThenAlphaComparison;
+                h.OptionComparison = OrderOnShortName;
                 return h;
             }
         );
         Console.WriteLine(helpText);
-        return result.Errors.All(
-            error =>
-                error.Tag
-                    is ErrorType.HelpRequestedError
-                        or ErrorType.HelpVerbRequestedError
-                        or ErrorType.VersionRequestedError
-        )
-            ? 0
-            : 1;
+        return exitCode;
     }
 
     private static void WriteSheetNames(string path)
@@ -184,7 +261,7 @@ internal class Program
     /// <param name="e">Error to print.</param>
     private static void WriteException(Exception e)
     {
-        if (_verbose >= 1)
+        if (_verbose >= 3)
         {
             WriteError("{1}{0}StackTrace:{0}{2}", Environment.NewLine, e.Message, e.StackTrace);
         }
@@ -233,7 +310,7 @@ internal class Program
     private static void WriteScoreTableIfVerbose(
         int verbosityThreshold,
         string[] sheetNames,
-        Dictionary<string, (float ClassSheetScore, float StudentSheetScore)> scores
+        (float ClassSheetScore, float StudentSheetScore)[] scores
     )
     {
         const string IndexHeader = "Index";
@@ -244,6 +321,7 @@ internal class Program
 
         if (_verbose < verbosityThreshold)
             return;
+        Guard.IsEqualTo(sheetNames.Length - scores.Length, 0);
 
         int length = Console.WindowWidth;
         int pad = ToStringLength(sheetNames.Length - 1);
@@ -271,7 +349,7 @@ internal class Program
         );
         for (int i = 0; i < sheetNames.Length; i++)
         {
-            var tuple = scores[sheetNames[i]];
+            var tuple = scores[i];
             Console.WriteLine(
                 tableFormat,
                 i,
