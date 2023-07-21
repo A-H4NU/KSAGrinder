@@ -25,6 +25,22 @@ internal class Program
     private static bool _lastPrintedNewLine = true;
     private static int _verbose = 0;
 
+    private static bool _canChangeConsoleColor;
+
+    static Program()
+    {
+        try
+        {
+            ConsoleColor color = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            _canChangeConsoleColor = true;
+        }
+        catch (Exception)
+        {
+            _canChangeConsoleColor = false;
+        }
+    }
+
     private static int Main(string[] args)
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -95,9 +111,10 @@ internal class Program
                 ExcelSheet sheet = book[name];
                 WriteIfVerbose(1, format, i, name);
                 if (sheet.Hidden)
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    ChangeConsoleForeground(ConsoleColor.DarkGray);
                 WriteIfVerbose(1, "\"{0}\"", name);
-                Console.ForegroundColor = oldColor;
+                if (sheet.Hidden)
+                    ChangeConsoleForeground(oldColor);
                 WriteIfVerbose(1, "... ");
                 scores[i] = (
                     SheetTypeEvaluator.ClassSheetScore(sheet),
@@ -251,9 +268,9 @@ internal class Program
             {
                 Console.Write(format, i);
                 if (isHidden[i])
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    ChangeConsoleForeground(ConsoleColor.DarkGray);
                 Console.WriteLine(sheetNames[i]);
-                Console.ForegroundColor = oldColor;
+                ChangeConsoleForeground(oldColor);
             }
         }
         finally
@@ -398,6 +415,17 @@ internal class Program
         );
         Console.WriteLine();
         _lastPrintedNewLine = true;
+    }
+
+    private static void ChangeConsoleForeground(ConsoleColor color)
+    {
+        if (!_canChangeConsoleColor)
+            return;
+        try
+        {
+            Console.ForegroundColor = color;
+        }
+        catch (Exception) { }
     }
 
     private static int ToStringLength(object? obj)
