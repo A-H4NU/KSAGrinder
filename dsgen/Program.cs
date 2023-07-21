@@ -1,6 +1,5 @@
 ﻿using CommandLine;
 using dsgen.Excel;
-using dsgen.Exceptions;
 using System.Text;
 using System.Diagnostics.CodeAnalysis;
 using ExcelDataReader;
@@ -20,6 +19,8 @@ internal class Program
         + "Verify if the file is valid, or specify the class sheets via '--student-sheets'.";
     private const string SheetsOverlappingMessage =
         "'--class-sheets' and '-student-sheets' may not contain a common index.";
+    private const string IndicesOutOfRangeMessage =
+        "'--class-sheets' or '-student-sheets' contains an invalid index.";
 
     private static bool _lastPrintedNewLine = true;
     private static int _verbose = 0;
@@ -38,11 +39,13 @@ internal class Program
 
     private static int RunAndGetExitCode(Options options, string[] args)
     {
+        const int EXIT_SUCCESS = 0,
+            EXIT_ERROR = 1;
         _verbose = options.Verbose;
         if (String.IsNullOrEmpty(options.FilePath))
         {
             WriteError("File path is not specified.");
-            return 1;
+            return EXIT_ERROR;
         }
         if (_verbose >= 1)
         {
@@ -61,10 +64,13 @@ internal class Program
             if (options.ShowSheetList)
             {
                 WriteSheetNames(options.FilePath);
-                return 0;
+                return EXIT_SUCCESS;
             }
             if (Enumerable.Intersect(options.ClassSheets, options.StudentSheets).Any())
-                throw new OverlappingSheetsException(SheetsOverlappingMessage);
+            {
+                WriteError(SheetsOverlappingMessage);
+                return EXIT_ERROR;
+            }
             WriteIfVerbose(1, "Loading file...");
             ExcelBook book = ExcelBook.FromFile(options.FilePath);
             string[] sheetNames = book.Keys.ToArray();
@@ -73,6 +79,14 @@ internal class Program
             int pad = ToStringLength(sheetNames.Length - 1);
             string format = $"    [{{0:D{pad}}}] ";
             WriteLineIfVerbose(1, " Done ✓");
+            if (
+                options.ClassSheets.Any(i => i >= book.Count)
+                || options.ClassSheets.Any(i => i >= book.Count)
+            )
+            {
+                WriteError(IndicesOutOfRangeMessage);
+                return EXIT_ERROR;
+            }
             WriteLineIfVerbose(1, "Evaluating sheets...");
             ConsoleColor oldColor = Console.ForegroundColor;
             for (int i = 0; i < sheetNames.Length; i++)
@@ -101,7 +115,10 @@ internal class Program
                     .Where(i => scores[i].ClassSheetScore > options.Threshold)
                     .ToArray();
             if (classSheets.Length == 0)
-                throw new NoProperSheetFoundException(NoProperClassSheetMessage);
+            {
+                WriteError(NoProperClassSheetMessage);
+                return EXIT_ERROR;
+            }
             Span<int> studentSheets = options.StudentSheets.Any()
                 ? options.StudentSheets.ToArray()
                 : Enumerable
@@ -109,14 +126,17 @@ internal class Program
                     .Where(i => scores[i].StudentSheetScore > options.Threshold)
                     .ToArray();
             if (studentSheets.Length == 0)
-                throw new NoProperSheetFoundException(NoProperStudentSheetMessage);
+            {
+                WriteError(NoProperStudentSheetMessage);
+                return EXIT_ERROR;
+            }
         }
         catch (Exception e)
         {
             WriteException(e);
-            return 1;
+            return EXIT_ERROR;
         }
-        return 0;
+        return EXIT_SUCCESS;
     }
 
     /// <summary>
