@@ -8,6 +8,7 @@ using CommunityToolkit.Diagnostics;
 using CommandLine.Text;
 using System.Reflection;
 using System.Diagnostics;
+using System.Collections;
 
 namespace dsgen;
 
@@ -27,11 +28,7 @@ internal class Program
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-        List<string> extra = new();
-        var parser = new Parser(config =>
-        {
-            config.HelpWriter = null;
-        });
+        var parser = new Parser(config => config.HelpWriter = null);
         var result = parser.ParseArguments<Options>(args);
         return result.MapResult(
             options => RunAndGetExitCode(options, args),
@@ -212,20 +209,29 @@ internal class Program
         {
             fs = File.OpenRead(path);
             reader = ExcelReaderFactory.CreateReader(fs);
+            Console.WriteLine("Total {0} sheets found:", reader.ResultsCount);
             Guard.IsNotEqualTo(reader.ResultsCount, 0, "The number of sheets");
             int pad = ToStringLength(reader.ResultsCount - 1);
-            string format = $"[{{0:D{pad}}}] {{1}}";
+            string format = $"    [{{0:D{pad}}}] ";
             string[] sheetNames = new string[reader.ResultsCount];
+            bool[] isHidden = new bool[reader.ResultsCount];
             int index = 0;
             do
             {
                 sheetNames[index] = reader.Name;
+                isHidden[index] = reader.VisibleState != "visible";
                 index++;
             } while (reader.NextResult());
-            Array.Sort(sheetNames);
+            Debug.Assert(index == reader.ResultsCount);
+            Array.Sort(sheetNames, isHidden);
+            ConsoleColor oldColor = Console.ForegroundColor;
             for (int i = 0; i < sheetNames.Length; i++)
             {
-                Console.WriteLine(format, i, sheetNames[i]);
+                Console.Write(format, i);
+                if (isHidden[i])
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine(sheetNames[i]);
+                Console.ForegroundColor = oldColor;
             }
         }
         finally
@@ -332,6 +338,8 @@ internal class Program
             $"│ {{0,{indexLength}}} │ {{1,{classSheetLength}}} │ {{2,{studentSheetLength}}} │ {{3}}";
         string tableFormat =
             $"│ {{0,{indexLength}:D{pad}}} │ {{1,{classSheetLength - 2}:F{precision}}} % │ {{2,{studentSheetLength - 2}:F{precision}}} % │ {{3}}";
+        Console.WriteLine();
+        Console.WriteLine("Evaluation Result:");
         Console.WriteLine(
             GetTableUpperBorder(
                 length,
@@ -366,6 +374,7 @@ internal class Program
                 studentSheetLength + 2
             )
         );
+        Console.WriteLine();
         _lastPrintedNewLine = true;
     }
 

@@ -25,7 +25,12 @@ public record Options
     )]
     public int Verbose { get; init; }
 
-    [Option('l', "show-list", HelpText = "Display the names of sheets in XLPATH and exit.")]
+    [Option(
+        'l',
+        "show-list",
+        HelpText = "Display the names and the indices of sheets in XLPATH and exit. "
+            + "The indices are constant as long as the sheet names do not change."
+    )]
     public bool ShowSheetList { get; init; } = false;
 
     [Option(
