@@ -21,6 +21,9 @@ internal class Program
         "'--class-sheets' and '-student-sheets' may not contain a common index.";
     private const string IndicesOutOfRangeMessage =
         "'--class-sheets' or '-student-sheets' contains an invalid index.";
+    private const string SelectedLowScoreSheetMessage =
+        "You selected a sheet with low probability for being a valid class/student sheet. "
+        + "Increase verbosity to see the probabilities.";
 
     private static bool _lastPrintedNewLine = true;
     private static int _verbose = 0;
@@ -146,6 +149,14 @@ internal class Program
             {
                 WriteError(NoProperStudentSheetMessage);
                 return EXIT_ERROR;
+            }
+
+            if (
+                options.ClassSheets.Any(i => scores[i].ClassSheetScore <= options.Threshold)
+                || options.StudentSheets.Any(i => scores[i].StudentSheetScore <= options.Threshold)
+            )
+            {
+                WriteWarning(SelectedLowScoreSheetMessage);
             }
         }
         catch (Exception e)
@@ -281,6 +292,25 @@ internal class Program
     }
 
     /// <summary>
+    /// Prints the warning with the <see cref="format"/> and <see cref="arg"/> provided.
+    /// </summary>
+    private static void WriteWarning(
+        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
+        params object?[]? arg
+    )
+    {
+        ConsoleColor oldColor = Console.ForegroundColor;
+        if (!_lastPrintedNewLine)
+            Console.Write(Environment.NewLine);
+        Console.Write("dsgen.exe: ");
+        ChangeConsoleForeground(ConsoleColor.Yellow);
+        Console.Write("warning: ");
+        ChangeConsoleForeground(oldColor);
+        Console.WriteLine(format, arg);
+        _lastPrintedNewLine = true;
+    }
+
+    /// <summary>
     /// Prints the error with the <see cref="format"/> and <see cref="arg"/> provided.
     /// </summary>
     private static void WriteError(
@@ -292,9 +322,9 @@ internal class Program
         if (!_lastPrintedNewLine)
             Console.Write(Environment.NewLine);
         Console.Write("dsgen.exe: ");
-        Console.ForegroundColor = ConsoleColor.Red;
+        ChangeConsoleForeground(ConsoleColor.Red);
         Console.Write("fatal error: ");
-        Console.ForegroundColor = oldColor;
+        ChangeConsoleForeground(oldColor);
         Console.WriteLine(format, arg);
         Console.WriteLine("Try `dsgen --help' for more information.");
         _lastPrintedNewLine = true;
@@ -375,6 +405,7 @@ internal class Program
         int studentSheetLength = Math.Max(5 + precision, StudentSheetHeader.Length);
         string headerFormat =
             $"│ {{0,{indexLength}}} │ {{1,{classSheetLength}}} │ {{2,{studentSheetLength}}} │ {{3}}";
+        // `classSheetLength - 2` is for the space of " %"
         string tableFormat =
             $"│ {{0,{indexLength}:D{pad}}} │ {{1,{classSheetLength - 2}:F{precision}}} % │ {{2,{studentSheetLength - 2}:F{precision}}} % │ {{3}}";
         Console.WriteLine();
@@ -382,7 +413,7 @@ internal class Program
         Console.WriteLine(
             GetTableUpperBorder(
                 length,
-                indexLength + 2,
+                indexLength + 2, // 2's are for spaces
                 classSheetLength + 2,
                 studentSheetLength + 2
             )
@@ -408,7 +439,7 @@ internal class Program
         Console.WriteLine(
             GetTableLowerBorder(
                 length,
-                indexLength + 2,
+                indexLength + 2, // 2's are for spaces
                 classSheetLength + 2,
                 studentSheetLength + 2
             )
