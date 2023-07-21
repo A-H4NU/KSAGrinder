@@ -6,9 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using ExcelDataReader;
 using CommunityToolkit.Diagnostics;
 using CommandLine.Text;
-using System.Reflection;
 using System.Diagnostics;
-using System.Collections;
 
 namespace dsgen;
 
@@ -16,10 +14,12 @@ internal class Program
 {
     private const string NoProperClassSheetMessage =
         "No sheet proper for being a class sheet was found. "
-        + "Verify if the sheet is valid, or specify the class sheets via '--class-sheets'.";
+        + "Verify if the file is valid, or specify the class sheets via '--class-sheets'.";
     private const string NoProperStudentSheetMessage =
         "No sheet proper for being a student sheet was found. "
-        + "Verify if the sheet is valid, or specify the class sheets via '--student-sheets'.";
+        + "Verify if the file is valid, or specify the class sheets via '--student-sheets'.";
+    private const string SheetsOverlappingMessage =
+        "'--class-sheets' and '-student-sheets' may not contain a common index.";
 
     private static bool _lastPrintedNewLine = true;
     private static int _verbose = 0;
@@ -63,6 +63,8 @@ internal class Program
                 WriteSheetNames(options.FilePath);
                 return 0;
             }
+            if (Enumerable.Intersect(options.ClassSheets, options.StudentSheets).Any())
+                throw new OverlappingSheetsException(SheetsOverlappingMessage);
             WriteIfVerbose(1, "Loading file...");
             ExcelBook book = ExcelBook.FromFile(options.FilePath);
             string[] sheetNames = book.Keys.ToArray();
