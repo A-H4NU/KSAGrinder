@@ -3,10 +3,9 @@ using dsgen.Excel;
 using dsgen.StringDistance;
 using dsgen.ColumnInfo;
 using System.Collections;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Collections.Immutable;
 
 namespace dsgen;
 
@@ -27,66 +26,8 @@ public static partial class SheetTypeEvaluator
     [GeneratedRegex(pattern: @"\A\d{2}-\d{3}\z", options: RegexOptions.Singleline)]
     private static partial Regex StudentIdRegex();
 
-    private static readonly (
-        string HeaderTitle,
-        string ColumnName,
-        IReadOnlyCollection<Type?> Types
-    )[] ClassSheetTitles;
-
     public static StringDistanceCalculator StringDistanceCalculator { get; set; } =
         Levenshtein.Instance;
-
-    /// <summary>
-    /// Initializes <see cref="ClassSheetTitles"/>.
-    /// </summary>
-    static SheetTypeEvaluator()
-    {
-        static void SortFieldInfosByName(FieldInfo[] array) =>
-            Array.Sort(array.Select(f => f.Name).ToArray(), array);
-
-        /* Initialize ClassSheetTitles with reflection. */
-        FieldInfo[] headerTitleFields = typeof(HeaderTitle).GetFields(
-            BindingFlags.Public | BindingFlags.Static
-        );
-        FieldInfo[] columnNameFields = typeof(ColumnName).GetFields(
-            BindingFlags.Public | BindingFlags.Static
-        );
-        FieldInfo[] typesFields = typeof(Types).GetFields(
-            BindingFlags.Public | BindingFlags.Static
-        );
-        Guard.IsNotEmpty(columnNameFields);
-        Debug.Assert(headerTitleFields.Length == columnNameFields.Length);
-        Debug.Assert(columnNameFields.Length == typesFields.Length);
-        /* Sort to assert the names of the fields match. */
-        SortFieldInfosByName(headerTitleFields);
-        SortFieldInfosByName(columnNameFields);
-        SortFieldInfosByName(typesFields);
-        int n = columnNameFields.Length;
-        for (int i = 0; i < n; i++)
-        {
-            Debug.Assert(headerTitleFields[i].Name == columnNameFields[i].Name);
-            Debug.Assert(columnNameFields[i].Name == typesFields[i].Name);
-        }
-        ClassSheetTitles = new (string, string, IReadOnlyCollection<Type?>)[n];
-        for (int i = 0; i < n; i++)
-        {
-            object? h = headerTitleFields[i].GetValue(null);
-            object? c = columnNameFields[i].GetValue(null);
-            object? t = typesFields[i].GetValue(null);
-            if (
-                h is string headerTitle
-                && c is string columnName
-                && t is IReadOnlyCollection<Type?> types
-            )
-            {
-                ClassSheetTitles[i] = (headerTitle, columnName, types);
-            }
-            else
-            {
-                Debug.Fail("Unreachable.");
-            }
-        }
-    }
 
     /// <summary>
     /// Evaluates the probability for the sheet can be used to generate class
@@ -129,14 +70,13 @@ public static partial class SheetTypeEvaluator
         float timeScore = (float)GetMax(timeMatches, out int timeHeaderIdx) / sheet.RowCount;
         if (codeScore == 0f || timeScore == 0f)
             return 0f;
-        int codeIdxInArray = Array.FindIndex(
-            ClassSheetTitles,
+        int codeIdxInArray = Column.ClassSheetTitles.FindIndex(
             tuple => tuple.ColumnName == ColumnName.Code
         );
-        int timeIdxInArray = Array.FindIndex(
-            ClassSheetTitles,
+        int timeIdxInArray = Column.ClassSheetTitles.FindIndex(
             tuple => tuple.ColumnName == ColumnName.Time
         );
+
         if (
             codeIdxInArray == -1
             || matchResult[codeIdxInArray] != codeHeaderIdx
@@ -150,9 +90,9 @@ public static partial class SheetTypeEvaluator
             if (!(doesMatchCode[codeHeaderIdx][i] && doesMatchTime[timeHeaderIdx][i]))
                 continue;
             bool matching = true;
-            for (int j = 0; j < ClassSheetTitles.Length; j++)
+            for (int j = 0; j < Column.ClassSheetTitles.Count; j++)
             {
-                if (!ClassSheetTitles[j].Types.Contains(sheet[i, matchResult[j]]?.GetType()))
+                if (!Column.ClassSheetTitles[j].Types.Contains(sheet[i, matchResult[j]]?.GetType()))
                 {
                     matching = false;
                     break;
@@ -372,7 +312,7 @@ public static partial class SheetTypeEvaluator
         StringDistanceCalculator? calculator = null
     )
     {
-        var reference = (from tuple in ClassSheetTitles select tuple.HeaderTitle).ToArray();
+        var reference = (from tuple in Column.ClassSheetTitles select tuple.HeaderTitle).ToArray();
         return TryMatchHeaders(headers, reference, out result, out similarities, calculator);
     }
 }

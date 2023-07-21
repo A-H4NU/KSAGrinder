@@ -1,40 +1,20 @@
-using System.Collections.ObjectModel;
-
 namespace dsgen.ColumnInfo;
+
+using T = System.Collections.ObjectModel.ReadOnlyCollection<Type?>;
 
 /// <summary>
 /// Types of entries in each column.
 /// </summary>
 public static class Types
 {
-    public static readonly ReadOnlyCollection<Type?> Code = (
-        new Type?[] { typeof(String) }
-    ).AsReadOnly();
-    public static readonly ReadOnlyCollection<Type?> Department = (
-        new Type?[] { typeof(String) }
-    ).AsReadOnly();
-    public static readonly ReadOnlyCollection<Type?> Name = (
-        new Type?[] { typeof(String) }
-    ).AsReadOnly();
-    public static readonly ReadOnlyCollection<Type?> Grade = (
-        new Type?[] { typeof(Double) }
-    ).AsReadOnly();
-    public static readonly ReadOnlyCollection<Type?> Class = (
-        new Type?[] { typeof(Double) }
-    ).AsReadOnly();
-    public static readonly ReadOnlyCollection<Type?> Teacher = (
-        new Type?[] { typeof(String) }
-    ).AsReadOnly();
-    public static readonly ReadOnlyCollection<Type?> Time = (
-        new Type?[] { typeof(String) }
-    ).AsReadOnly();
-    public static readonly ReadOnlyCollection<Type?> Enrollment = (
-        new Type?[] { typeof(Double) }
-    ).AsReadOnly();
-    public static readonly ReadOnlyCollection<Type?> Credit = (
-        new Type?[] { typeof(Double) }
-    ).AsReadOnly();
-    public static readonly ReadOnlyCollection<Type?> Note = (
-        new Type?[] { typeof(String), null }
-    ).AsReadOnly();
+    public static readonly T Code = new Type?[] { typeof(String) }.AsReadOnly();
+    public static readonly T Department = (new Type?[] { typeof(String) }).AsReadOnly();
+    public static readonly T Name = (new Type?[] { typeof(String) }).AsReadOnly();
+    public static readonly T Grade = (new Type?[] { typeof(Double) }).AsReadOnly();
+    public static readonly T Class = (new Type?[] { typeof(Double) }).AsReadOnly();
+    public static readonly T Teacher = (new Type?[] { typeof(String) }).AsReadOnly();
+    public static readonly T Time = (new Type?[] { typeof(String) }).AsReadOnly();
+    public static readonly T Enrollment = (new Type?[] { typeof(Double) }).AsReadOnly();
+    public static readonly T Credit = (new Type?[] { typeof(Double) }).AsReadOnly();
+    public static readonly T Note = (new Type?[] { typeof(String), null }).AsReadOnly();
 }
