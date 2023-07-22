@@ -60,7 +60,7 @@ public record struct Column(
             object? h = headerTitleFields[i].GetValue(null);
             object? c = columnNameFields[i].GetValue(null);
             object? ts = typesFields[i].GetValue(null);
-            object? t = typesFields[i].GetValue(null);
+            object? t = typeFields[i].GetValue(null);
             if (
                 h is string headerTitle
                 && c is string columnName
