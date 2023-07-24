@@ -79,7 +79,7 @@ public static class ExcelSheetExtension
     /// <summary>
     /// Try finding the first row that can be considered as a header inferring from <paramref name="reference"/>.
     /// <para>
-    ///     - <c>reference[i]</c> is matched to <c>sheet[result, i]</c>
+    ///     - <c>reference[i]</c> is matched to <c>sheet[result[i], i]</c>
     ///     - <c>similarities[i]</c> is the similarity between them
     /// </para>
     /// </summary>
