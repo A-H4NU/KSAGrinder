@@ -76,10 +76,10 @@ public static partial class SheetTypeEvaluator
         if (codeScore == 0f || timeScore == 0f)
             return 0f;
         int codeIdxInArray = Column.ClassSheetTitles.FindIndex(
-            tuple => tuple.ColumnName == ColumnName.Code
+            tuple => tuple.ColumnName == "Code"
         );
         int timeIdxInArray = Column.ClassSheetTitles.FindIndex(
-            tuple => tuple.ColumnName == ColumnName.Time
+            tuple => tuple.ColumnName == "Time"
         );
 
         if (

@@ -75,6 +75,20 @@ public readonly struct Column
 
     public static ReadOnlyCollection<Column>? ClassSheetTitles { get; private set; }
 
+    public static ReadOnlyCollection<string> RequiredColumnNames = new string[]
+    {
+        "Code",
+        "Department",
+        "Name",
+        "Grade",
+        "Class",
+        "Teacher",
+        "Time",
+        "Enrollment",
+        "Credit",
+        "Note"
+    }.AsReadOnly();
+
     public static async Task InitializeAsync()
     {
         string? path = null;
@@ -87,6 +101,15 @@ public readonly struct Column
             path = Path.Combine(directory, Program.ColumnInfoFilePath);
             var result = await DataContractSerializerUtils.DeserializeFromFileAsync<Column[]>(path);
             ClassSheetTitles = new ReadOnlyCollection<Column>(result);
+            foreach (string requiredColumnName in RequiredColumnNames)
+            {
+                if (ClassSheetTitles.FindIndex(c => c.ColumnName == requiredColumnName) == -1)
+                {
+                    throw new Exception(
+                        $"There must be a column whose ColumnName is \"{requiredColumnName}\"."
+                    );
+                }
+            }
         }
         catch (Exception ex)
             when (ex is FileNotFoundException
