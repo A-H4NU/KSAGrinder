@@ -4,7 +4,8 @@ using dsgen.StringDistance;
 using dsgen.ColumnInfo;
 using System.Collections;
 using System.Text.RegularExpressions;
-using System.Collections.Immutable;
+using System.Globalization;
+using System.Diagnostics;
 
 namespace dsgen;
 
@@ -40,6 +41,7 @@ public static partial class SheetTypeEvaluator
         StringDistanceCalculator? calculator = null
     )
     {
+        Debug.Assert(Column.ClassSheetTitles is not null);
         if (sheet.Hidden || sheet.ColumnCount < 9)
             return 0f;
 
@@ -55,7 +57,10 @@ public static partial class SheetTypeEvaluator
             obj => DoesMatchRegex(TimeRegex(), obj),
             out BitArray[] doesMatchTime
         );
-        var reference = (from tuple in Column.ClassSheetTitles select tuple.HeaderTitle).ToArray();
+        var reference = (
+            from tuple in Column.ClassSheetTitles
+            select tuple.HeaderTitles[CultureInfo.GetCultureInfo("ko-KR")]
+        ).ToArray();
         if (
             !sheet.TryFindSheetHeaderRow(
                 reference,

@@ -6,11 +6,17 @@ using ExcelDataReader;
 using CommunityToolkit.Diagnostics;
 using CommandLine.Text;
 using System.Diagnostics;
+using dsgen.ColumnInfo;
 
 namespace dsgen;
 
 internal class Program
 {
+    private const int EXIT_SUCCESS = 0;
+    private const int EXIT_ERROR = 1;
+
+    internal const string ColumnInfoFilePath = "columns.xml";
+
     private const string NoProperClassSheetMessage =
         "No sheet proper for being a class sheet was found. "
         + "Verify if the file is valid, or specify the class sheets via '--class-sheets'.";
@@ -44,12 +50,31 @@ internal class Program
         }
     }
 
-    private static int Main(string[] args)
+    private static async Task<int> Main(string[] args)
     {
+        var columnInitializeTask = Column.InitializeAsync();
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
         var parser = new Parser(config => config.HelpWriter = null);
         var result = parser.ParseArguments<Options>(args);
+        result.WithParsed(options => _verbose = options.Verbose);
+        try
+        {
+            await columnInitializeTask;
+        }
+#if DEBUG
+        catch (Exception ex)
+        {
+            WriteException(ex);
+            return EXIT_ERROR;
+        }
+#else
+        catch (Exception)
+        {
+            WriteError("Failed to initialize.");
+            return EXIT_ERROR;
+        }
+#endif
         return result.MapResult(
             options => RunAndGetExitCode(options, args),
             errors => WriteHelpAndGetExitCode(result)
@@ -58,9 +83,6 @@ internal class Program
 
     private static int RunAndGetExitCode(Options options, string[] args)
     {
-        const int EXIT_SUCCESS = 0,
-            EXIT_ERROR = 1;
-        _verbose = options.Verbose;
         if (String.IsNullOrEmpty(options.FilePath))
         {
             WriteError("File path is not specified.");
