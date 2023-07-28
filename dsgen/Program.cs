@@ -37,6 +37,10 @@ internal class Program
     /* Messages that are used in ColumnInfo.Column. */
     public const string RequiredColumnNameNotFoundMessage =
         "There must be a column whose ColumnName is '{0}' in '{1}'.";
+    public const string TypeNotFoundMessage =
+        "Could not find the type '{0}'.";
+    public const string TypeInvalidMessage =
+        "Type '{0}' is invalid for data column type.";
 
     #endregion
 

@@ -1,5 +1,8 @@
+using CommunityToolkit.Diagnostics;
+using dsgen.Exceptions;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -38,7 +41,7 @@ public readonly struct Column
     [DataMember(Name = nameof(Types))]
     private List<string?> TypesStr
     {
-        get => Types.Select(type => type?.FullName).ToList();
+        get => Types.Select(type => type?.ToString()).ToList();
         init
         {
             // Simply a fast way of:
@@ -48,8 +51,7 @@ public readonly struct Column
             {
                 if (str is not null)
                 {
-                    Type? t = Type.GetType(str);
-                    Debug.Assert(t is not null);
+                    ThrowIfInvalidDataColumnType(str, out Type t);
                     builder.Add(t);
                 }
                 else
@@ -62,16 +64,17 @@ public readonly struct Column
     [DataMember(Name = nameof(DataTableType))]
     private string DataTableTypeStr
     {
-        get => DataTableType.FullName!;
+        get => DataTableType.ToString();
         init
         {
-            Type? t = Type.GetType(value);
-            Debug.Assert(t is not null);
+            ThrowIfInvalidDataColumnType(value, out Type t);
             DataTableType = t;
         }
     }
 
     #endregion
+
+    private static Assembly s_mscorlib = typeof(Int32).Assembly;
 
     public static ReadOnlyCollection<Column>? ClassSheetTitles { get; private set; }
 
@@ -129,6 +132,27 @@ public readonly struct Column
                 ClassSheetTitles.ToArray(),
                 path
             );
+        }
+    }
+
+    private static void ThrowIfInvalidDataColumnType(string str, [NotNull] out Type? type)
+    {
+        Guard.IsNotNull(str);
+        type = Type.GetType(str);
+        if (type is null)
+        {
+            throw new TypeException(String.Format(Program.TypeNotFoundMessage, str));
+        }
+        // Check if "type" is a valid type for DataColumn.
+        // Since we do not have access to internal logic for checking its validity,
+        // we use try/catch expression for simplicity.
+        try
+        {
+            _ = new System.Data.DataColumn(null, type);
+        }
+        catch (NotSupportedException ex)
+        {
+            throw new TypeException(String.Format(Program.TypeInvalidMessage, str), ex);
         }
     }
 
