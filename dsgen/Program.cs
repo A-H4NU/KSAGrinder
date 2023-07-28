@@ -40,7 +40,7 @@ internal class Program
     public const string TypeNotFoundMessage =
         "Could not find the type '{0}'.";
     public const string TypeInvalidMessage =
-        "Type '{0}' is invalid for data column type.";
+        "Type '{0}' is not serializable.";
 
     #endregion
 

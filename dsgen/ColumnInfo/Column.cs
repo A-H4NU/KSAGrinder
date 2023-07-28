@@ -51,7 +51,7 @@ public readonly struct Column
             {
                 if (str is not null)
                 {
-                    ThrowIfInvalidDataColumnType(str, out Type t);
+                    ThrowIfInvalidType(str, out Type t);
                     builder.Add(t);
                 }
                 else
@@ -67,7 +67,7 @@ public readonly struct Column
         get => DataTableType.ToString();
         init
         {
-            ThrowIfInvalidDataColumnType(value, out Type t);
+            ThrowIfInvalidType(value, out Type t);
             DataTableType = t;
         }
     }
@@ -135,44 +135,14 @@ public readonly struct Column
         }
     }
 
-    private static void ThrowIfInvalidDataColumnType(string str, [NotNull] out Type? type)
+    private static void ThrowIfInvalidType(string str, [NotNull] out Type? type)
     {
         Guard.IsNotNull(str);
         type = Type.GetType(str);
         if (type is null)
-        {
             throw new TypeException(String.Format(Program.TypeNotFoundMessage, str));
-        }
-        // Check if "type" is a valid type for DataColumn.
-        // Since we do not have access to internal logic for checking its validity,
-        // we use try/catch expression for simplicity.
-        try
-        {
-            _ = new System.Data.DataColumn(null, type);
-        }
-        catch (NotSupportedException ex)
-        {
-            throw new TypeException(String.Format(Program.TypeInvalidMessage, str), ex);
-        }
-    }
-
-    private static bool AllEqual<T>(params T[] objs)
-        where T : IEquatable<T>
-    {
-        if (objs.Length < 2)
-            return true;
-        for (int i = 1; i < objs.Length; i++)
-            if (!objs[i].Equals(objs[i - 1]))
-                return false;
-        return true;
-    }
-
-    private static void ApplyActionToAll<T>(Action<T> action, params T[] objs)
-    {
-        for (int i = 0; i < objs.Length; i++)
-        {
-            action(objs[i]);
-        }
+        if (!type.IsSerializable)
+            throw new TypeException(String.Format(Program.TypeInvalidMessage, str));
     }
 
     /// <summary>
