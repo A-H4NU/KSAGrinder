@@ -17,6 +17,9 @@ internal class Program
 
     internal const string ColumnInfoFilePath = "columns.xml";
 
+    #region Messages
+
+    /* Messages that are used in Program. */
     private const string NoProperClassSheetMessage =
         "No sheet proper for being a class sheet was found. "
         + "Verify if the file is valid, or specify the class sheets via '--class-sheets'.";
@@ -30,6 +33,12 @@ internal class Program
     private const string SelectedLowScoreSheetMessage =
         "You selected a sheet with low probability for being a valid class/student sheet. "
         + "Increase verbosity to see the probabilities.";
+
+    /* Messages that are used in ColumnInfo.Column. */
+    public const string RequiredColumnNameNotFoundMessage =
+        "There must be a column whose ColumnName is '{0}' in '{1}'.";
+
+    #endregion
 
     private static bool _lastPrintedNewLine = true;
     private static int _verbose = 0;

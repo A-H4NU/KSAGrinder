@@ -105,9 +105,12 @@ public readonly struct Column
             {
                 if (ClassSheetTitles.FindIndex(c => c.ColumnName == requiredColumnName) == -1)
                 {
-                    throw new Exception(
-                        $"There must be a column whose ColumnName is \"{requiredColumnName}\"."
+                    string message = String.Format(
+                        Program.RequiredColumnNameNotFoundMessage,
+                        requiredColumnName,
+                        path
                     );
+                    throw new Exception(message);
                 }
             }
         }
