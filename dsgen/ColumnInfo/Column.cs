@@ -78,6 +78,8 @@ public readonly struct Column
 
     public static ReadOnlyCollection<Column>? ClassSheetTitles { get; private set; }
 
+    public static ReadOnlyCollection<CultureInfo>? SupportedCultureInfos { get; private set; }
+
     public static ReadOnlyCollection<string> RequiredColumnNames = new string[]
     {
         "Code",
@@ -103,7 +105,14 @@ public readonly struct Column
             Debug.Assert(!String.IsNullOrEmpty(directory));
             path = Path.Combine(directory, Program.ColumnInfoFilePath);
             var result = await DataContractSerializerUtils.DeserializeFromFileAsync<Column[]>(path);
+
+            /* Now, reading and deserializing were successful.
+             * Any failures after this point is just simply an error,
+             * throwing an exception that is passed to the caller of this function. */
+
             ClassSheetTitles = new ReadOnlyCollection<Column>(result);
+
+            /* Check if required columns exist. */
             foreach (string requiredColumnName in RequiredColumnNames)
             {
                 if (ClassSheetTitles.FindIndex(c => c.ColumnName == requiredColumnName) == -1)
@@ -116,6 +125,10 @@ public readonly struct Column
                     throw new Exception(message);
                 }
             }
+
+            SupportedCultureInfos = new ReadOnlyCollectionBuilder<CultureInfo>(
+                ClassSheetTitles.Select(column => column.HeaderTitles.Keys).IntersectAll()
+            ).ToReadOnlyCollection();
         }
         catch (Exception ex)
             when (ex is FileNotFoundException
@@ -124,8 +137,8 @@ public readonly struct Column
                 || ex is System.Xml.XmlException
             )
         {
-            // The file does not exist or the content of the file is invalid.
-            // Now, we need to serialize and write to the file.
+            /* Expected exceptions when failed to read column info from file for any reason.
+             * (Over)write the file with defaults. */
             Debug.Assert(path is not null);
             ClassSheetTitles = DefaultClassSheetColumns.DefaultColumns;
             await DataContractSerializerUtils.SerializeToFileAsync(
