@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+namespace dsgen.Extensions;
 
 public static class ReadOnlyCollectionExtension
 {

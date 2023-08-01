@@ -1,4 +1,4 @@
-namespace dsgen;
+namespace dsgen.Extensions;
 
 public static class LinqExtension
 {

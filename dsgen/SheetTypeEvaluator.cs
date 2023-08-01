@@ -6,26 +6,12 @@ using System.Collections;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Diagnostics;
+using dsgen.Extensions;
 
 namespace dsgen;
 
 public static partial class SheetTypeEvaluator
 {
-    [GeneratedRegex(
-        pattern: @"\A[a-z]{2,}\d{3,}\z",
-        options: RegexOptions.IgnoreCase | RegexOptions.Singleline
-    )]
-    private static partial Regex LectureCodeRegex();
-
-    [GeneratedRegex(
-        pattern: @"\A([월|화|수|목|금]\d{1,2})(?:[\||,|.| |;|/]([월|화|수|목|금]\d{1,2}))*\z",
-        options: RegexOptions.Singleline
-    )]
-    private static partial Regex TimeRegex();
-
-    [GeneratedRegex(pattern: @"\A\d{2}-\d{3}\z", options: RegexOptions.Singleline)]
-    private static partial Regex StudentIdRegex();
-
     public static StringDistanceCalculator StringDistanceCalculator { get; set; } =
         Levenshtein.Instance;
 
@@ -49,12 +35,12 @@ public static partial class SheetTypeEvaluator
         // Similar for timeMatches.
         int[] codeMatches = CountForEachColumn(
             sheet,
-            obj => DoesMatchRegex(LectureCodeRegex(), obj),
+            obj => DoesMatchRegex(Regexes.LectureCode, obj),
             out BitArray[] doesMatchCode
         );
         int[] timeMatches = CountForEachColumn(
             sheet,
-            obj => DoesMatchRegex(TimeRegex(), obj),
+            obj => DoesMatchRegex(Regexes.Time[CultureInfo.GetCultureInfo("ko-KR")], obj),
             out BitArray[] doesMatchTime
         );
         var reference = (
@@ -125,7 +111,7 @@ public static partial class SheetTypeEvaluator
             return 0f;
         int[] idMatches = CountForEachColumn(
             sheet,
-            obj => DoesMatchRegex(StudentIdRegex(), obj),
+            obj => DoesMatchRegex(Regexes.StudentId, obj),
             out _
         );
         return (float)GetMax(idMatches, out _) / sheet.RowCount;

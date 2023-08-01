@@ -1,5 +1,6 @@
 using CommunityToolkit.Diagnostics;
 using dsgen.Exceptions;
+using dsgen.Extensions;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
