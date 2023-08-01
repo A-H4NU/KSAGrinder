@@ -30,19 +30,21 @@ internal static partial class Regexes
     /// </p>
     /// </summary>
     public const string TimeRegexFormat =
-        @"\A((?<day>{0}|{1}|{2}|{3}|{4})(?<hr>\d{{1,2}}))"
-        + @"([\||,|.| |;|/]((?<day>{0}|{1}|{2}|{3}|{4})(?<hr>\d{{1,2}})))*\z";
+        @"((?<day>{0}|{1}|{2}|{3}|{4})(?<hr>\d{{1,2}}))"
+        + @"([\||,|.| |;|/|\ ]+((?<day>{0}|{1}|{2}|{3}|{4})(?<hr>\d{{1,2}})))*";
 
     [AssociatedCulture("ko-KR")]
     [GeneratedRegex(
-        pattern: @"\A((?<day>월|화|수|목|금)(?<hr>\d{1,2}))([\||,|.| |;|/]((?<day>월|화|수|목|금)(?<hr>\d{1,2})))*\z",
+        pattern: @"((?<day>월|화|수|목|금)(?<hr>\d{1,2}))"
+            + @"([\||,|.| |;|/|\ ]+((?<day>월|화|수|목|금)(?<hr>\d{1,2})))*",
         options: RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture
     )]
     private static partial Regex TimeRegex_koKR();
 
     [AssociatedCulture("en")]
     [GeneratedRegex(
-        pattern: @"\A((?<day>Mon|Tue|Wed|Thu|Fri)(?<hr>\d{1,2}))([\||,|.| |;|/]((?<day>Mon|Tue|Wed|Thu|Fri)(?<hr>\d{1,2})))*\z",
+        pattern: @"((?<day>Mon|Tue|Wed|Thu|Fri)(?<hr>\d{1,2}))"
+            + @"([\||,|.| |;|/|\ ]+((?<day>Mon|Tue|Wed|Thu|Fri)(?<hr>\d{1,2})))*",
         options: RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture
     )]
     private static partial Regex TimeRegex_en();
