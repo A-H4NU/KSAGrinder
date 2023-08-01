@@ -27,6 +27,26 @@ public static partial class SheetTypeEvaluator
         StringDistanceCalculator? calculator = null
     )
     {
+        Debug.Assert(Column.SupportedCultureInfos is not null);
+        var scores =
+            from culture in Column.SupportedCultureInfos
+            select ClassSheetScoreWithCulture(sheet, culture, calculator);
+        return Enumerable.Max(scores);
+    }
+
+    /// <summary>
+    /// Evaluates the probability for the sheet can be used to generate class
+    /// and lecture data, assuming the class sheet is endowed by the specific culture.
+    /// </summary>
+    /// <param name="sheet">The sheet to evaluate.</param>
+    /// <param name="calculator">The strategy used to calculate the similarity between strings.</param>
+    /// <returns>Probability. Ranges from 0 to 1.</returns>
+    private static float ClassSheetScoreWithCulture(
+        ExcelSheet sheet,
+        CultureInfo culture,
+        StringDistanceCalculator? calculator = null
+    )
+    {
         Debug.Assert(Column.ClassSheetTitles is not null);
         if (sheet.Hidden || sheet.ColumnCount < 9)
             return 0f;
@@ -40,12 +60,12 @@ public static partial class SheetTypeEvaluator
         );
         int[] timeMatches = CountForEachColumn(
             sheet,
-            obj => DoesMatchRegex(Regexes.Time[CultureInfo.GetCultureInfo("ko-KR")], obj),
+            obj => DoesMatchRegex(Regexes.Time[culture], obj),
             out BitArray[] doesMatchTime
         );
         var reference = (
             from tuple in Column.ClassSheetTitles
-            select tuple.HeaderTitles[CultureInfo.GetCultureInfo("ko-KR")]
+            select tuple.HeaderTitles[culture]
         ).ToArray();
         if (
             !sheet.TryFindSheetHeaderRow(
@@ -61,12 +81,8 @@ public static partial class SheetTypeEvaluator
         float timeScore = (float)GetMax(timeMatches, out int timeHeaderIdx) / sheet.RowCount;
         if (codeScore == 0f || timeScore == 0f)
             return 0f;
-        int codeIdxInArray = Column.ClassSheetTitles.FindIndex(
-            tuple => tuple.ColumnName == "Code"
-        );
-        int timeIdxInArray = Column.ClassSheetTitles.FindIndex(
-            tuple => tuple.ColumnName == "Time"
-        );
+        int codeIdxInArray = Column.ClassSheetTitles.FindIndex(tuple => tuple.ColumnName == "Code");
+        int timeIdxInArray = Column.ClassSheetTitles.FindIndex(tuple => tuple.ColumnName == "Time");
 
         if (
             codeIdxInArray == -1
