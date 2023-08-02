@@ -21,7 +21,9 @@ public record Options
         'v',
         "verbose",
         Default = 0,
-        HelpText = "Be verbose with the specified level. " + "Must be a nonnegative integer."
+        HelpText = "Be verbose with the specified level. "
+            + "Must be a nonnegative integer. "
+            + $"(Maximum verbosity is reached at {Program.VERBOSE_MAX_AS_STRING}.)"
     )]
     public int Verbose { get; init; }
 

@@ -7,19 +7,79 @@ using CommunityToolkit.Diagnostics;
 using CommandLine.Text;
 using System.Diagnostics;
 using dsgen.ColumnInfo;
+using System.Data;
 
 namespace dsgen;
 
 internal class Program
 {
+    #region Exit Codes
+
     private const int EXIT_SUCCESS = 0;
     private const int EXIT_ERROR = 1;
+
+    #endregion
+
+    #region Verbosity Levels
+
+    /// <summary>
+    /// Verbose at minimum. Only writes warnings and errors.
+    /// </summary>
+    public const int VERBOSE_MINIMAL = 0;
+
+    /// <summary>
+    /// Writes what the program is currently doing, or have done.
+    /// </summary>
+    public const int VERBOSE_PROGRESS = 1;
+
+    /// <summary>
+    /// Writes detailed information that is referenced by the program to decide behaviors.
+    /// </summary>
+    public const int VERBOSE_DETAILS = 2;
+
+    /// <summary>
+    /// Writes the stacktrace when writing exceptions. (Only enabled the debug build.)
+    /// See <see cref="WriteException(Exception)"/>.
+    /// </summary>
+    public const int VERBOSE_STACKTRACE = 3;
+
+    // csharpier-ignore-start
+    /// <summary>
+    /// Maximum verbosity.
+    /// Having verbosity higher than <see cref="VERBOSE_MAX"/> will not be different
+    /// from using <see cref="VERBOSE_MAX"/>.
+    /// </summary>
+    public const int VERBOSE_MAX =
+#if DEBUG
+        VERBOSE_STACKTRACE;
+#else
+        VERBOSE_DETAILS;
+#endif
+
+    /// <summary>
+    /// Simply <c>Program.VERBOSE_MAX.ToString() but constant</c>.
+    /// </summary>
+    public const string VERBOSE_MAX_AS_STRING =
+#if DEBUG
+        "3";
+#else
+        "2";
+#endif
+    // csharpier-ignore-end
+
+    #endregion
 
     internal const string ColumnInfoFilePath = "columns.xml";
 
     #region Messages
 
     /* Messages that are used in Program. */
+#if !DEBUG
+    private const string FailedToInitializeMessage = "Failed to initialize.";
+#endif
+    private const string ParseFailedMessage = "Failed to parse the commandline arguments.";
+    private const string VerbosityNegativeMessage = "Verbosity cannot be a negative number.";
+    private const string NoFilePathMessage = "File path is not specified.";
     private const string NoProperClassSheetMessage =
         "No sheet proper for being a class sheet was found. "
         + "Verify if the file is valid, or specify the class sheets via '--class-sheets'.";
@@ -49,6 +109,8 @@ internal class Program
 
     static Program()
     {
+        Debug.Assert(String.Equals(VERBOSE_MAX.ToString(), VERBOSE_MAX_AS_STRING));
+
         try
         {
             ConsoleColor color = Console.ForegroundColor;
@@ -82,7 +144,7 @@ internal class Program
 #else
         catch (Exception)
         {
-            WriteError("Failed to initialize.");
+            WriteError(FailedToInitializeMessage);
             return EXIT_ERROR;
         }
 #endif
@@ -94,12 +156,12 @@ internal class Program
 
     private static int RunAndGetExitCode(Options options, string[] args)
     {
-        if (String.IsNullOrEmpty(options.FilePath))
+        if (String.IsNullOrWhiteSpace(options.FilePath))
         {
-            WriteError("File path is not specified.");
+            WriteError(NoFilePathMessage);
             return EXIT_ERROR;
         }
-        if (_verbose >= 1)
+        if (_verbose >= VERBOSE_DETAILS)
         {
             Console.WriteLine("Arguments:");
             int pad = ToStringLength(args.Length - 1);
@@ -124,14 +186,14 @@ internal class Program
                 WriteError(SheetsOverlappingMessage);
                 return EXIT_ERROR;
             }
-            WriteIfVerbose(1, "Loading file...");
+            WriteIfVerbose(VERBOSE_PROGRESS, "Loading file...");
             ExcelBook book = ExcelBook.FromFile(options.FilePath);
             string[] sheetNames = book.Keys.ToArray();
             Array.Sort(sheetNames);
             var scores = new (float ClassSheetScore, float StudentSheetScore)[book.Count];
             int pad = ToStringLength(sheetNames.Length - 1);
             string format = $"    [{{0:D{pad}}}] ";
-            WriteLineIfVerbose(1, " Done ✓");
+            WriteLineIfVerbose(VERBOSE_PROGRESS, " Done ✓");
             if (
                 options.ClassSheets.Any(i => i >= book.Count)
                 || options.ClassSheets.Any(i => i >= book.Count)
@@ -140,27 +202,27 @@ internal class Program
                 WriteError(IndicesOutOfRangeMessage);
                 return EXIT_ERROR;
             }
-            WriteLineIfVerbose(1, "Evaluating sheets...");
+            WriteLineIfVerbose(VERBOSE_PROGRESS, "Evaluating sheets...");
             ConsoleColor oldColor = Console.ForegroundColor;
             for (int i = 0; i < sheetNames.Length; i++)
             {
                 string name = sheetNames[i];
                 ExcelSheet sheet = book[name];
-                WriteIfVerbose(1, format, i, name);
+                WriteIfVerbose(VERBOSE_PROGRESS, format, i, name);
                 if (sheet.Hidden)
                     ChangeConsoleForeground(ConsoleColor.DarkGray);
-                WriteIfVerbose(1, "\"{0}\"", name);
+                WriteIfVerbose(VERBOSE_PROGRESS, "\"{0}\"", name);
                 if (sheet.Hidden)
                     ChangeConsoleForeground(oldColor);
-                WriteIfVerbose(1, "... ");
+                WriteIfVerbose(VERBOSE_PROGRESS, "... ");
                 scores[i] = (
                     SheetTypeEvaluator.ClassSheetScore(sheet),
                     SheetTypeEvaluator.StudentSheetScore(sheet)
                 );
-                WriteLineIfVerbose(1, " ✓");
+                WriteLineIfVerbose(VERBOSE_PROGRESS, " ✓");
             }
-            WriteLineIfVerbose(1, "Done ✓");
-            WriteScoreTableIfVerbose(2, sheetNames, scores);
+            WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
+            WriteScoreTableIfVerbose(VERBOSE_DETAILS, sheetNames, scores);
 
             /* Select the sheets from which we extract data. */
             ExcelSheet[] classSheets = (
@@ -269,13 +331,13 @@ internal class Program
             }
         }
 
-        int exitCode = result.Errors.Any(IsAbnormalError) ? 1 : 0;
+        int exitCode = result.Errors.Any(IsAbnormalError) ? EXIT_ERROR : EXIT_SUCCESS;
         var testbuilder = new HelpText().SentenceBuilder;
-        if (exitCode != 0)
+        if (exitCode != EXIT_SUCCESS)
         {
             Error[] errorsToPrint = result.Errors.Where(IsAbnormalError).ToArray();
             StringBuilder sb = new();
-            sb.Append("Failed to parse the commandline arguments.");
+            sb.Append(ParseFailedMessage);
             for (int i = 0; i < errorsToPrint.Length; i++)
                 sb.AppendLine().Append(' ', 4).Append(testbuilder.FormatError(errorsToPrint[i]));
             WriteError(sb.ToString());
@@ -380,11 +442,13 @@ internal class Program
     /// <param name="e">Error to print.</param>
     private static void WriteException(Exception e)
     {
-        if (_verbose >= 3)
+#if DEBUG
+        if (_verbose >= VERBOSE_STACKTRACE)
         {
             WriteError("{1}{0}StackTrace:{0}{2}", Environment.NewLine, e.Message, e.StackTrace);
         }
         else
+#endif
         {
             WriteError(e.Message);
         }
