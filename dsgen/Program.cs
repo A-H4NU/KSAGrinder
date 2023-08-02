@@ -57,7 +57,7 @@ internal class Program
 #endif
 
     /// <summary>
-    /// Simply <c>Program.VERBOSE_MAX.ToString() but constant</c>.
+    /// Simply <c>Program.VERBOSE_MAX.ToString()</c> but constant.
     /// </summary>
     public const string VERBOSE_MAX_AS_STRING =
 #if DEBUG
