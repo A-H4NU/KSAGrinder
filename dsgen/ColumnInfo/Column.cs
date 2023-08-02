@@ -17,7 +17,7 @@ public readonly partial struct Column
 {
     [DataMember]
     public bool IsKey { get; init; }
-    
+
     [IgnoreDataMember]
     public ReadOnlyDictionary<CultureInfo, string> HeaderTitles { get; init; }
 
@@ -132,10 +132,6 @@ public readonly partial struct Column
                     throw new Exception(message);
                 }
             }
-
-            SupportedCultureInfos = new ReadOnlyCollectionBuilder<CultureInfo>(
-                ClassSheetTitles.Select(column => column.HeaderTitles.Keys).IntersectAll()
-            ).ToReadOnlyCollection();
         }
         catch (Exception ex)
             when (ex is FileNotFoundException
@@ -153,6 +149,10 @@ public readonly partial struct Column
                 path
             );
         }
+
+        SupportedCultureInfos = new ReadOnlyCollectionBuilder<CultureInfo>(
+            ClassSheetTitles.Select(column => column.HeaderTitles.Keys).IntersectAll()
+        ).ToReadOnlyCollection();
     }
 
     private static void ThrowIfInvalidType(string str, [NotNull] out Type? type)
