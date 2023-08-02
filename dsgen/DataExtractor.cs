@@ -47,18 +47,20 @@ public static class DataExtractor
 
     public static bool TryExtractAsClassSheet(
         ExcelSheet sheet,
-        [NotNullWhen(true)] out DataTable? result
+        [NotNullWhen(true)] out DataTable? result,
+        [NotNullWhen(true)] out CultureInfo? culture
     )
     {
         Debug.Assert(Column.SupportedCultureInfos is not null);
         result = null;
+        culture = null;
         int minSkip = Int32.MaxValue;
-        foreach (CultureInfo culture in Column.SupportedCultureInfos)
+        foreach (CultureInfo c in Column.SupportedCultureInfos)
         {
             if (
                 !TryExtractAsClassSheetWithCultureInfo(
                     sheet,
-                    culture,
+                    c,
                     out DataTable? res,
                     out int skipped
                 )
@@ -69,6 +71,7 @@ public static class DataExtractor
             {
                 minSkip = skipped;
                 result = res;
+                culture = c;
             }
         }
         return result is not null;
