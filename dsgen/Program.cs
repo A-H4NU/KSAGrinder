@@ -207,27 +207,28 @@ internal class Program
                 WriteError(IndicesOutOfRangeMessage);
                 return EXIT_ERROR;
             }
-            WriteLineIfVerbose(VERBOSE_PROGRESS, "Evaluating sheets...");
+            WriteIfVerbose(VERBOSE_PROGRESS, "Evaluating sheets... ");
+            WriteLineIfVerbose(VERBOSE_DETAILS, "");
             ConsoleColor oldColor = Console.ForegroundColor;
             for (int i = 0; i < sheetNames.Length; i++)
             {
                 string name = sheetNames[i];
                 ExcelSheet sheet = book[name];
-                WriteIfVerbose(VERBOSE_PROGRESS, format, i, name);
+                WriteIfVerbose(VERBOSE_DETAILS, format, i, name);
                 if (sheet.Hidden)
                     ChangeConsoleForeground(ConsoleColor.DarkGray);
-                WriteIfVerbose(VERBOSE_PROGRESS, "\"{0}\"", name);
+                WriteIfVerbose(VERBOSE_DETAILS, "\"{0}\"", name);
                 if (sheet.Hidden)
                     ChangeConsoleForeground(oldColor);
-                WriteIfVerbose(VERBOSE_PROGRESS, "... ");
+                WriteIfVerbose(VERBOSE_DETAILS, "... ");
                 scores[i] = (
                     SheetTypeEvaluator.ClassSheetScore(sheet),
                     SheetTypeEvaluator.StudentSheetScore(sheet)
                 );
-                WriteLineIfVerbose(VERBOSE_PROGRESS, " ✓");
+                WriteLineIfVerbose(VERBOSE_DETAILS, " ✓");
             }
             WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
-            WriteScoreTableIfVerbose(VERBOSE_DETAILS, sheetNames, scores);
+            WriteScoreTableIfVerbose(VERBOSE_DETAILS, book, sheetNames, scores);
 
             /* Select the sheets from which we extract data. */
             ExcelSheet[] classSheets = (
@@ -501,6 +502,7 @@ internal class Program
     /// </summary>
     private static void WriteScoreTableIfVerbose(
         int verbosityThreshold,
+        ExcelBook book,
         string[] sheetNames,
         (float ClassSheetScore, float StudentSheetScore)[] scores
     )
@@ -524,7 +526,7 @@ internal class Program
             $"│ {{0,{indexLength}}} │ {{1,{classSheetLength}}} │ {{2,{studentSheetLength}}} │ {{3}}";
         // `classSheetLength - 2` is for the space of " %"
         string tableFormat =
-            $"│ {{0,{indexLength}:D{pad}}} │ {{1,{classSheetLength - 2}:F{precision}}} % │ {{2,{studentSheetLength - 2}:F{precision}}} % │ {{3}}";
+            $"│ {{0,{indexLength}:D{pad}}} │ {{1,{classSheetLength - 2}:F{precision}}} % │ {{2,{studentSheetLength - 2}:F{precision}}} % │ ";
         Console.WriteLine();
         Console.WriteLine("Evaluation Result:");
         Console.WriteLine(
@@ -545,13 +547,18 @@ internal class Program
         for (int i = 0; i < sheetNames.Length; i++)
         {
             var tuple = scores[i];
-            Console.WriteLine(
+            bool hidden = book[sheetNames[i]].Hidden;
+            Console.Write(
                 tableFormat,
                 i,
                 tuple.ClassSheetScore * 100,
-                tuple.StudentSheetScore * 100,
-                sheetNames[i]
+                tuple.StudentSheetScore * 100
             );
+            ConsoleColor oldColor = Console.ForegroundColor;
+            if (hidden)
+                ChangeConsoleForeground(ConsoleColor.DarkGray);
+            Console.WriteLine(sheetNames[i]);
+            ChangeConsoleForeground(oldColor);
         }
         Console.WriteLine(
             GetTableLowerBorder(
