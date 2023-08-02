@@ -22,6 +22,8 @@ public class ExcelSheet
 
     public bool Hidden { get; init; } = false;
 
+    public required string Name { get; init; }
+
     private ExcelSheet(int rowCount, int columnCount)
     {
         Guard.IsGreaterThanOrEqualTo(rowCount, 0);
@@ -68,6 +70,7 @@ public class ExcelSheet
         }
         return new(rowCount, columnCount, array)
         {
+            Name = reader.Name,
             Hidden = reader.VisibleState != "visible"
         };
     }
