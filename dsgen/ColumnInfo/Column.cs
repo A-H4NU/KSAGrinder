@@ -98,6 +98,7 @@ public readonly partial struct Column
         "Time",
         "Enrollment",
         "Credit",
+        "Hours",
         "Note"
     }.AsReadOnly();
 

@@ -164,6 +164,20 @@ public readonly partial struct Column
             IsLocalizable = false,
         };
 
+        public static readonly Column Hours = new Column()
+        {
+            IsKey = false,
+            HeaderTitles = new Dictionary<CultureInfo, string>
+            {
+                { Culture_koKR, "시수" },
+                { Culture_en, "Hours" },
+            }.AsReadOnly(),
+            ColumnName = "Hours",
+            Types = new Type?[] { typeof(Double) }.AsReadOnly(),
+            DataTableType = typeof(Int32),
+            IsLocalizable = false,
+        };
+
         public static readonly Column Note = new Column()
         {
             IsKey = false,
