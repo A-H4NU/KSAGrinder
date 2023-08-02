@@ -81,26 +81,27 @@ public readonly partial struct Column
 
     #endregion
 
-    private static Assembly s_mscorlib = typeof(Int32).Assembly;
+    private static readonly Assembly s_mscorlib = typeof(Int32).Assembly;
 
     public static ReadOnlyCollection<Column>? ClassSheetTitles { get; private set; }
 
     public static ReadOnlyCollection<CultureInfo>? SupportedCultureInfos { get; private set; }
 
-    public static ReadOnlyCollection<string> RequiredColumnNames = new string[]
-    {
-        "Code",
-        "Department",
-        "Name",
-        "Grade",
-        "Class",
-        "Teacher",
-        "Time",
-        "Enrollment",
-        "Credit",
-        "Hours",
-        "Note"
-    }.AsReadOnly();
+    public static ReadOnlyCollection<string> RequiredColumnNames { get; } =
+        new string[]
+        {
+            "Code",
+            "Department",
+            "Name",
+            "Grade",
+            "Class",
+            "Teacher",
+            "Time",
+            "Enrollment",
+            "Credit",
+            "Hours",
+            "Note"
+        }.AsReadOnly();
 
     public static async Task InitializeAsync()
     {
