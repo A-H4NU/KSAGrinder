@@ -20,9 +20,10 @@ public record Options
     [Option(
         'v',
         "verbose",
-        Default = 0,
+        Default = 1,
         HelpText = "Be verbose with the specified level. "
             + "Must be a nonnegative integer. "
+            + "If verbosity is set to zero, then it prints nothing other than errors. "
             + $"(Maximum verbosity is reached at {Program.VERBOSE_MAX_AS_STRING}.)"
     )]
     public int Verbose { get; init; }

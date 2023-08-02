@@ -25,23 +25,23 @@ internal class Program
     /// <summary>
     /// Verbose at minimum. Only writes warnings and errors.
     /// </summary>
-    public const int VERBOSE_MINIMAL = 0;
+    public const int VERBOSE_MINIMAL = 1;
 
     /// <summary>
     /// Writes what the program is currently doing, or have done.
     /// </summary>
-    public const int VERBOSE_PROGRESS = 1;
+    public const int VERBOSE_PROGRESS = 2;
 
     /// <summary>
     /// Writes detailed information that is referenced by the program to decide behaviors.
     /// </summary>
-    public const int VERBOSE_DETAILS = 2;
+    public const int VERBOSE_DETAILS = 3;
 
     /// <summary>
     /// Writes the stacktrace when writing exceptions. (Only enabled the debug build.)
     /// See <see cref="WriteException(Exception)"/>.
     /// </summary>
-    public const int VERBOSE_STACKTRACE = 3;
+    public const int VERBOSE_STACKTRACE = 4;
 
     // csharpier-ignore-start
     /// <summary>
@@ -61,9 +61,9 @@ internal class Program
     /// </summary>
     public const string VERBOSE_MAX_AS_STRING =
 #if DEBUG
-        "3";
+        "4";
 #else
-        "2";
+        "3";
 #endif
     // csharpier-ignore-end
 
@@ -103,7 +103,7 @@ internal class Program
     #endregion
 
     private static bool _lastPrintedNewLine = true;
-    private static int _verbose = 0;
+    private static int _verbose = 1;
 
     private static bool _canChangeConsoleColor;
 
@@ -159,6 +159,11 @@ internal class Program
         if (String.IsNullOrWhiteSpace(options.FilePath))
         {
             WriteError(NoFilePathMessage);
+            return EXIT_ERROR;
+        }
+        if (_verbose < 0)
+        {
+            WriteError(VerbosityNegativeMessage);
             return EXIT_ERROR;
         }
         if (_verbose >= VERBOSE_DETAILS)
@@ -359,6 +364,8 @@ internal class Program
 
     private static void WriteSheetNames(string path)
     {
+        if (_verbose <= 0)
+            return;
         FileStream? fs = null;
         IExcelDataReader? reader = null;
         try
@@ -405,6 +412,8 @@ internal class Program
         params object?[]? arg
     )
     {
+        if (_verbose <= 0)
+            return;
         ConsoleColor oldColor = Console.ForegroundColor;
         if (!_lastPrintedNewLine)
             Console.Write(Environment.NewLine);
