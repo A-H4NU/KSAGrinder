@@ -15,6 +15,9 @@ namespace dsgen.ColumnInfo;
 [DataContract]
 public readonly partial struct Column
 {
+    [DataMember]
+    public bool IsKey { get; init; }
+    
     [IgnoreDataMember]
     public ReadOnlyDictionary<CultureInfo, string> HeaderTitles { get; init; }
 
@@ -26,6 +29,9 @@ public readonly partial struct Column
 
     [IgnoreDataMember]
     public Type DataTableType { get; init; }
+
+    [DataMember]
+    public bool IsLocalizable { get; init; }
 
     #region Private properties for serialization. DO NOT ACCESS THESE IN ANY WAY.
 

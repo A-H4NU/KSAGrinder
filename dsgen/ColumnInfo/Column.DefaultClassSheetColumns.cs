@@ -40,6 +40,7 @@ public readonly partial struct Column
 
         public static readonly Column Code = new Column()
         {
+            IsKey = true,
             HeaderTitles = new Dictionary<CultureInfo, string>
             {
                 { Culture_koKR, "교과목코드" },
@@ -47,11 +48,13 @@ public readonly partial struct Column
             }.AsReadOnly(),
             ColumnName = "Code",
             Types = new Type?[] { typeof(String) }.AsReadOnly(),
-            DataTableType = typeof(String)
+            DataTableType = typeof(String),
+            IsLocalizable = false,
         };
 
         public static readonly Column Department = new Column()
         {
+            IsKey = false,
             HeaderTitles = new Dictionary<CultureInfo, string>
             {
                 { Culture_koKR, "교과군" },
@@ -59,10 +62,13 @@ public readonly partial struct Column
             }.AsReadOnly(),
             ColumnName = "Department",
             Types = new Type?[] { typeof(String) }.AsReadOnly(),
-            DataTableType = typeof(String)
+            DataTableType = typeof(String),
+            IsLocalizable = false,
         };
+        
         public static readonly Column Name = new Column()
         {
+            IsKey = false,
             HeaderTitles = new Dictionary<CultureInfo, string>
             {
                 { Culture_koKR, "교과목명" },
@@ -70,10 +76,13 @@ public readonly partial struct Column
             }.AsReadOnly(),
             ColumnName = "Name",
             Types = new Type?[] { typeof(String) }.AsReadOnly(),
-            DataTableType = typeof(String)
+            DataTableType = typeof(String),
+            IsLocalizable = true,
         };
+
         public static readonly Column Grade = new Column()
         {
+            IsKey = true,
             HeaderTitles = new Dictionary<CultureInfo, string>
             {
                 { Culture_koKR, "학년" },
@@ -81,10 +90,13 @@ public readonly partial struct Column
             }.AsReadOnly(),
             ColumnName = "Grade",
             Types = new Type?[] { typeof(Double) }.AsReadOnly(),
-            DataTableType = typeof(Int32)
+            DataTableType = typeof(Int32),
+            IsLocalizable = false,
         };
+
         public static readonly Column Class = new Column()
         {
+            IsKey = true,
             HeaderTitles = new Dictionary<CultureInfo, string>
             {
                 { Culture_koKR, "분반" },
@@ -92,10 +104,13 @@ public readonly partial struct Column
             }.AsReadOnly(),
             ColumnName = "Class",
             Types = new Type?[] { typeof(Double) }.AsReadOnly(),
-            DataTableType = typeof(Int32)
+            DataTableType = typeof(Int32),
+            IsLocalizable = false,
         };
+
         public static readonly Column Teacher = new Column()
         {
+            IsKey = false,
             HeaderTitles = new Dictionary<CultureInfo, string>
             {
                 { Culture_koKR, "담당교원" },
@@ -103,10 +118,13 @@ public readonly partial struct Column
             }.AsReadOnly(),
             ColumnName = "Teacher",
             Types = new Type?[] { typeof(String) }.AsReadOnly(),
-            DataTableType = typeof(String)
+            DataTableType = typeof(String),
+            IsLocalizable = false,
         };
+
         public static readonly Column Time = new Column()
         {
+            IsKey = false,
             HeaderTitles = new Dictionary<CultureInfo, string>
             {
                 { Culture_koKR, "요일" },
@@ -114,10 +132,13 @@ public readonly partial struct Column
             }.AsReadOnly(),
             ColumnName = "Time",
             Types = new Type?[] { typeof(String) }.AsReadOnly(),
-            DataTableType = typeof((DayOfWeek day, int hour)[])
+            DataTableType = typeof((DayOfWeek day, int hour)[]),
+            IsLocalizable = false,
         };
+
         public static readonly Column Enrollment = new Column()
         {
+            IsKey = false,
             HeaderTitles = new Dictionary<CultureInfo, string>
             {
                 { Culture_koKR, "신청수" },
@@ -125,10 +146,13 @@ public readonly partial struct Column
             }.AsReadOnly(),
             ColumnName = "Enrollment",
             Types = new Type?[] { typeof(Double) }.AsReadOnly(),
-            DataTableType = typeof(Int32)
+            DataTableType = typeof(Int32),
+            IsLocalizable = false,
         };
+
         public static readonly Column Credit = new Column()
         {
+            IsKey = false,
             HeaderTitles = new Dictionary<CultureInfo, string>
             {
                 { Culture_koKR, "학점" },
@@ -136,10 +160,13 @@ public readonly partial struct Column
             }.AsReadOnly(),
             ColumnName = "Credit",
             Types = new Type?[] { typeof(Double) }.AsReadOnly(),
-            DataTableType = typeof(Int32)
+            DataTableType = typeof(Int32),
+            IsLocalizable = false,
         };
+
         public static readonly Column Note = new Column()
         {
+            IsKey = false,
             HeaderTitles = new Dictionary<CultureInfo, string>
             {
                 { Culture_koKR, "비고" },
@@ -147,7 +174,8 @@ public readonly partial struct Column
             }.AsReadOnly(),
             ColumnName = "Note",
             Types = new Type?[] { typeof(String), null }.AsReadOnly(),
-            DataTableType = typeof(String)
+            DataTableType = typeof(String),
+            IsLocalizable = false,
         };
     }
 }
