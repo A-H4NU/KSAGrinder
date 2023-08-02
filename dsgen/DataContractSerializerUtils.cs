@@ -6,7 +6,6 @@ namespace dsgen;
 
 public static class DataContractSerializerUtils
 {
-
     private static Encoding _encoding = Encoding.UTF8;
 
     /// <summary>
@@ -114,28 +113,31 @@ public static class DataContractSerializerUtils
     public static async Task SerializeToFileAsync<T>(
         T obj,
         string path,
-        bool append = false,Encoding? fileEncoding = null,
+        bool append = false,
+        Encoding? fileEncoding = null,
         CancellationToken cancellationToken = default
     )
     {
-        FileStreamOptions options = new FileStreamOptions()
-        {
-            Mode = append ? FileMode.Append : FileMode.Create,
-            Access = FileAccess.Write,
-            Share = FileShare.None
-        };
-        XmlWriterSettings xmlSettings = XmlSettings;
-        using MemoryStream ms = new();
-        DataContractSerializer serializer = new(typeof(T));
-        using (XmlWriter xw = XmlWriter.Create(ms, xmlSettings))
-            serializer.WriteObject(xw, obj);
-        if (append)
-        {
-            string xml = xmlSettings.Encoding.GetString(ms.GetBuffer());
-            await File.AppendAllTextAsync(path, xml, Encoding, cancellationToken);
-        }
-        else
-            await File.WriteAllBytesAsync(path, ms.GetBuffer(), cancellationToken);
+        await Task.Run(
+            () =>
+            {
+                fileEncoding ??= Encoding;
+                FileStreamOptions options = new FileStreamOptions()
+                {
+                    Mode = append ? FileMode.Append : FileMode.Create,
+                    Access = FileAccess.Write,
+                    Share = FileShare.None
+                };
+                XmlWriterSettings xmlSettings = XmlSettings;
+                xmlSettings.Encoding = fileEncoding;
+                DataContractSerializer serializer = new(typeof(T));
+
+                using FileStream fs = new(path, options);
+                using (XmlWriter xw = XmlWriter.Create(fs, xmlSettings))
+                    serializer.WriteObject(xw, obj);
+            },
+            cancellationToken
+        );
     }
 
     /// <summary>
@@ -166,7 +168,7 @@ public static class DataContractSerializerUtils
     /// <returns>The deserialized object.</returns>
     public static T DeserializeFromFile<T>(string path, Encoding? fileEncoding = null)
     {
-        fileEncoding ??= Encoding.UTF8;
+        fileEncoding ??= Encoding;
         return Deserialize<T>(File.ReadAllText(path, fileEncoding));
     }
 
@@ -189,7 +191,7 @@ public static class DataContractSerializerUtils
         CancellationToken cancellationToken = default
     )
     {
-        fileEncoding ??= Encoding.UTF8;
+        fileEncoding ??= Encoding;
         string xml = await File.ReadAllTextAsync(path, fileEncoding, cancellationToken);
         return Deserialize<T>(xml);
     }
