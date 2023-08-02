@@ -37,10 +37,8 @@ internal class Program
     /* Messages that are used in ColumnInfo.Column. */
     public const string RequiredColumnNameNotFoundMessage =
         "There must be a column whose ColumnName is '{0}' in '{1}'.";
-    public const string TypeNotFoundMessage =
-        "Could not find the type '{0}'.";
-    public const string TypeInvalidMessage =
-        "Type '{0}' is not serializable.";
+    public const string TypeNotFoundMessage = "Could not find the type '{0}'.";
+    public const string TypeInvalidMessage = "Type '{0}' is not serializable.";
 
     #endregion
 
@@ -120,6 +118,7 @@ internal class Program
                 WriteSheetNames(options.FilePath);
                 return EXIT_SUCCESS;
             }
+            /* It is not allowed for user-selected class sheets and student sheets to overlap. */
             if (Enumerable.Intersect(options.ClassSheets, options.StudentSheets).Any())
             {
                 WriteError(SheetsOverlappingMessage);
@@ -163,29 +162,39 @@ internal class Program
             WriteLineIfVerbose(1, "Done ✓");
             WriteScoreTableIfVerbose(2, sheetNames, scores);
 
-            Span<int> classSheets = options.ClassSheets.Any()
-                ? options.ClassSheets.ToArray()
-                : Enumerable
-                    .Range(0, sheetNames.Length)
-                    .Where(i => scores[i].ClassSheetScore > options.Threshold)
-                    .ToArray();
+            /* Select the sheets from which we extract data. */
+            ExcelSheet[] classSheets = (
+                options.ClassSheets.Any()
+                    ? options.ClassSheets
+                    : Enumerable
+                        .Range(0, sheetNames.Length)
+                        .Where(i => scores[i].ClassSheetScore > options.Threshold)
+            )
+                .Select(i => book[sheetNames[i]])
+                .ToArray();
+            ExcelSheet[] studentSheets = (
+                options.StudentSheets.Any()
+                    ? options.StudentSheets
+                    : Enumerable
+                        .Range(0, sheetNames.Length)
+                        .Where(i => scores[i].StudentSheetScore > options.Threshold)
+            )
+                .Select(i => book[sheetNames[i]])
+                .ToArray();
+
+            /* If no sheets are selected, exit with error. */
             if (classSheets.Length == 0)
             {
                 WriteError(NoProperClassSheetMessage);
                 return EXIT_ERROR;
             }
-            Span<int> studentSheets = options.StudentSheets.Any()
-                ? options.StudentSheets.ToArray()
-                : Enumerable
-                    .Range(0, sheetNames.Length)
-                    .Where(i => scores[i].StudentSheetScore > options.Threshold)
-                    .ToArray();
             if (studentSheets.Length == 0)
             {
                 WriteError(NoProperStudentSheetMessage);
                 return EXIT_ERROR;
             }
 
+            /* Warn the user if they selected a sheet with low score. */
             if (
                 options.ClassSheets.Any(i => scores[i].ClassSheetScore <= options.Threshold)
                 || options.StudentSheets.Any(i => scores[i].StudentSheetScore <= options.Threshold)
