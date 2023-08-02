@@ -304,22 +304,14 @@ internal class Program
         {
             if (attr1.IsOption && attr2.IsOption)
             {
-                if (attr1.Required && !attr2.Required)
-                    return -1;
-                else if (!attr1.Required && attr2.Required)
-                    return 1;
+                if (attr1.Required ^ attr2.Required)
+                    return attr1.Required ? -1 : 1;
                 else
                 {
-                    if (
-                        string.IsNullOrEmpty(attr1.ShortName)
-                        && !string.IsNullOrEmpty(attr2.ShortName)
-                    )
-                        return 1;
-                    else if (
-                        !string.IsNullOrEmpty(attr1.ShortName)
-                        && string.IsNullOrEmpty(attr2.ShortName)
-                    )
-                        return -1;
+                    bool mt1 = String.IsNullOrEmpty(attr1.ShortName);
+                    bool mt2 = String.IsNullOrEmpty(attr2.ShortName);
+                    if (mt1 ^ mt2)
+                        return mt1 ? 1 : -1;
                     return String.Compare(
                         attr1.ShortName,
                         attr2.ShortName,
