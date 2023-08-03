@@ -8,6 +8,7 @@ using CommandLine.Text;
 using System.Diagnostics;
 using dsgen.ColumnInfo;
 using System.Data;
+using System.Globalization;
 
 namespace dsgen;
 
@@ -82,10 +83,10 @@ internal class Program
     private const string NoFilePathMessage = "File path is not specified.";
     private const string NoProperClassSheetMessage =
         "No sheet proper for being a class sheet was found. "
-        + "Verify if the file is valid, or specify the class sheets via '--class-sheets'.";
+        + "Verify if the file is valid, or specify the class sheets via '--class-sheets' option.";
     private const string NoProperStudentSheetMessage =
         "No sheet proper for being a student sheet was found. "
-        + "Verify if the file is valid, or specify the class sheets via '--student-sheets'.";
+        + "Verify if the file is valid, or specify the class sheets via '--student-sheets' option.";
     private const string SheetsOverlappingMessage =
         "'--class-sheets' and '-student-sheets' may not contain a common index.";
     private const string IndicesOutOfRangeMessage =
@@ -93,6 +94,10 @@ internal class Program
     private const string SelectedLowScoreSheetMessage =
         "You selected a sheet with low probability for being a valid class/student sheet. "
         + "Increase verbosity to see the probabilities.";
+    private const string ExtractionFailedMessage = "Failed to extract data from '{0}'.";
+    private const string CultureOverlapMessage =
+        "Sheets '{0}' and '{1}' seem to be written with the same language. "
+        + "Try specifying the class sheets via '--class-sheeets' option.";
 
     /* Messages that are used in ColumnInfo.Column. */
     public const string RequiredColumnNameNotFoundMessage =
@@ -262,6 +267,26 @@ internal class Program
                 return EXIT_ERROR;
             }
 
+            WriteLineIfVerbose(
+                VERBOSE_DETAILS,
+                $"Total {classSheets.Length} class sheets are selected."
+            );
+            for (int i = 0; i < classSheets.Length; i++)
+            {
+                WriteLineIfVerbose(VERBOSE_DETAILS, $"    - {classSheets[i].Name}");
+            }
+            WriteLineIfVerbose(VERBOSE_DETAILS, "");
+
+            WriteLineIfVerbose(
+                VERBOSE_DETAILS,
+                $"Total {studentSheets.Length} student sheets are selected."
+            );
+            for (int i = 0; i < studentSheets.Length; i++)
+            {
+                WriteLineIfVerbose(VERBOSE_DETAILS, $"    - {studentSheets[i].Name}");
+            }
+            WriteLineIfVerbose(VERBOSE_DETAILS, "");
+
             /* Warn the user if they selected a sheet with low score. */
             if (
                 options.ClassSheets.Any(i => scores[i].ClassSheetScore <= options.Threshold)
@@ -270,6 +295,51 @@ internal class Program
             {
                 WriteWarning(SelectedLowScoreSheetMessage);
             }
+
+            WriteIfVerbose(VERBOSE_PROGRESS, "Extracting data from class sheets... ");
+            WriteLineIfVerbose(VERBOSE_DETAILS, "");
+
+            var classSheetResults = new (DataTable Table, CultureInfo Culture)?[classSheets.Length];
+            for (int i = 0; i < classSheets.Length; i++)
+            {
+                WriteIfVerbose(VERBOSE_DETAILS, "    {0}... ", classSheets[i].Name);
+
+                if (
+                    DataExtractor.TryExtractAsClassSheet(
+                        classSheets[i],
+                        out DataTable? table,
+                        out CultureInfo? culture
+                    )
+                )
+                {
+                    classSheetResults[i] = (table, culture);
+                }
+
+                /* Check if extraction was successful. */
+                if (
+                    classSheetResults[i] is null
+                    || classSheetResults[i]!.Value.Table.Rows.Count == 0
+                )
+                {
+                    WriteError(ExtractionFailedMessage, classSheets[i].Name);
+                    return EXIT_ERROR;
+                }
+
+                /* Check if `classSheetResults` has unique `CultureInfo`s. */
+                for (int j = 0; j < i; j++)
+                {
+                    CultureInfo culture1 = classSheetResults[i]!.Value.Culture;
+                    CultureInfo culture2 = classSheetResults[j]!.Value.Culture;
+                    if (culture1 == culture2)
+                    {
+                        WriteError(CultureOverlapMessage, classSheets[j].Name, classSheets[i].Name);
+                        return EXIT_ERROR;
+                    }
+                }
+                WriteLineIfVerbose(VERBOSE_DETAILS, "Done ✓");
+            }
+
+            WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
         }
         catch (Exception e)
         {
