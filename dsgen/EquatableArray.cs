@@ -1,18 +1,19 @@
+using System.Collections;
+
 namespace dsgen;
 
 /// <summary>
 /// Array wrapper that implements a proper GetHashCode() method.
 /// </summary>
-internal class EquatableArray : IEquatable<EquatableArray>
+internal class EquatableArray : IEquatable<EquatableArray>, IEnumerable
 {
-    private object[] _array;
+    private readonly object[] _array;
 
     public int Length => _array.Length;
 
     public object this[int index]
     {
         get => _array[index];
-        set => _array[index] = value;
     }
 
     public EquatableArray()
@@ -20,9 +21,14 @@ internal class EquatableArray : IEquatable<EquatableArray>
         _array = Array.Empty<object>();
     }
 
-    public EquatableArray(int length)
+    public EquatableArray(object[] array)
     {
-        _array = new object[length];
+        _array = new object[array.Length];
+        Span<object> span = _array;
+        for (int i = 0; i < array.Length; i++)
+        {
+            span[i] = array[i];
+        }
     }
 
     public bool Equals(EquatableArray? other)
@@ -31,7 +37,7 @@ internal class EquatableArray : IEquatable<EquatableArray>
             return false;
         for (int i = 0; i < this.Length; i++)
         {
-            if (this._array[i] != other._array[i])
+            if (!this._array[i].Equals(other._array[i]))
                 return false;
         }
         return true;
@@ -39,8 +45,6 @@ internal class EquatableArray : IEquatable<EquatableArray>
 
     public override bool Equals(object? obj)
     {
-        if (obj is null)
-            return false;
         if (ReferenceEquals(this, obj))
             return true;
         return obj is EquatableArray other && Equals(other);
@@ -53,4 +57,15 @@ internal class EquatableArray : IEquatable<EquatableArray>
             hash.Add(_array[i]);
         return hash.ToHashCode();
     }
+
+    public IEnumerator GetEnumerator()
+    {
+        return _array.GetEnumerator();
+    }
+
+    public static bool operator ==(EquatableArray a, EquatableArray b)
+        => a.Equals(b);
+
+    public static bool operator !=(EquatableArray a, EquatableArray b)
+        => !(a == b);
 }
