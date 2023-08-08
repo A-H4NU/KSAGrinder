@@ -11,7 +11,6 @@ public record Options
     [Option(
         'p',
         "path",
-        MetaValue = "XLPATH",
         Required = true,
         HelpText = "The excel file to process."
     )]
@@ -50,10 +49,18 @@ public record Options
     [Option(
         'o',
         "output",
-        MetaValue = "OUTPATH",
         HelpText = "Specify where the output file is placed."
     )]
     public string? Output { get; init; } = null;
+
+    [Option(
+        "primary-culture",
+        Default = "ko-KR",
+        HelpText = "Specify the culture(language) that is marked as primary "
+            + "so that the specified language is selected when there is a conflict among "
+            + "sheets of different cultures in a conflict-tolerant column."
+    )]
+    public string PrimaryCulture { get; init; } = "";
 
     [Option(
         "class-sheets",

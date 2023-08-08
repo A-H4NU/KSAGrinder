@@ -33,6 +33,9 @@ public readonly partial struct Column
     [DataMember]
     public bool IsLocalizable { get; init; }
 
+    [DataMember]
+    public bool ConflictTolerant { get; init; }
+
     #region Private properties for serialization. DO NOT ACCESS THESE IN ANY WAY.
 
     [DataMember(Name = nameof(HeaderTitles))]
@@ -103,6 +106,13 @@ public readonly partial struct Column
             "Note"
         }.AsReadOnly();
 
+    public static bool IsInitialized { get; private set; } = false;
+
+    private const string RequiredColumnNameNotFoundMessage =
+        "There must be a column whose ColumnName is '{0}' in '{1}'.";
+    private const string TypeNotFoundMessage = "Could not find the type '{0}'.";
+    private const string TypeInvalidMessage = "Type '{0}' is not serializable.";
+    private const string FlagInvalidMessage = "A key column cannot be localizable or conflict-tolerant.";
     public static async Task InitializeAsync()
     {
         string? path = null;
@@ -127,11 +137,20 @@ public readonly partial struct Column
                 if (ClassSheetTitles.FindIndex(c => c.ColumnName == requiredColumnName) == -1)
                 {
                     string message = String.Format(
-                        Program.RequiredColumnNameNotFoundMessage,
+                        RequiredColumnNameNotFoundMessage,
                         requiredColumnName,
                         path
                     );
                     throw new Exception(message);
+                }
+            }
+
+            /* Check the columns' flags (IsKey, IsLocalizable, and ConflictTolerant) are valid. */
+            foreach (Column column in ClassSheetTitles)
+            {
+                if (column.IsKey && (column.IsLocalizable || column.ConflictTolerant))
+                {
+                    throw new Exception(FlagInvalidMessage);
                 }
             }
         }
@@ -155,6 +174,8 @@ public readonly partial struct Column
         SupportedCultureInfos = new ReadOnlyCollectionBuilder<CultureInfo>(
             ClassSheetTitles.Select(column => column.HeaderTitles.Keys).IntersectAll()
         ).ToReadOnlyCollection();
+
+        IsInitialized = true;
     }
 
     private static void ThrowIfInvalidType(string str, [NotNull] out Type? type)
@@ -162,8 +183,8 @@ public readonly partial struct Column
         Guard.IsNotNull(str);
         type = Type.GetType(str);
         if (type is null)
-            throw new TypeException(String.Format(Program.TypeNotFoundMessage, str));
+            throw new TypeException(String.Format(TypeNotFoundMessage, str));
         if (!type.IsSerializable)
-            throw new TypeException(String.Format(Program.TypeInvalidMessage, str));
+            throw new TypeException(String.Format(TypeInvalidMessage, str));
     }
 }

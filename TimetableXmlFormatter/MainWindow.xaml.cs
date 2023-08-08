@@ -18,7 +18,7 @@ namespace TimetableXmlFormatter
     /// </summary>
     public partial class MainWindow : Window
     {
-        public const int ClassNameHeaderIndex = 0; // At which line are class names located?
+        public const int ClassNameHeaderIndex = 1; // At which line are class names located?
 
         private static readonly Dictionary<string, DayOfWeek> KoreanDayToEnum = new()
         {

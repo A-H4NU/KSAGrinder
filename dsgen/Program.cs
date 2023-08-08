@@ -98,12 +98,10 @@ internal class Program
     private const string CultureOverlapMessage =
         "Sheets '{0}' and '{1}' seem to be written with the same language. "
         + "Try specifying the class sheets via '--class-sheeets' option.";
-
-    /* Messages that are used in ColumnInfo.Column. */
-    public const string RequiredColumnNameNotFoundMessage =
-        "There must be a column whose ColumnName is '{0}' in '{1}'.";
-    public const string TypeNotFoundMessage = "Could not find the type '{0}'.";
-    public const string TypeInvalidMessage = "Type '{0}' is not serializable.";
+    private const string EmptyLocalizableMessage =
+        "Class {{ Code = {0}, Grade = {1}, Class No. = {2} }} has an empty field '{3}'.";
+    private const string ManyRowsLackingMessage =
+        "More than {0} rows lack one or more field(s) to be filled in.";
 
     #endregion
 
@@ -126,6 +124,38 @@ internal class Program
         {
             _canChangeConsoleColor = false;
         }
+    }
+
+    private static void Test()
+    {
+        object[] arr = new object[] { "string", 1, 1 };
+        EquatableArray ea1 = new(arr);
+        arr[1] = 2;
+        EquatableArray ea2 = new(arr);
+        arr[1] = 1;
+        EquatableArray ea3 = new(arr);
+        Console.WriteLine(ea1.GetHashCode());
+        Console.WriteLine(ea2.GetHashCode());
+        Console.WriteLine(ea3.GetHashCode());
+        Console.WriteLine(ea1.Equals(ea2));
+        Console.WriteLine(ea2.Equals(ea3));
+        Console.WriteLine(ea1.Equals(ea3));
+        for (int i = 0; i < 3; i++)
+            Console.WriteLine(
+                $"ea1[{i}] == ea3[{i}] = {ea1[i].Equals(ea3[i])} / {ea1[i]}, {ea3[i]}"
+            );
+        Dictionary<EquatableArray, int> dict = new();
+        dict[ea1] = 2;
+        Console.WriteLine(dict.ContainsKey(ea2));
+        Console.WriteLine(dict.ContainsKey(ea3));
+        ref int a = ref System.Runtime.InteropServices.CollectionsMarshal.GetValueRefOrAddDefault(
+            dict,
+            ea2,
+            out bool exists
+        );
+        Console.WriteLine(exists);
+        a = 3;
+        Console.WriteLine(dict[ea1]);
     }
 
     private static async Task<int> Main(string[] args)
@@ -338,8 +368,43 @@ internal class Program
                 }
                 WriteLineIfVerbose(VERBOSE_DETAILS, "Done ✓");
             }
-
             WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
+
+            WriteIfVerbose(VERBOSE_PROGRESS, "Building class table... ");
+            ClassTableBuilder classTableBuilder = new();
+            foreach (var tuple in classSheetResults)
+            {
+                classTableBuilder.Add(tuple!.Value.Table, tuple!.Value.Culture);
+            }
+            CultureInfo primaryCulture = CultureInfo.GetCultureInfo(options.PrimaryCulture);
+            DataTable classTable = classTableBuilder.Build(
+                primaryCulture,
+                true,
+                out TableBuildReport report
+            );
+            WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
+
+            const int WriteRowsThreshold = 5;
+            if (!report.IsClear)
+            {
+                int length = Math.Min(report.EmptyLocalizableColumns.Length, WriteRowsThreshold);
+                for (int i = 0; i < length; i++)
+                {
+                    DataRow row = report.Table.Rows[report.EmptyLocalizableColumns[i]];
+                    int nullIdx = Array.FindIndex(row.ItemArray, item => item is DBNull);
+                    WriteWarning(
+                        EmptyLocalizableMessage,
+                        row["Code"],
+                        row["Grade"],
+                        row["Class"],
+                        report.Table.Columns[nullIdx].ColumnName
+                    );
+                }
+                if (report.EmptyLocalizableColumns.Length > WriteRowsThreshold)
+                {
+                    WriteWarning(ManyRowsLackingMessage, WriteRowsThreshold);
+                }
+            }
         }
         catch (Exception e)
         {
@@ -512,17 +577,42 @@ internal class Program
     /// Print the exception via <see cref="WriteError(string, object?[]?)"/>.
     /// </summary>
     /// <param name="e">Error to print.</param>
-    private static void WriteException(Exception e)
+    private static void WriteException(Exception e, bool root = true)
     {
 #if DEBUG
         if (_verbose >= VERBOSE_STACKTRACE)
         {
-            WriteError("{1}{0}StackTrace:{0}{2}", Environment.NewLine, e.Message, e.StackTrace);
+            Exception? ex = e;
+            StringBuilder format = new();
+            int index = 1;
+            List<object?> arguments = new() { Environment.NewLine };
+            while (ex is not null)
+            {
+                if (!ReferenceEquals(e, ex))
+                {
+                    format.Append("[Inner] ");
+                }
+                format.Append($"{{{index++}}}{{0}}StackTrace:{{0}}{{{index++}}}{{0}}");
+                arguments.Add(ex.Message);
+                arguments.Add(ex.StackTrace);
+                ex = ex.InnerException;
+            }
+            format.Remove(format.Length - 3, 3);
+            WriteError(format.ToString(), arguments.ToArray());
         }
         else
 #endif
         {
             WriteError(e.Message);
+        }
+    }
+
+    private static void WriteRawException(Exception e)
+    {
+        Console.WriteLine("{1}{0}StackTrace:{0}{2}", Environment.NewLine, e.Message, e.StackTrace);
+        if (e.InnerException is not null)
+        {
+            WriteRawException(e.InnerException);
         }
     }
 
