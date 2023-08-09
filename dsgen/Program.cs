@@ -126,38 +126,6 @@ internal class Program
         }
     }
 
-    private static void Test()
-    {
-        object[] arr = new object[] { "string", 1, 1 };
-        EquatableArray ea1 = new(arr);
-        arr[1] = 2;
-        EquatableArray ea2 = new(arr);
-        arr[1] = 1;
-        EquatableArray ea3 = new(arr);
-        Console.WriteLine(ea1.GetHashCode());
-        Console.WriteLine(ea2.GetHashCode());
-        Console.WriteLine(ea3.GetHashCode());
-        Console.WriteLine(ea1.Equals(ea2));
-        Console.WriteLine(ea2.Equals(ea3));
-        Console.WriteLine(ea1.Equals(ea3));
-        for (int i = 0; i < 3; i++)
-            Console.WriteLine(
-                $"ea1[{i}] == ea3[{i}] = {ea1[i].Equals(ea3[i])} / {ea1[i]}, {ea3[i]}"
-            );
-        Dictionary<EquatableArray, int> dict = new();
-        dict[ea1] = 2;
-        Console.WriteLine(dict.ContainsKey(ea2));
-        Console.WriteLine(dict.ContainsKey(ea3));
-        ref int a = ref System.Runtime.InteropServices.CollectionsMarshal.GetValueRefOrAddDefault(
-            dict,
-            ea2,
-            out bool exists
-        );
-        Console.WriteLine(exists);
-        a = 3;
-        Console.WriteLine(dict[ea1]);
-    }
-
     private static async Task<int> Main(string[] args)
     {
         var columnInitializeTask = Column.InitializeAsync();
