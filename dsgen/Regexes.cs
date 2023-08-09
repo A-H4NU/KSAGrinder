@@ -57,9 +57,9 @@ internal static partial class Regexes
     /// Group 0:
     ///     Capture 0: Mon1,Wed2,Fri5 at 0
     /// Group day:
-    ///     Capture 0: "Mon1" at 0
-    ///     Capture 1: "Wed2" at 5
-    ///     Capture 2: "Fri5" at 10
+    ///     Capture 0: "Mon" at 0
+    ///     Capture 1: "Wed" at 5
+    ///     Capture 2: "Fri" at 10
     /// Group hr:
     ///     Capture 0: "1" at 3
     ///     Capture 1: "2" at 8
