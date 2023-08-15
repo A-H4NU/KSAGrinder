@@ -60,7 +60,7 @@ public sealed class ClassTableBuilder
         out TableBuildReport buildReport
     )
     {
-        Debug.Assert(Column.ClassSheetTitles is not null);
+        Debug.Assert(Column.IsInitialized);
 
         if (_list.Count == 0)
         {
@@ -146,10 +146,10 @@ public sealed class ClassTableBuilder
     public ClassTableBuilder Add(DataTable table, CultureInfo culture)
     {
         /* Check the input is valid. */
-        Debug.Assert(Column.ClassSheetTitles is not null);
+        Debug.Assert(Column.IsInitialized);
         if (_list.FindIndex(a => a.Culture == culture) >= 0)
             throw new DataTableBuilderException(OverlappingCultureMessage);
-        if (table.Columns.Count != Column.ClassSheetTitles.Count)
+        if (table.Columns.Count != Column.ClassSheetTitles!.Count)
             goto table_ill_formatted;
         for (int i = 0; i < table.Columns.Count; i++)
         {
@@ -176,10 +176,10 @@ public sealed class ClassTableBuilder
 
     private string GetCulturedColumnName(DataColumn column, CultureInfo culture)
     {
-        Debug.Assert(Column.ClassSheetTitles is not null);
+        Debug.Assert(Column.IsInitialized);
 
-        int index = Column.ClassSheetTitles.FindIndex(c => c.ColumnName == column.ColumnName);
-        if (index == -1 || !Column.ClassSheetTitles[index].IsLocalizable)
+        int index = Column.ClassSheetTitles!.FindIndex(c => c.ColumnName == column.ColumnName);
+        if (index == -1 || !Column.ClassSheetTitles![index].IsLocalizable)
             return column.ColumnName;
         return GetCulturedColumnName(Column.ClassSheetTitles[index], culture);
     }
@@ -197,12 +197,12 @@ public sealed class ClassTableBuilder
 #endif
     private DataTable GetEmptyTable(out DataColumn[] keyColumns, string? tableName = null)
     {
-        Debug.Assert(Column.ClassSheetTitles is not null);
+        Debug.Assert(Column.IsInitialized);
 
         DataTable res = new(tableName);
-        keyColumns = new DataColumn[Column.ClassSheetTitles.Count(c => c.IsKey)];
+        keyColumns = new DataColumn[Column.ClassSheetTitles!.Count(c => c.IsKey)];
         int keyColumnIdx = 0;
-        foreach (Column columnInfo in Column.ClassSheetTitles)
+        foreach (Column columnInfo in Column.ClassSheetTitles!)
         {
             if (!columnInfo.IsLocalizable)
             {
@@ -252,9 +252,9 @@ public sealed class ClassTableBuilder
             return false;
         }
 
-        Debug.Assert(Column.ClassSheetTitles is not null);
+        Debug.Assert(Column.IsInitialized);
         var (table, culture) = tac;
-        DataColumn[] primaryKey = Column.ClassSheetTitles
+        DataColumn[] primaryKey = Column.ClassSheetTitles!
             .Where(c => c.IsKey)
             .Select(c => table.Columns[c.ColumnName]!)
             .ToArray();

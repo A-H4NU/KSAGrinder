@@ -27,7 +27,7 @@ public static partial class SheetTypeEvaluator
         StringDistanceCalculator? calculator = null
     )
     {
-        Debug.Assert(Column.SupportedCultureInfos is not null);
+        Debug.Assert(Column.IsInitialized);
         var scores =
             from culture in Column.SupportedCultureInfos
             select ClassSheetScoreWithCulture(sheet, culture, calculator);
@@ -47,7 +47,7 @@ public static partial class SheetTypeEvaluator
         StringDistanceCalculator? calculator = null
     )
     {
-        Debug.Assert(Column.ClassSheetTitles is not null);
+        Debug.Assert(Column.IsInitialized);
         if (sheet.Hidden || sheet.ColumnCount < 9)
             return 0f;
 
@@ -81,8 +81,12 @@ public static partial class SheetTypeEvaluator
         float timeScore = (float)GetMax(timeMatches, out int timeHeaderIdx) / sheet.RowCount;
         if (codeScore == 0f || timeScore == 0f)
             return 0f;
-        int codeIdxInArray = Column.ClassSheetTitles.FindIndex(tuple => tuple.ColumnName == "Code");
-        int timeIdxInArray = Column.ClassSheetTitles.FindIndex(tuple => tuple.ColumnName == "Time");
+        int codeIdxInArray = Column.ClassSheetTitles!.FindIndex(
+            tuple => tuple.ColumnName == "Code"
+        );
+        int timeIdxInArray = Column.ClassSheetTitles!.FindIndex(
+            tuple => tuple.ColumnName == "Time"
+        );
 
         if (
             codeIdxInArray == -1
@@ -97,7 +101,7 @@ public static partial class SheetTypeEvaluator
             if (!(doesMatchCode[codeHeaderIdx][i] && doesMatchTime[timeHeaderIdx][i]))
                 continue;
             bool matching = true;
-            for (int j = 0; j < Column.ClassSheetTitles.Count; j++)
+            for (int j = 0; j < Column.ClassSheetTitles!.Count; j++)
             {
                 if (!Column.ClassSheetTitles[j].Types.Contains(sheet[i, matchResult[j]]?.GetType()))
                 {

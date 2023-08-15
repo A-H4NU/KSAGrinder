@@ -106,6 +106,9 @@ public readonly partial struct Column
             "Note"
         }.AsReadOnly();
 
+    /// <summary>
+    /// Denotes whether or not static properties of <see cref="Column"/> is initialized.
+    /// </summary>
     public static bool IsInitialized { get; private set; } = false;
 
     private const string RequiredColumnNameNotFoundMessage =

@@ -20,8 +20,8 @@ public static class DataExtractor
         [NotNullWhen(true)] out object? result
     )
     {
-        Debug.Assert(Column.ClassSheetTitles is not null);
-        if (headerIndex < 0 || headerIndex >= Column.ClassSheetTitles.Count)
+        Debug.Assert(Column.IsInitialized);
+        if (headerIndex < 0 || headerIndex >= Column.ClassSheetTitles!.Count)
             ThrowHelper.ThrowArgumentOutOfRangeException(nameof(headerIndex));
 
         Type dataTableType = Column.ClassSheetTitles[headerIndex].DataTableType;
@@ -51,11 +51,11 @@ public static class DataExtractor
         [NotNullWhen(true)] out CultureInfo? culture
     )
     {
-        Debug.Assert(Column.SupportedCultureInfos is not null);
+        Debug.Assert(Column.IsInitialized);
         result = null;
         culture = null;
         int minSkip = Int32.MaxValue;
-        foreach (CultureInfo c in Column.SupportedCultureInfos)
+        foreach (CultureInfo c in Column.SupportedCultureInfos!)
         {
             if (
                 !TryExtractAsClassSheetWithCultureInfo(
@@ -84,8 +84,8 @@ public static class DataExtractor
         out int skippedRows
     )
     {
-        Debug.Assert(Column.ClassSheetTitles is not null);
-        Debug.Assert(Column.ClassSheetTitles.All(tuple => tuple.HeaderTitles.ContainsKey(culture)));
+        Debug.Assert(Column.IsInitialized);
+        Debug.Assert(Column.ClassSheetTitles!.All(tuple => tuple.HeaderTitles.ContainsKey(culture)));
 
         result = null;
         skippedRows = -1;
@@ -107,7 +107,7 @@ public static class DataExtractor
         skippedRows = 0;
         for (int j = 0; j < matchResult.Length; j++)
         {
-            string name = Column.ClassSheetTitles[j].ColumnName;
+            string name = Column.ClassSheetTitles![j].ColumnName;
             Type type = Column.ClassSheetTitles[j].DataTableType;
             result.Columns.Add(new DataColumn(name, type));
         }
@@ -118,7 +118,7 @@ public static class DataExtractor
             for (int j = 0; j < matchResult.Length; j++)
             {
                 bool typeMatch = false;
-                foreach (Type? type in Column.ClassSheetTitles[j].Types)
+                foreach (Type? type in Column.ClassSheetTitles![j].Types)
                 {
                     object? cell = sheet[i, matchResult[j]];
                     if (type is null ? cell is null : type.IsInstanceOfType(cell))
@@ -129,7 +129,6 @@ public static class DataExtractor
                 }
                 if (!typeMatch)
                 {
-                    Console.WriteLine("Type");
                     goto skip_this_row;
                 }
             }
