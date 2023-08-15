@@ -123,6 +123,9 @@ public readonly partial struct Column
 
     public static async Task InitializeAsync()
     {
+        if (IsInitialized)
+            return;
+
         string? path = null;
         try
         {
