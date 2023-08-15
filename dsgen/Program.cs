@@ -221,11 +221,12 @@ internal class Program
                 string name = sheetNames[i];
                 ExcelSheet sheet = book[name];
                 WriteIfVerbose(VERBOSE_DETAILS, format, i, name);
-                if (sheet.Hidden)
-                    ChangeConsoleForeground(ConsoleColor.DarkGray);
-                WriteIfVerbose(VERBOSE_DETAILS, "\"{0}\"", name);
-                if (sheet.Hidden)
-                    ChangeConsoleForeground(oldColor);
+                WriteColoredIfVerbose(
+                    VERBOSE_DETAILS,
+                    sheet.Hidden ? ConsoleColor.DarkGray : null,
+                    "\"{0}\"",
+                    name
+                );
                 WriteIfVerbose(VERBOSE_DETAILS, "... ");
                 scores[i] = (
                     SheetTypeEvaluator.ClassSheetScore(sheet),
@@ -490,10 +491,11 @@ internal class Program
             for (int i = 0; i < sheetNames.Length; i++)
             {
                 Console.Write(format, i);
-                if (isHidden[i])
-                    ChangeConsoleForeground(ConsoleColor.DarkGray);
-                Console.WriteLine(sheetNames[i]);
-                ChangeConsoleForeground(oldColor);
+                WriteLineColoredIfVerbose(
+                    -1,
+                    isHidden[i] ? ConsoleColor.DarkGray : null,
+                    sheetNames[i]
+                );
             }
         }
         finally
@@ -606,6 +608,28 @@ internal class Program
     }
 
     /// <summary>
+    /// Write to stdout with the specified color
+    /// if verbosity level is not smaller than <paramref name="verbosityThreshold"/>.
+    /// </summary>
+    /// <param name="color">
+    /// The color to print with. If it is set to <c>null</c>,
+    /// it is practically same as <see cref="WriteLineIfVerbose"/>.
+    /// </param>
+    private static void WriteColoredIfVerbose(
+        int verbosityThreshold,
+        ConsoleColor? color,
+        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
+        params object?[]? arg
+    )
+    {
+        ConsoleColor oldColor = Console.ForegroundColor;
+        if (color is not null)
+            ChangeConsoleForeground(color.Value);
+        WriteIfVerbose(verbosityThreshold, format, arg);
+        ChangeConsoleForeground(oldColor);
+    }
+
+    /// <summary>
     /// Write to stdout if verbosity level is not smaller than <paramref name="verbosityThreshold"/>.
     /// </summary>
     private static void WriteLineIfVerbose(
@@ -618,6 +642,28 @@ internal class Program
             return;
         Console.WriteLine(format, arg);
         _lastPrintedNewLine = true;
+    }
+
+    /// <summary>
+    /// Write to stdout with the specified color
+    /// if verbosity level is not smaller than <paramref name="verbosityThreshold"/>.
+    /// </summary>
+    /// <param name="color">
+    /// The color to print with. If it is set to <c>null</c>,
+    /// it is practically same as <see cref="WriteLineIfVerbose"/>.
+    /// </param>
+    private static void WriteLineColoredIfVerbose(
+        int verbosityThreshold,
+        ConsoleColor? color,
+        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
+        params object?[]? arg
+    )
+    {
+        ConsoleColor oldColor = Console.ForegroundColor;
+        if (color is not null)
+            ChangeConsoleForeground(color.Value);
+        WriteLineIfVerbose(verbosityThreshold, format, arg);
+        ChangeConsoleForeground(oldColor);
     }
 
     /// <summary>
@@ -678,10 +724,7 @@ internal class Program
                 tuple.StudentSheetScore * 100
             );
             ConsoleColor oldColor = Console.ForegroundColor;
-            if (hidden)
-                ChangeConsoleForeground(ConsoleColor.DarkGray);
-            Console.WriteLine(sheetNames[i]);
-            ChangeConsoleForeground(oldColor);
+            WriteLineColoredIfVerbose(-1, hidden ? ConsoleColor.DarkGray : null, sheetNames[i]);
         }
         Console.WriteLine(
             GetTableLowerBorder(
