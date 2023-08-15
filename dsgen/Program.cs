@@ -128,7 +128,7 @@ internal class Program
 
     private static async Task<int> Main(string[] args)
     {
-        var columnInitializeTask = Column.InitializeAsync();
+        var columnInitializeTask = Task.Run(Column.Initialize);
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
         var parser = new Parser(config => config.HelpWriter = null);
@@ -145,9 +145,12 @@ internal class Program
             return EXIT_ERROR;
         }
 #else
-        catch (Exception)
+        catch (Exception ex)
         {
-            WriteError(FailedToInitializeMessage);
+            if (ex is ColumnConstraintException)
+                WriteException(ex);
+            else
+                WriteError(FailedToInitializeMessage);
             return EXIT_ERROR;
         }
 #endif

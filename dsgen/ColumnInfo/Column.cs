@@ -121,12 +121,17 @@ public readonly partial struct Column
         "A column name cannot contain an underscore.";
     private const string OverlappingColumnNameMessage = "Column names may not overlap.";
 
-    public static async Task InitializeAsync()
+    private static readonly object s_initializeLock = new();
+
+    public static void Initialize()
     {
+        Monitor.Enter(s_initializeLock);
+
         if (IsInitialized)
             return;
 
         string? path = null;
+        bool expectedPath = false;
         try
         {
             Assembly? entryAssembly = Assembly.GetEntryAssembly();
@@ -134,7 +139,7 @@ public readonly partial struct Column
             string directory = Path.GetDirectoryName(entryAssembly.Location)!;
             Debug.Assert(!String.IsNullOrEmpty(directory));
             path = Path.Combine(directory, Program.ColumnInfoFilePath);
-            var result = await DataContractSerializerUtils.DeserializeFromFileAsync<Column[]>(path);
+            var result = DataContractSerializerUtils.DeserializeFromFile<Column[]>(path);
 
             /* Now, reading and deserializing were successful.
              * Any failures after this point is just simply an error,
@@ -152,7 +157,7 @@ public readonly partial struct Column
                         requiredColumnName,
                         path
                     );
-                    throw new Exception(message);
+                    throw new ColumnConstraintException(message);
                 }
             }
 
@@ -162,12 +167,12 @@ public readonly partial struct Column
             {
                 if (column.IsKey && (column.IsLocalizable || column.ConflictTolerant))
                 {
-                    throw new Exception(FlagInvalidMessage);
+                    throw new ColumnConstraintException(FlagInvalidMessage);
                 }
 
                 if (column.ColumnName.Contains('_'))
                 {
-                    throw new Exception(ColumnNameIncludesUnderscoreMessage);
+                    throw new ColumnConstraintException(ColumnNameIncludesUnderscoreMessage);
                 }
             }
 
@@ -175,31 +180,35 @@ public readonly partial struct Column
             HashSet<string> columnNames = new(capacity: ClassSheetTitles.Count);
             if (!ClassSheetTitles.Select(c => c.ColumnName).All(columnNames.Add))
             {
-                throw new Exception(OverlappingColumnNameMessage);
+                throw new ColumnConstraintException(OverlappingColumnNameMessage);
             }
+
+            expectedPath = true;
         }
         catch (Exception ex)
-            when (ex is FileNotFoundException
-                || ex is InvalidDataContractException
-                || ex is SerializationException
-                || ex is System.Xml.XmlException
-            )
+            when (ex is not ColumnConstraintException)
         {
             /* Expected exceptions when failed to read column info from file for any reason.
              * (Over)write the file with defaults. */
             Debug.Assert(path is not null);
             ClassSheetTitles = DefaultClassSheetColumns.DefaultColumns;
-            await DataContractSerializerUtils.SerializeToFileAsync(
-                ClassSheetTitles.ToArray(),
-                path
-            );
+            DataContractSerializerUtils.SerializeToFile(ClassSheetTitles.ToArray(), path);
+
+            expectedPath = true;
         }
+        finally
+        {
+            if (expectedPath)
+            {
+                Debug.Assert(ClassSheetTitles is not null);
+                SupportedCultureInfos = new ReadOnlyCollectionBuilder<CultureInfo>(
+                    ClassSheetTitles.Select(column => column.HeaderTitles.Keys).IntersectAll()
+                ).ToReadOnlyCollection();
 
-        SupportedCultureInfos = new ReadOnlyCollectionBuilder<CultureInfo>(
-            ClassSheetTitles.Select(column => column.HeaderTitles.Keys).IntersectAll()
-        ).ToReadOnlyCollection();
-
-        IsInitialized = true;
+                IsInitialized = true;
+            }
+            Monitor.Exit(s_initializeLock);
+        }
     }
 
     private static void ThrowIfInvalidType(string str, [NotNull] out Type? type)
