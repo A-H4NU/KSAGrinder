@@ -112,7 +112,11 @@ public readonly partial struct Column
         "There must be a column whose ColumnName is '{0}' in '{1}'.";
     private const string TypeNotFoundMessage = "Could not find the type '{0}'.";
     private const string TypeInvalidMessage = "Type '{0}' is not serializable.";
-    private const string FlagInvalidMessage = "A key column cannot be localizable or conflict-tolerant.";
+    private const string FlagInvalidMessage =
+        "A key column cannot be localizable or conflict-tolerant.";
+    private const string ColumnNameIncludesUnderscoreMessage =
+        "A column name cannot contain an underscore.";
+
     public static async Task InitializeAsync()
     {
         string? path = null;
@@ -146,11 +150,17 @@ public readonly partial struct Column
             }
 
             /* Check the columns' flags (IsKey, IsLocalizable, and ConflictTolerant) are valid. */
+            /* Check the columns' names do not contain an underscore. */
             foreach (Column column in ClassSheetTitles)
             {
                 if (column.IsKey && (column.IsLocalizable || column.ConflictTolerant))
                 {
                     throw new Exception(FlagInvalidMessage);
+                }
+
+                if (column.ColumnName.Contains('_'))
+                {
+                    throw new Exception(ColumnNameIncludesUnderscoreMessage);
                 }
             }
         }

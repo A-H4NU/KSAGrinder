@@ -151,7 +151,6 @@ public static class DataExtractor
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to process: {Column.ClassSheetTitles}");
                     goto skip_this_row;
                 }
             }
