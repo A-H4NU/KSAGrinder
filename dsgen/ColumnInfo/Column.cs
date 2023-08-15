@@ -119,6 +119,7 @@ public readonly partial struct Column
         "A key column cannot be localizable or conflict-tolerant.";
     private const string ColumnNameIncludesUnderscoreMessage =
         "A column name cannot contain an underscore.";
+    private const string OverlappingColumnNameMessage = "Column names may not overlap.";
 
     public static async Task InitializeAsync()
     {
@@ -165,6 +166,13 @@ public readonly partial struct Column
                 {
                     throw new Exception(ColumnNameIncludesUnderscoreMessage);
                 }
+            }
+
+            /* Check if column names do not overlap. */
+            HashSet<string> columnNames = new(capacity: ClassSheetTitles.Count);
+            if (!ClassSheetTitles.Select(c => c.ColumnName).All(columnNames.Add))
+            {
+                throw new Exception(OverlappingColumnNameMessage);
             }
         }
         catch (Exception ex)
