@@ -8,7 +8,13 @@ public record Options
     private const string RandomScheduleFile = "path/to/schedule.xlsx";
     private const string RandomDataSetFile = "another path/to/dataset.ds";
 
-    [Option('p', "path", Required = true, HelpText = "The excel file to process.")]
+    [Option(
+        'p',
+        "path",
+        Required = true,
+        MetaValue = "XLPATH",
+        HelpText = "The excel file to process."
+    )]
     public string FilePath { get; init; } = "";
 
     [Option(
@@ -25,7 +31,7 @@ public record Options
     [Option(
         's',
         "no-error-msg",
-        HelpText = "Supress error messages as long as the commandline argument is parsed correctly."
+        HelpText = "Suppress error messages as long as the commandline argument is parsed correctly."
     )]
     public bool NoErrorMessage { get; init; } = false;
 
@@ -33,7 +39,8 @@ public record Options
         'l',
         "show-list",
         HelpText = "Display the names and the indices of sheets in XLPATH and exit. "
-            + "The indices are constant as long as the sheet names do not change."
+            + "The indices are constant as long as the sheet names do not change "
+            + "as they are ordered by the sheet names."
     )]
     public bool ShowSheetList { get; init; } = false;
 
@@ -85,15 +92,15 @@ public record Options
                 new Options() { FilePath = RandomScheduleFile }
             ),
             new(
-                $"Show the names and the indices of the sheets in '{RandomScheduleFile}'",
+                $"{Environment.NewLine}Show the names and the indices of the sheets in '{RandomScheduleFile}'",
                 new Options() { FilePath = RandomScheduleFile, ShowSheetList = true }
             ),
             new(
-                $"Generate a dataset from '{RandomScheduleFile}' and save it as '{RandomDataSetFile}'",
+                $"{Environment.NewLine}Generate a dataset from '{RandomScheduleFile}' and save it as '{RandomDataSetFile}'",
                 new Options() { FilePath = RandomScheduleFile, Output = RandomDataSetFile }
             ),
             new(
-                $"Specify the sheets of indices 2 and 3 as class sheets and generate a dataset from '{RandomScheduleFile}'",
+                $"{Environment.NewLine}Specify the sheets of indices 2 and 3 as class sheets and generate a dataset from '{RandomScheduleFile}'",
                 new Options() { FilePath = RandomScheduleFile, ClassSheets = new int[] { 2, 3 } }
             ),
         };
