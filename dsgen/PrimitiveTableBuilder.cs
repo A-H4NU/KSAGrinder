@@ -9,7 +9,7 @@ using dsgen.Extensions;
 
 namespace dsgen;
 
-public sealed class ClassTableBuilder
+public sealed class PrimitiveTableBuilder
 {
     private const string ListEmptyMessage = "There are no data tables to build from.";
     private const string ConflictMessage = "Had a conflict building the table.";
@@ -34,7 +34,7 @@ public sealed class ClassTableBuilder
 
     private List<TableAndCulture> _list;
 
-    public ClassTableBuilder()
+    public PrimitiveTableBuilder()
     {
         _list = new();
     }
@@ -42,7 +42,7 @@ public sealed class ClassTableBuilder
     /// <param name="columnNameFormat">
     /// Format used for column names of localizable column names.
     /// </param>
-    public ClassTableBuilder(string columnNameFormat)
+    public PrimitiveTableBuilder(string columnNameFormat)
     {
         _list = new();
         _columnNameFormat = columnNameFormat;
@@ -141,7 +141,7 @@ public sealed class ClassTableBuilder
     /// <summary>
     /// Add <paramref name="item"/> to the builder.
     /// </summary>
-    public ClassTableBuilder Add(DataTable table, CultureInfo culture)
+    public PrimitiveTableBuilder Add(DataTable table, CultureInfo culture)
     {
         /* Check the input is valid. */
         Debug.Assert(Column.IsInitialized);

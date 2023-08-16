@@ -342,14 +342,14 @@ internal class Program
             }
             WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
 
-            WriteIfVerbose(VERBOSE_PROGRESS, "Building class table... ");
-            ClassTableBuilder classTableBuilder = new();
+            WriteIfVerbose(VERBOSE_PROGRESS, "Building primitive table... ");
+            PrimitiveTableBuilder classTableBuilder = new();
             foreach (var tuple in classSheetResults)
             {
                 classTableBuilder.Add(tuple!.Value.Table, tuple!.Value.Culture);
             }
             CultureInfo primaryCulture = CultureInfo.GetCultureInfo(options.PrimaryCulture);
-            DataTable classTable = classTableBuilder.Build(
+            DataTable primitiveTable = classTableBuilder.Build(
                 primaryCulture,
                 true,
                 out TableBuildReport report
