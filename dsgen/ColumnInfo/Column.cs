@@ -15,26 +15,54 @@ namespace dsgen.ColumnInfo;
 [DataContract]
 public readonly partial struct Column
 {
+    /// <summary>
+    /// Is this column (a part of) the primary key?
+    /// </summary>
     [DataMember]
     public bool IsKey { get; init; }
 
+    /// <summary>
+    /// Headers for each language.
+    /// </summary>
     [IgnoreDataMember]
     public ReadOnlyDictionary<CultureInfo, string> HeaderTitles { get; init; }
 
+    /// <summary>
+    /// The name of <see cref="System.Data.DataColumn"/>.
+    /// </summary>
     [DataMember]
     public string ColumnName { get; init; }
 
+    /// <summary>
+    /// Allowable types from the table of the excel file.
+    /// <see cref="null"/> denotes it might be empty.
+    /// </summary>
     [IgnoreDataMember]
     public ReadOnlyCollection<Type?> Types { get; init; }
 
+    /// <summary>
+    /// The type of <see cref="System.Data.DataColumn"/>.
+    /// </summary>
     [IgnoreDataMember]
     public Type DataTableType { get; init; }
 
+    /// <summary>
+    /// May depend on the culture/language?
+    /// </summary>
     [DataMember]
     public bool IsLocalizable { get; init; }
 
+    /// <summary>
+    /// Is getting different values from the languages is expected?
+    /// </summary>
     [DataMember]
     public bool ConflictTolerant { get; init; }
+
+    /// <summary>
+    /// May depend on the class number?
+    /// </summary>
+    [DataMember]
+    public bool ClassNoDependent { get; init; }
 
     #region Private properties for serialization. DO NOT ACCESS THESE IN ANY WAY.
 

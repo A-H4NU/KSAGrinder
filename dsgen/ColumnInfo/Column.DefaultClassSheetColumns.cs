@@ -51,6 +51,7 @@ public readonly partial struct Column
             DataTableType = typeof(String),
             IsLocalizable = false,
             ConflictTolerant = false,
+            ClassNoDependent = false,
         };
 
         public static readonly Column Department = new Column()
@@ -66,6 +67,7 @@ public readonly partial struct Column
             DataTableType = typeof(String),
             IsLocalizable = false,
             ConflictTolerant = true,
+            ClassNoDependent = false,
         };
         
         public static readonly Column Name = new Column()
@@ -80,7 +82,8 @@ public readonly partial struct Column
             Types = new Type?[] { typeof(String) }.AsReadOnly(),
             DataTableType = typeof(String),
             IsLocalizable = true,
-            ConflictTolerant = false
+            ConflictTolerant = false,
+            ClassNoDependent = false,
         };
 
         public static readonly Column Grade = new Column()
@@ -96,6 +99,7 @@ public readonly partial struct Column
             DataTableType = typeof(Int32),
             IsLocalizable = false,
             ConflictTolerant = false,
+            ClassNoDependent = false,
         };
 
         public static readonly Column Class = new Column()
@@ -111,6 +115,7 @@ public readonly partial struct Column
             DataTableType = typeof(Int32),
             IsLocalizable = false,
             ConflictTolerant = false,
+            ClassNoDependent = true,
         };
 
         public static readonly Column Teacher = new Column()
@@ -126,6 +131,7 @@ public readonly partial struct Column
             DataTableType = typeof(String),
             IsLocalizable = false,
             ConflictTolerant = false,
+            ClassNoDependent = true,
         };
 
         public static readonly Column Time = new Column()
@@ -141,6 +147,7 @@ public readonly partial struct Column
             DataTableType = typeof(String),
             IsLocalizable = false,
             ConflictTolerant = false,
+            ClassNoDependent = true,
         };
 
         public static readonly Column Enrollment = new Column()
@@ -156,6 +163,7 @@ public readonly partial struct Column
             DataTableType = typeof(Int32),
             IsLocalizable = false,
             ConflictTolerant = false,
+            ClassNoDependent = true,
         };
 
         public static readonly Column Credit = new Column()
@@ -171,6 +179,7 @@ public readonly partial struct Column
             DataTableType = typeof(Int32),
             IsLocalizable = false,
             ConflictTolerant = false,
+            ClassNoDependent = false,
         };
 
         public static readonly Column Hours = new Column()
@@ -186,6 +195,7 @@ public readonly partial struct Column
             DataTableType = typeof(Int32),
             IsLocalizable = false,
             ConflictTolerant = false,
+            ClassNoDependent = false,
         };
 
         public static readonly Column Note = new Column()
@@ -201,6 +211,7 @@ public readonly partial struct Column
             DataTableType = typeof(String),
             IsLocalizable = false,
             ConflictTolerant = false,
+            ClassNoDependent = true,
         };
     }
 }
