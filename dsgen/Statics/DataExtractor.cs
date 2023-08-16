@@ -8,7 +8,7 @@ using CommunityToolkit.Diagnostics;
 using dsgen.ColumnInfo;
 using dsgen.Excel;
 
-namespace dsgen;
+namespace dsgen.Statics;
 
 public static class DataExtractor
 {

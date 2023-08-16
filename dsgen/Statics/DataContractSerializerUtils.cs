@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
 
-namespace dsgen;
+namespace dsgen.Statics;
 
 public static class DataContractSerializerUtils
 {

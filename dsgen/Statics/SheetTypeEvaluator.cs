@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Diagnostics;
 using dsgen.Extensions;
 
-namespace dsgen;
+namespace dsgen.Statics;
 
 public static partial class SheetTypeEvaluator
 {

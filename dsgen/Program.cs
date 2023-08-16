@@ -1,14 +1,20 @@
 ﻿using CommandLine;
-using dsgen.Excel;
-using System.Text;
-using System.Diagnostics.CodeAnalysis;
-using ExcelDataReader;
-using CommunityToolkit.Diagnostics;
 using CommandLine.Text;
-using System.Diagnostics;
+
+using CommunityToolkit.Diagnostics;
+
 using dsgen.ColumnInfo;
+using dsgen.Excel;
+using dsgen.Statics;
+using dsgen.TableBuildes;
+
+using ExcelDataReader;
+
 using System.Data;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text;
 
 namespace dsgen;
 

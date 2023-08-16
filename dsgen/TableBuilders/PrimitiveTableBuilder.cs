@@ -7,7 +7,7 @@ using dsgen.ColumnInfo;
 using dsgen.Exceptions;
 using dsgen.Extensions;
 
-namespace dsgen;
+namespace dsgen.TableBuildes;
 
 public sealed class PrimitiveTableBuilder
 {
