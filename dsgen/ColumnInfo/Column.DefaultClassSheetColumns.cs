@@ -138,7 +138,7 @@ public readonly partial struct Column
             }.AsReadOnly(),
             ColumnName = "Time",
             Types = new Type?[] { typeof(String) }.AsReadOnly(),
-            DataTableType = typeof((DayOfWeek day, int hour)[]),
+            DataTableType = typeof(String),
             IsLocalizable = false,
             ConflictTolerant = false,
         };

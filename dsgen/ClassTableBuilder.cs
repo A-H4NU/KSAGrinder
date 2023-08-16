@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -103,7 +102,6 @@ public sealed class ClassTableBuilder
                 from tac in _list
                 select GetCulturedColumnName(column, tac.Culture)
             ).ToArray();
-            // Console.WriteLine(String.Join(", ", culturedColumnNames));
             foreach (var (key, row) in rows)
             {
                 foreach (string culturedColumnName in culturedColumnNames)
@@ -241,18 +239,8 @@ public sealed class ClassTableBuilder
         out bool hadUnresolvedConflicts
     )
     {
-        static bool EqualsOrSetEquals(object obj1, object obj2)
-        {
-            if (Equals(obj1, obj2))
-                return true;
-            if (obj1 is IEnumerable e1 && obj2 is IEnumerable e2)
-            {
-                return e1.Cast<object>().ToHashSet().SetEquals(e2.Cast<object>());
-            }
-            return false;
-        }
-
         Debug.Assert(Column.IsInitialized);
+
         var (table, culture) = tac;
         DataColumn[] primaryKey = Column.ClassSheetTitles!
             .Where(c => c.IsKey)
@@ -294,8 +282,7 @@ public sealed class ClassTableBuilder
                 string columnName = GetCulturedColumnName(column, culture);
                 object? rowContent = row[column.ColumnName];
                 object? resRowContent = resRow![columnName];
-                bool isConflict =
-                    resRowContent is not DBNull && !EqualsOrSetEquals(resRowContent, rowContent);
+                bool isConflict = resRowContent is not DBNull && !Equals(resRowContent, rowContent);
                 switch ((isConflict, column.ConflictTolerant, overwriteConflictTolerant))
                 {
                     case (false, _, _):

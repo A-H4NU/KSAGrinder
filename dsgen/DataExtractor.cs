@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -25,7 +26,14 @@ public static class DataExtractor
             ThrowHelper.ThrowArgumentOutOfRangeException(nameof(headerIndex));
 
         Type dataTableType = Column.ClassSheetTitles[headerIndex].DataTableType;
-        result = null;
+
+        /* Special cell types */
+        if (Column.ClassSheetTitles[headerIndex].ColumnName == "Time")
+        {
+            return TryResolveTimeCell(cellContent, cultureInfo, out result);
+        }
+
+        /* General things. */
         if (dataTableType == typeof(String))
         {
             return TryResolveStringCell(cellContent, out result);
@@ -37,10 +45,6 @@ public static class DataExtractor
         if (dataTableType == typeof(Double))
         {
             return TryResolveDoubleCell(cellContent, out result);
-        }
-        if (dataTableType == typeof(ValueTuple<DayOfWeek, Int32>[]))
-        {
-            return TryResolveTimeCell(cellContent, cultureInfo, out result);
         }
         throw new NotSupportedException();
     }
@@ -85,7 +89,9 @@ public static class DataExtractor
     )
     {
         Debug.Assert(Column.IsInitialized);
-        Debug.Assert(Column.ClassSheetTitles!.All(tuple => tuple.HeaderTitles.ContainsKey(culture)));
+        Debug.Assert(
+            Column.ClassSheetTitles!.All(tuple => tuple.HeaderTitles.ContainsKey(culture))
+        );
 
         result = null;
         skippedRows = -1;
@@ -229,8 +235,22 @@ public static class DataExtractor
         return false;
     }
 
+    public const char TimeDelimiter = '|';
+
     private static readonly DayOfWeek[] s_daysInAWeek = (DayOfWeek[])
         typeof(DayOfWeek).GetEnumValues();
+
+    private static readonly ReadOnlyDictionary<DayOfWeek, string> s_daysToStr =
+        new Dictionary<DayOfWeek, string>()
+        {
+            { DayOfWeek.Sunday, "SU" },
+            { DayOfWeek.Monday, "MO" },
+            { DayOfWeek.Tuesday, "TU" },
+            { DayOfWeek.Wednesday, "WE" },
+            { DayOfWeek.Thursday, "TH" },
+            { DayOfWeek.Friday, "FR" },
+            { DayOfWeek.Saturday, "SA" },
+        }.AsReadOnly();
 
     private static bool TryResolveTimeCell(
         object? cellContent,
@@ -279,7 +299,8 @@ public static class DataExtractor
                 return false;
             res[i] = (s_daysInAWeek[index], Int32.Parse(hrCaptures[i].ValueSpan));
         }
-        result = res;
+        Array.Sort(res);
+        result = String.Join(TimeDelimiter, res.Select(t => $"{s_daysToStr[t.Day]}{t.Hour}"));
         return true;
     }
 
