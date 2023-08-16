@@ -8,12 +8,7 @@ public record Options
     private const string RandomScheduleFile = "path/to/schedule.xlsx";
     private const string RandomDataSetFile = "another path/to/dataset.ds";
 
-    [Option(
-        'p',
-        "path",
-        Required = true,
-        HelpText = "The excel file to process."
-    )]
+    [Option('p', "path", Required = true, HelpText = "The excel file to process.")]
     public string FilePath { get; init; } = "";
 
     [Option(
@@ -26,6 +21,13 @@ public record Options
             + $"(Maximum verbosity is reached at {Program.VERBOSE_MAX_AS_STRING}.)"
     )]
     public int Verbose { get; init; }
+
+    [Option(
+        's',
+        "no-error-msg",
+        HelpText = "Supress error messages as long as the commandline argument is parsed correctly."
+    )]
+    public bool NoErrorMessage { get; init; } = false;
 
     [Option(
         'l',
@@ -46,11 +48,7 @@ public record Options
     )]
     public float Threshold { get; init; }
 
-    [Option(
-        'o',
-        "output",
-        HelpText = "Specify where the output file is placed."
-    )]
+    [Option('o', "output", HelpText = "Specify where the output file is placed.")]
     public string? Output { get; init; } = null;
 
     [Option(

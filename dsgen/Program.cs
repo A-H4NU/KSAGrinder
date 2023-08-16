@@ -107,6 +107,7 @@ internal class Program
 
     private static bool _lastPrintedNewLine = true;
     private static int _verbose = 1;
+    private static bool _noErrorMessage = false;
 
     private static bool _canChangeConsoleColor;
 
@@ -133,7 +134,11 @@ internal class Program
 
         var parser = new Parser(config => config.HelpWriter = null);
         var result = parser.ParseArguments<Options>(args);
-        result.WithParsed(options => _verbose = options.Verbose);
+        result.WithParsed(options =>
+        {
+            _verbose = options.Verbose;
+            _noErrorMessage = options.NoErrorMessage;
+        });
         try
         {
             await columnInitializeTask;
@@ -534,6 +539,8 @@ internal class Program
         params object?[]? arg
     )
     {
+        if (_noErrorMessage)
+            return;
         ConsoleColor oldColor = Console.ForegroundColor;
         if (!_lastPrintedNewLine)
             Console.Write(Environment.NewLine);
@@ -550,7 +557,7 @@ internal class Program
     /// Print the exception via <see cref="WriteError(string, object?[]?)"/>.
     /// </summary>
     /// <param name="e">Error to print.</param>
-    private static void WriteException(Exception e, bool root = true)
+    private static void WriteException(Exception e)
     {
 #if DEBUG
         if (_verbose >= VERBOSE_STACKTRACE)
