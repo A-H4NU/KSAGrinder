@@ -453,11 +453,17 @@ internal class Program
             WriteError(sb.ToString());
             return exitCode;
         }
+
         var helpText = HelpText.AutoBuild(
             result,
             h =>
             {
                 h.MaximumDisplayWidth = 100;
+                try
+                {
+                    h.MaximumDisplayWidth = Console.BufferWidth;
+                }
+                catch (Exception) { }
                 h.AddNewLineBetweenHelpSections = true;
                 h.OptionComparison = OrderOnShortName;
                 return h;
