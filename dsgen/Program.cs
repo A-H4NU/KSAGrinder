@@ -6,7 +6,7 @@ using CommunityToolkit.Diagnostics;
 using dsgen.ColumnInfo;
 using dsgen.Excel;
 using dsgen.Statics;
-using dsgen.TableBuildes;
+using dsgen.TableBuilders;
 
 using ExcelDataReader;
 
