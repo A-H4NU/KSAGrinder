@@ -388,6 +388,11 @@ internal class Program
                     WriteWarning(ManyRowsLackingMessage, WriteRowsThreshold);
                 }
             }
+
+            WriteIfVerbose(VERBOSE_PROGRESS, "Building lecture table... ");
+            LectureTableBuilder ltBuilder = new(primitiveTable);
+            DataTable lectureTable = ltBuilder.Build(out _);
+            WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
         }
         catch (Exception e)
         {

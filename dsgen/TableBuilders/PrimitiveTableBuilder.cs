@@ -9,7 +9,7 @@ using dsgen.Extensions;
 
 namespace dsgen.TableBuilders;
 
-public sealed class PrimitiveTableBuilder
+internal sealed class PrimitiveTableBuilder
 {
     private const string ListEmptyMessage = "There are no data tables to build from.";
     private const string ConflictMessage = "Had a conflict building the table.";
