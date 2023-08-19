@@ -1,3 +1,5 @@
+using CommunityToolkit.Diagnostics;
+
 namespace dsgen;
 
 public sealed class MultipleTaskHandler
@@ -57,7 +59,7 @@ public sealed class MultipleTaskHandler
     }
 
     /// <summary>
-    /// Add an actions to be invoked by either <see cref="InvokeActions"/>
+    /// Add actions to be invoked by either <see cref="InvokeActions"/>
     /// or <see cref="InvokeActionsAsync(CancellationToken)"/>.
     /// </summary>
     /// <param name="actions">The list of <see cref="Action"/> to invoke.</param>
@@ -68,7 +70,23 @@ public sealed class MultipleTaskHandler
     }
 
     /// <summary>
-    /// Add an indexed action to be invoked by either <see cref="InvokeActions"/>
+    /// Add an action to be invoked by either <see cref="InvokeActions"/>
+    /// or <see cref="InvokeActionsAsync(CancellationToken)"/> multiple times.
+    /// </summary>
+    /// <param name="count">
+    /// The number of times to register the action.
+    /// </param>
+    public MultipleTaskHandler AddActions(Action action, int count)
+    {
+        Guard.IsGreaterThanOrEqualTo(count, 0);
+        ActionWrapper wrapper = new(action);
+        for (int i = 0; i < count; i++)
+            _tasks.Add(wrapper);
+        return this;
+    }
+
+    /// <summary>
+    /// Add indexed actions to be invoked by either <see cref="InvokeActions"/>
     /// or <see cref="InvokeActionsAsync(CancellationToken)"/>.
     /// </summary>
     /// <param name="indexedActions">
@@ -79,6 +97,26 @@ public sealed class MultipleTaskHandler
     public MultipleTaskHandler AddIndexedActions(IEnumerable<Action<int>> indexedActions)
     {
         _tasks.AddRange(indexedActions.Select(Wrap));
+        return this;
+    }
+
+    /// <summary>
+    /// Add an indexed action to be invoked by either <see cref="InvokeActions"/>
+    /// or <see cref="InvokeActionsAsync(CancellationToken)"/> multiple times.
+    /// </summary>
+    /// <param name="indexedAction">
+    /// The integer parameter represents the index of the action.
+    /// <c>i</c>-th (zero-based) action will receive <c>i</c> as a parameter.
+    /// </param>
+    /// <param name="count">
+    /// The number of times to register the action.
+    /// </param>
+    public MultipleTaskHandler AddIndexedActions(Action<int> indexedAction, int count)
+    {
+        Guard.IsGreaterThanOrEqualTo(count, 0);
+        ActionWrapper wrapper = new(indexedAction);
+        for (int i = 0; i < count; i++)
+            _tasks.Add(wrapper);
         return this;
     }
 
@@ -141,8 +179,8 @@ public sealed class MultipleTaskHandler
 
     private sealed class ActionWrapper
     {
-        private Action? _nonIndexedTask;
-        private Action<int>? _indexedTask;
+        private readonly Action? _nonIndexedTask;
+        private readonly Action<int>? _indexedTask;
 
         public ActionWrapper(Action nonIndexedTask)
         {
