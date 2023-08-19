@@ -12,7 +12,6 @@ using ExcelDataReader;
 
 using System.Data;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -47,7 +46,7 @@ internal class Program
 
     /// <summary>
     /// Writes the stacktrace when writing exceptions. (Only enabled the debug build.)
-    /// See <see cref="WriteException(Exception)"/>.
+    /// See <see cref="ConsoleUtil.WriteException(Exception)"/>.
     /// </summary>
     public const int VERBOSE_STACKTRACE = 4;
 
@@ -112,26 +111,9 @@ internal class Program
 
     #endregion
 
-    private static bool _lastPrintedNewLine = true;
-    private static int _verbose = 1;
-    private static bool _noErrorMessage = false;
-
-    private static bool _canChangeConsoleColor;
-
     static Program()
     {
         Debug.Assert(String.Equals(VERBOSE_MAX.ToString(), VERBOSE_MAX_AS_STRING));
-
-        try
-        {
-            ConsoleColor color = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-            _canChangeConsoleColor = true;
-        }
-        catch (Exception)
-        {
-            _canChangeConsoleColor = false;
-        }
     }
 
     private static async Task<int> Main(string[] args)
@@ -143,8 +125,8 @@ internal class Program
         var result = parser.ParseArguments<Options>(args);
         result.WithParsed(options =>
         {
-            _verbose = options.Verbose;
-            _noErrorMessage = options.NoErrorMessage;
+            ConsoleUtil.Verbose = options.Verbose;
+            ConsoleUtil.NoErrorMessage = options.NoErrorMessage;
         });
         try
         {
@@ -153,16 +135,16 @@ internal class Program
 #if DEBUG
         catch (Exception ex)
         {
-            WriteException(ex);
+            ConsoleUtil.WriteException(ex);
             return EXIT_ERROR;
         }
 #else
         catch (Exception ex)
         {
             if (ex is ColumnConstraintException)
-                WriteException(ex);
+                ConsoleUtil.WriteException(ex);
             else
-                WriteError(FailedToInitializeMessage);
+                ConsoleUtil.WriteError(FailedToInitializeMessage);
             return EXIT_ERROR;
         }
 #endif
@@ -173,24 +155,26 @@ internal class Program
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void PrintDoneProgress() => WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
+    private static void PrintDoneProgress() =>
+        ConsoleUtil.WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void PrintDoneDetails() => WriteLineIfVerbose(VERBOSE_DETAILS, "Done ✓");
+    private static void PrintDoneDetails() =>
+        ConsoleUtil.WriteLineIfVerbose(VERBOSE_DETAILS, "Done ✓");
 
     private static int RunAndGetExitCode(Options options, string[] args)
     {
         if (String.IsNullOrWhiteSpace(options.FilePath))
         {
-            WriteError(NoFilePathMessage);
+            ConsoleUtil.WriteError(NoFilePathMessage);
             return EXIT_ERROR;
         }
-        if (_verbose < 0)
+        if (ConsoleUtil.Verbose < 0)
         {
-            WriteError(VerbosityNegativeMessage);
+            ConsoleUtil.WriteError(VerbosityNegativeMessage);
             return EXIT_ERROR;
         }
-        if (_verbose >= VERBOSE_DETAILS)
+        if (ConsoleUtil.Verbose >= VERBOSE_DETAILS)
         {
             Console.WriteLine("Arguments:");
             int pad = ToStringLength(args.Length - 1);
@@ -212,11 +196,11 @@ internal class Program
             /* It is not allowed for user-selected class sheets and student sheets to overlap. */
             if (Enumerable.Intersect(options.ClassSheets, options.StudentSheets).Any())
             {
-                WriteError(SheetsOverlappingMessage);
+                ConsoleUtil.WriteError(SheetsOverlappingMessage);
                 return EXIT_ERROR;
             }
 
-            WriteIfVerbose(VERBOSE_PROGRESS, "Loading file... ");
+            ConsoleUtil.WriteIfVerbose(VERBOSE_PROGRESS, "Loading file... ");
             ExcelBook book = ExcelBook.FromFile(options.FilePath);
             string[] sheetNames = book.Keys.ToArray();
             Array.Sort(sheetNames);
@@ -227,7 +211,7 @@ internal class Program
                 || options.ClassSheets.Any(i => i >= book.Count)
             )
             {
-                WriteError(IndicesOutOfRangeMessage);
+                ConsoleUtil.WriteError(IndicesOutOfRangeMessage);
                 return EXIT_ERROR;
             }
 
@@ -247,12 +231,12 @@ internal class Program
             /* If no sheets are selected, exit with error. */
             if (classSheets.Length == 0)
             {
-                WriteError(NoProperClassSheetMessage);
+                ConsoleUtil.WriteError(NoProperClassSheetMessage);
                 return EXIT_ERROR;
             }
             if (studentSheets.Length == 0)
             {
-                WriteError(NoProperStudentSheetMessage);
+                ConsoleUtil.WriteError(NoProperStudentSheetMessage);
                 return EXIT_ERROR;
             }
 
@@ -264,7 +248,7 @@ internal class Program
                 || options.StudentSheets.Any(i => scores[i].StudentSheetScore <= options.Threshold)
             )
             {
-                WriteWarning(SelectedLowScoreSheetMessage);
+                ConsoleUtil.WriteWarning(SelectedLowScoreSheetMessage);
             }
 
             if (!TryExtractDataFromClassSheets(classSheets, out var classSheetResults))
@@ -284,7 +268,7 @@ internal class Program
                 {
                     DataRow row = report.Table.Rows[report.EmptyLocalizableColumns[i]];
                     int nullIdx = Array.FindIndex(row.ItemArray, item => item is DBNull);
-                    WriteWarning(
+                    ConsoleUtil.WriteWarning(
                         EmptyLocalizableMessage,
                         row["Code"],
                         row["Grade"],
@@ -294,18 +278,18 @@ internal class Program
                 }
                 if (report.EmptyLocalizableColumns.Length > WriteRowsThreshold)
                 {
-                    WriteWarning(ManyRowsLackingMessage, WriteRowsThreshold);
+                    ConsoleUtil.WriteWarning(ManyRowsLackingMessage, WriteRowsThreshold);
                 }
             }
 
-            WriteIfVerbose(VERBOSE_PROGRESS, "Building lecture table... ");
+            ConsoleUtil.WriteIfVerbose(VERBOSE_PROGRESS, "Building lecture table... ");
             LectureTableBuilder ltBuilder = new(primitiveTable);
             DataTable lectureTable = ltBuilder.Build(out _);
             PrintDoneProgress();
         }
         catch (Exception e)
         {
-            WriteException(e);
+            ConsoleUtil.WriteException(e);
             return EXIT_ERROR;
         }
         return EXIT_SUCCESS;
@@ -323,8 +307,8 @@ internal class Program
 
         static void WriteHeader()
         {
-            WriteIfVerbose(VERBOSE_PROGRESS, "Evaluating sheets... ");
-            WriteLineIfVerbose(VERBOSE_DETAILS, "");
+            ConsoleUtil.WriteIfVerbose(VERBOSE_PROGRESS, "Evaluating sheets... ");
+            ConsoleUtil.WriteLineIfVerbose(VERBOSE_DETAILS, "");
         }
 
         void EvaluateSheet(int i)
@@ -336,18 +320,18 @@ internal class Program
                 SheetTypeEvaluator.StudentSheetScore(sheet)
             );
 
-            if (_verbose < VERBOSE_DETAILS)
+            if (ConsoleUtil.Verbose < VERBOSE_DETAILS)
                 return;
             lock (Console.Out)
             {
-                WriteIfVerbose(VERBOSE_DETAILS, format, i, name);
-                WriteColoredIfVerbose(
+                ConsoleUtil.WriteIfVerbose(VERBOSE_DETAILS, format, i, name);
+                ConsoleUtil.WriteColoredIfVerbose(
                     VERBOSE_DETAILS,
                     sheet.Hidden ? ConsoleColor.DarkGray : null,
                     "\"{0}\"",
                     name
                 );
-                WriteLineIfVerbose(VERBOSE_DETAILS, "... ✓");
+                ConsoleUtil.WriteLineIfVerbose(VERBOSE_DETAILS, "... ✓");
             }
         }
 
@@ -393,25 +377,25 @@ internal class Program
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void WriteSelectedSheets(ExcelSheet[] classSheets, ExcelSheet[] studentSheets)
     {
-        WriteLineIfVerbose(
+        ConsoleUtil.WriteLineIfVerbose(
             VERBOSE_DETAILS,
             $"Total {classSheets.Length} class sheets are selected."
         );
         for (int i = 0; i < classSheets.Length; i++)
         {
-            WriteLineIfVerbose(VERBOSE_DETAILS, $"    - {classSheets[i].Name}");
+            ConsoleUtil.WriteLineIfVerbose(VERBOSE_DETAILS, $"    - {classSheets[i].Name}");
         }
-        WriteLineIfVerbose(VERBOSE_DETAILS, "");
+        ConsoleUtil.WriteLineIfVerbose(VERBOSE_DETAILS, "");
 
-        WriteLineIfVerbose(
+        ConsoleUtil.WriteLineIfVerbose(
             VERBOSE_DETAILS,
             $"Total {studentSheets.Length} student sheets are selected."
         );
         for (int i = 0; i < studentSheets.Length; i++)
         {
-            WriteLineIfVerbose(VERBOSE_DETAILS, $"    - {studentSheets[i].Name}");
+            ConsoleUtil.WriteLineIfVerbose(VERBOSE_DETAILS, $"    - {studentSheets[i].Name}");
         }
-        WriteLineIfVerbose(VERBOSE_DETAILS, "");
+        ConsoleUtil.WriteLineIfVerbose(VERBOSE_DETAILS, "");
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -421,11 +405,11 @@ internal class Program
     )
     {
         classSheetResults = new (DataTable Table, CultureInfo Culture)?[classSheets.Length];
-        WriteIfVerbose(VERBOSE_PROGRESS, "Extracting data from class sheets... ");
-        WriteLineIfVerbose(VERBOSE_DETAILS, "");
+        ConsoleUtil.WriteIfVerbose(VERBOSE_PROGRESS, "Extracting data from class sheets... ");
+        ConsoleUtil.WriteLineIfVerbose(VERBOSE_DETAILS, "");
         for (int i = 0; i < classSheets.Length; i++)
         {
-            WriteIfVerbose(VERBOSE_DETAILS, "    {0}... ", classSheets[i].Name);
+            ConsoleUtil.WriteIfVerbose(VERBOSE_DETAILS, "    {0}... ", classSheets[i].Name);
 
             if (
                 DataExtractor.TryExtractAsClassSheet(
@@ -441,7 +425,7 @@ internal class Program
             /* Check if extraction was successful. */
             if (classSheetResults[i] is null || classSheetResults[i]!.Value.Table.Rows.Count == 0)
             {
-                WriteError(ExtractionFailedMessage, classSheets[i].Name);
+                ConsoleUtil.WriteError(ExtractionFailedMessage, classSheets[i].Name);
                 return false;
             }
 
@@ -452,7 +436,7 @@ internal class Program
                 CultureInfo culture2 = classSheetResults[j]!.Value.Culture;
                 if (culture1 == culture2)
                 {
-                    WriteError(CultureOverlapMessage, classSheets[j].Name, classSheets[i].Name);
+                    ConsoleUtil.WriteError(CultureOverlapMessage, classSheets[j].Name, classSheets[i].Name);
                     return false;
                 }
             }
@@ -468,7 +452,7 @@ internal class Program
         out TableBuildReport report
     )
     {
-        WriteIfVerbose(VERBOSE_PROGRESS, "Building primitive table... ");
+        ConsoleUtil.WriteIfVerbose(VERBOSE_PROGRESS, "Building primitive table... ");
         PrimitiveTableBuilder classTableBuilder = new();
         foreach (var tuple in classSheetResults)
         {
@@ -539,7 +523,7 @@ internal class Program
             sb.Append(ParseFailedMessage);
             for (int i = 0; i < errorsToPrint.Length; i++)
                 sb.AppendLine().Append(' ', 4).Append(testbuilder.FormatError(errorsToPrint[i]));
-            WriteError(sb.ToString());
+            ConsoleUtil.WriteError(sb.ToString());
             return exitCode;
         }
 
@@ -564,7 +548,7 @@ internal class Program
 
     private static void WriteSheetNames(string path)
     {
-        if (_verbose <= 0)
+        if (ConsoleUtil.Verbose <= 0)
             return;
         FileStream? fs = null;
         IExcelDataReader? reader = null;
@@ -591,7 +575,7 @@ internal class Program
             for (int i = 0; i < sheetNames.Length; i++)
             {
                 Console.Write(format, i);
-                WriteLineColoredIfVerbose(
+                ConsoleUtil.WriteLineColoredIfVerbose(
                     -1,
                     isHidden[i] ? ConsoleColor.DarkGray : null,
                     sheetNames[i]
@@ -603,169 +587,6 @@ internal class Program
             reader?.Dispose();
             fs?.Dispose();
         }
-    }
-
-    /// <summary>
-    /// Prints the warning with the <see cref="format"/> and <see cref="arg"/> provided.
-    /// </summary>
-    private static void WriteWarning(
-        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
-        params object?[]? arg
-    )
-    {
-        if (_verbose <= 0)
-            return;
-        ConsoleColor oldColor = Console.ForegroundColor;
-        if (!_lastPrintedNewLine)
-            Console.Write(Environment.NewLine);
-        Console.Write("dsgen.exe: ");
-        ChangeConsoleForeground(ConsoleColor.Yellow);
-        Console.Write("warning: ");
-        ChangeConsoleForeground(oldColor);
-        Console.WriteLine(format, arg);
-        _lastPrintedNewLine = true;
-    }
-
-    /// <summary>
-    /// Prints the error with the <see cref="format"/> and <see cref="arg"/> provided.
-    /// </summary>
-    private static void WriteError(
-        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
-        params object?[]? arg
-    )
-    {
-        if (_noErrorMessage)
-            return;
-        ConsoleColor oldColor = Console.ForegroundColor;
-        if (!_lastPrintedNewLine)
-            Console.Write(Environment.NewLine);
-        Console.Write("dsgen.exe: ");
-        ChangeConsoleForeground(ConsoleColor.Red);
-        Console.Write("fatal error: ");
-        ChangeConsoleForeground(oldColor);
-        Console.WriteLine(format, arg);
-        Console.WriteLine("Try `dsgen --help' for more information.");
-        _lastPrintedNewLine = true;
-    }
-
-    /// <summary>
-    /// Print the exception via <see cref="WriteError(string, object?[]?)"/>.
-    /// </summary>
-    /// <param name="e">Error to print.</param>
-    private static void WriteException(Exception e)
-    {
-#if DEBUG
-        if (_verbose >= VERBOSE_STACKTRACE)
-        {
-            Exception? ex = e;
-            StringBuilder format = new();
-            int index = 1;
-            List<object?> arguments = new() { Environment.NewLine };
-            while (ex is not null)
-            {
-                if (!ReferenceEquals(e, ex))
-                {
-                    format.Append("[Inner] ");
-                }
-                format.Append($"{{{index++}}}{{0}}StackTrace:{{0}}{{{index++}}}{{0}}");
-                arguments.Add(ex.Message);
-                arguments.Add(ex.StackTrace);
-                ex = ex.InnerException;
-            }
-            format.Remove(format.Length - 3, 3);
-            WriteError(format.ToString(), arguments.ToArray());
-        }
-        else
-#endif
-        {
-            WriteError(e.Message);
-        }
-    }
-
-    private static void WriteRawException(Exception e)
-    {
-        Console.WriteLine("{1}{0}StackTrace:{0}{2}", Environment.NewLine, e.Message, e.StackTrace);
-        if (e.InnerException is not null)
-        {
-            WriteRawException(e.InnerException);
-        }
-    }
-
-    /// <summary>
-    /// Write to stdout if verbosity level is not smaller than <paramref name="verbosityThreshold"/>.
-    /// </summary>
-    private static void WriteIfVerbose(
-        int verbosityThreshold,
-        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
-        params object?[]? arg
-    )
-    {
-        if (_verbose < verbosityThreshold)
-            return;
-        string toWrite = arg is null ? format : String.Format(format, arg);
-        Console.Write(toWrite);
-        if (String.IsNullOrEmpty(toWrite))
-            return;
-        _lastPrintedNewLine = toWrite.EndsWith('\n') || toWrite.EndsWith('\r');
-    }
-
-    /// <summary>
-    /// Write to stdout with the specified color
-    /// if verbosity level is not smaller than <paramref name="verbosityThreshold"/>.
-    /// </summary>
-    /// <param name="color">
-    /// The color to print with. If it is set to <c>null</c>,
-    /// it is practically same as <see cref="WriteLineIfVerbose"/>.
-    /// </param>
-    private static void WriteColoredIfVerbose(
-        int verbosityThreshold,
-        ConsoleColor? color,
-        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
-        params object?[]? arg
-    )
-    {
-        ConsoleColor oldColor = Console.ForegroundColor;
-        if (color is not null)
-            ChangeConsoleForeground(color.Value);
-        WriteIfVerbose(verbosityThreshold, format, arg);
-        ChangeConsoleForeground(oldColor);
-    }
-
-    /// <summary>
-    /// Write to stdout if verbosity level is not smaller than <paramref name="verbosityThreshold"/>.
-    /// </summary>
-    private static void WriteLineIfVerbose(
-        int verbosityThreshold,
-        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
-        params object?[]? arg
-    )
-    {
-        if (_verbose < verbosityThreshold)
-            return;
-        Console.WriteLine(format, arg);
-        _lastPrintedNewLine = true;
-    }
-
-    /// <summary>
-    /// Write to stdout with the specified color
-    /// if verbosity level is not smaller than <paramref name="verbosityThreshold"/>.
-    /// </summary>
-    /// <param name="color">
-    /// The color to print with. If it is set to <c>null</c>,
-    /// it is practically same as <see cref="WriteLineIfVerbose"/>.
-    /// </param>
-    private static void WriteLineColoredIfVerbose(
-        int verbosityThreshold,
-        ConsoleColor? color,
-        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
-        params object?[]? arg
-    )
-    {
-        ConsoleColor oldColor = Console.ForegroundColor;
-        if (color is not null)
-            ChangeConsoleForeground(color.Value);
-        WriteLineIfVerbose(verbosityThreshold, format, arg);
-        ChangeConsoleForeground(oldColor);
     }
 
     /// <summary>
@@ -784,7 +605,7 @@ internal class Program
         const string SheetNameHeader = "Sheet Name";
         const int precision = 2;
 
-        if (_verbose < verbosityThreshold)
+        if (ConsoleUtil.Verbose < verbosityThreshold)
             return;
         Guard.IsEqualTo(sheetNames.Length - scores.Length, 0);
 
@@ -826,7 +647,7 @@ internal class Program
                 tuple.StudentSheetScore * 100
             );
             ConsoleColor oldColor = Console.ForegroundColor;
-            WriteLineColoredIfVerbose(-1, hidden ? ConsoleColor.DarkGray : null, sheetNames[i]);
+            ConsoleUtil.WriteLineColoredIfVerbose(-1, hidden ? ConsoleColor.DarkGray : null, sheetNames[i]);
         }
         Console.WriteLine(
             GetTableLowerBorder(
@@ -837,18 +658,7 @@ internal class Program
             )
         );
         Console.WriteLine();
-        _lastPrintedNewLine = true;
-    }
-
-    private static void ChangeConsoleForeground(ConsoleColor color)
-    {
-        if (!_canChangeConsoleColor)
-            return;
-        try
-        {
-            Console.ForegroundColor = color;
-        }
-        catch (Exception) { }
+        ConsoleUtil.JustPrintedNewLine();
     }
 
     private static int ToStringLength(object? obj)
