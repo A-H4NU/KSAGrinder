@@ -14,6 +14,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace dsgen;
@@ -171,6 +172,12 @@ internal class Program
         );
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void PrintDoneProgress() => WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void PrintDoneDetails() => WriteLineIfVerbose(VERBOSE_DETAILS, "Done ✓");
+
     private static int RunAndGetExitCode(Options options, string[] args)
     {
         if (String.IsNullOrWhiteSpace(options.FilePath))
@@ -208,14 +215,13 @@ internal class Program
                 WriteError(SheetsOverlappingMessage);
                 return EXIT_ERROR;
             }
-            WriteIfVerbose(VERBOSE_PROGRESS, "Loading file...");
+
+            WriteIfVerbose(VERBOSE_PROGRESS, "Loading file... ");
             ExcelBook book = ExcelBook.FromFile(options.FilePath);
             string[] sheetNames = book.Keys.ToArray();
             Array.Sort(sheetNames);
             var scores = new (float ClassSheetScore, float StudentSheetScore)[book.Count];
-            int pad = ToStringLength(sheetNames.Length - 1);
-            string format = $"    [{{0:D{pad}}}] ";
-            WriteLineIfVerbose(VERBOSE_PROGRESS, " Done ✓");
+            PrintDoneProgress();
             if (
                 options.ClassSheets.Any(i => i >= book.Count)
                 || options.ClassSheets.Any(i => i >= book.Count)
@@ -224,49 +230,19 @@ internal class Program
                 WriteError(IndicesOutOfRangeMessage);
                 return EXIT_ERROR;
             }
-            WriteIfVerbose(VERBOSE_PROGRESS, "Evaluating sheets... ");
-            WriteLineIfVerbose(VERBOSE_DETAILS, "");
-            ConsoleColor oldColor = Console.ForegroundColor;
-            for (int i = 0; i < sheetNames.Length; i++)
-            {
-                string name = sheetNames[i];
-                ExcelSheet sheet = book[name];
-                WriteIfVerbose(VERBOSE_DETAILS, format, i, name);
-                WriteColoredIfVerbose(
-                    VERBOSE_DETAILS,
-                    sheet.Hidden ? ConsoleColor.DarkGray : null,
-                    "\"{0}\"",
-                    name
-                );
-                WriteIfVerbose(VERBOSE_DETAILS, "... ");
-                scores[i] = (
-                    SheetTypeEvaluator.ClassSheetScore(sheet),
-                    SheetTypeEvaluator.StudentSheetScore(sheet)
-                );
-                WriteLineIfVerbose(VERBOSE_DETAILS, " ✓");
-            }
-            WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
+
+            EvaluateSheets(sheetNames, book, scores);
+
             WriteScoreTableIfVerbose(VERBOSE_DETAILS, book, sheetNames, scores);
 
-            /* Select the sheets from which we extract data. */
-            ExcelSheet[] classSheets = (
-                options.ClassSheets.Any()
-                    ? options.ClassSheets
-                    : Enumerable
-                        .Range(0, sheetNames.Length)
-                        .Where(i => scores[i].ClassSheetScore > options.Threshold)
-            )
-                .Select(i => book[sheetNames[i]])
-                .ToArray();
-            ExcelSheet[] studentSheets = (
-                options.StudentSheets.Any()
-                    ? options.StudentSheets
-                    : Enumerable
-                        .Range(0, sheetNames.Length)
-                        .Where(i => scores[i].StudentSheetScore > options.Threshold)
-            )
-                .Select(i => book[sheetNames[i]])
-                .ToArray();
+            GetClassAndStudentSheets(
+                options,
+                sheetNames,
+                scores,
+                book,
+                out ExcelSheet[] classSheets,
+                out ExcelSheet[] studentSheets
+            );
 
             /* If no sheets are selected, exit with error. */
             if (classSheets.Length == 0)
@@ -280,25 +256,7 @@ internal class Program
                 return EXIT_ERROR;
             }
 
-            WriteLineIfVerbose(
-                VERBOSE_DETAILS,
-                $"Total {classSheets.Length} class sheets are selected."
-            );
-            for (int i = 0; i < classSheets.Length; i++)
-            {
-                WriteLineIfVerbose(VERBOSE_DETAILS, $"    - {classSheets[i].Name}");
-            }
-            WriteLineIfVerbose(VERBOSE_DETAILS, "");
-
-            WriteLineIfVerbose(
-                VERBOSE_DETAILS,
-                $"Total {studentSheets.Length} student sheets are selected."
-            );
-            for (int i = 0; i < studentSheets.Length; i++)
-            {
-                WriteLineIfVerbose(VERBOSE_DETAILS, $"    - {studentSheets[i].Name}");
-            }
-            WriteLineIfVerbose(VERBOSE_DETAILS, "");
+            WriteSelectedSheets(classSheets, studentSheets);
 
             /* Warn the user if they selected a sheet with low score. */
             if (
@@ -309,63 +267,14 @@ internal class Program
                 WriteWarning(SelectedLowScoreSheetMessage);
             }
 
-            WriteIfVerbose(VERBOSE_PROGRESS, "Extracting data from class sheets... ");
-            WriteLineIfVerbose(VERBOSE_DETAILS, "");
+            if (!TryExtractDataFromClassSheets(classSheets, out var classSheetResults))
+                return EXIT_ERROR;
 
-            var classSheetResults = new (DataTable Table, CultureInfo Culture)?[classSheets.Length];
-            for (int i = 0; i < classSheets.Length; i++)
-            {
-                WriteIfVerbose(VERBOSE_DETAILS, "    {0}... ", classSheets[i].Name);
-
-                if (
-                    DataExtractor.TryExtractAsClassSheet(
-                        classSheets[i],
-                        out DataTable? table,
-                        out CultureInfo? culture
-                    )
-                )
-                {
-                    classSheetResults[i] = (table, culture);
-                }
-
-                /* Check if extraction was successful. */
-                if (
-                    classSheetResults[i] is null
-                    || classSheetResults[i]!.Value.Table.Rows.Count == 0
-                )
-                {
-                    WriteError(ExtractionFailedMessage, classSheets[i].Name);
-                    return EXIT_ERROR;
-                }
-
-                /* Check if `classSheetResults` has unique `CultureInfo`s. */
-                for (int j = 0; j < i; j++)
-                {
-                    CultureInfo culture1 = classSheetResults[i]!.Value.Culture;
-                    CultureInfo culture2 = classSheetResults[j]!.Value.Culture;
-                    if (culture1 == culture2)
-                    {
-                        WriteError(CultureOverlapMessage, classSheets[j].Name, classSheets[i].Name);
-                        return EXIT_ERROR;
-                    }
-                }
-                WriteLineIfVerbose(VERBOSE_DETAILS, "Done ✓");
-            }
-            WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
-
-            WriteIfVerbose(VERBOSE_PROGRESS, "Building primitive table... ");
-            PrimitiveTableBuilder classTableBuilder = new();
-            foreach (var tuple in classSheetResults)
-            {
-                classTableBuilder.Add(tuple!.Value.Table, tuple!.Value.Culture);
-            }
-            CultureInfo primaryCulture = CultureInfo.GetCultureInfo(options.PrimaryCulture);
-            DataTable primitiveTable = classTableBuilder.Build(
-                primaryCulture,
-                true,
+            DataTable primitiveTable = GetPrimitiveTable(
+                options,
+                classSheetResults,
                 out TableBuildReport report
             );
-            WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
 
             const int WriteRowsThreshold = 5;
             if (!report.IsClear)
@@ -392,7 +301,7 @@ internal class Program
             WriteIfVerbose(VERBOSE_PROGRESS, "Building lecture table... ");
             LectureTableBuilder ltBuilder = new(primitiveTable);
             DataTable lectureTable = ltBuilder.Build(out _);
-            WriteLineIfVerbose(VERBOSE_PROGRESS, "Done ✓");
+            PrintDoneProgress();
         }
         catch (Exception e)
         {
@@ -400,6 +309,175 @@ internal class Program
             return EXIT_ERROR;
         }
         return EXIT_SUCCESS;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void EvaluateSheets(
+        string[] sheetNames,
+        ExcelBook book,
+        (float ClassSheetScore, float StudentScore)[] scores
+    )
+    {
+        int pad = ToStringLength(sheetNames.Length - 1);
+        string format = $"    [{{0:D{pad}}}] ";
+
+        static void WriteHeader()
+        {
+            WriteIfVerbose(VERBOSE_PROGRESS, "Evaluating sheets... ");
+            WriteLineIfVerbose(VERBOSE_DETAILS, "");
+        }
+
+        void EvaluateSheet(int i)
+        {
+            string name = sheetNames[i];
+            ExcelSheet sheet = book[name];
+            scores[i] = (
+                SheetTypeEvaluator.ClassSheetScore(sheet),
+                SheetTypeEvaluator.StudentSheetScore(sheet)
+            );
+
+            if (_verbose < VERBOSE_DETAILS)
+                return;
+            lock (Console.Out)
+            {
+                WriteIfVerbose(VERBOSE_DETAILS, format, i, name);
+                WriteColoredIfVerbose(
+                    VERBOSE_DETAILS,
+                    sheet.Hidden ? ConsoleColor.DarkGray : null,
+                    "\"{0}\"",
+                    name
+                );
+                WriteLineIfVerbose(VERBOSE_DETAILS, "... ✓");
+            }
+        }
+
+        var mth = new MultipleTaskHandler()
+            .SetInitializeAction(WriteHeader)
+            .AddIndexedActions(EvaluateSheet, sheetNames.Length);
+        mth.InvokeActionsAsync().Wait();
+
+        PrintDoneProgress();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void GetClassAndStudentSheets(
+        Options options,
+        string[] sheetNames,
+        (float ClassSheetScore, float StudentSheetScore)[] scores,
+        ExcelBook book,
+        out ExcelSheet[] classSheets,
+        out ExcelSheet[] studentSheets
+    )
+    {
+        /* Select the sheets from which we extract data. */
+        classSheets = (
+            options.ClassSheets.Any()
+                ? options.ClassSheets
+                : Enumerable
+                    .Range(0, sheetNames.Length)
+                    .Where(i => scores[i].ClassSheetScore > options.Threshold)
+        )
+            .Select(i => book[sheetNames[i]])
+            .ToArray();
+        studentSheets = (
+            options.StudentSheets.Any()
+                ? options.StudentSheets
+                : Enumerable
+                    .Range(0, sheetNames.Length)
+                    .Where(i => scores[i].StudentSheetScore > options.Threshold)
+        )
+            .Select(i => book[sheetNames[i]])
+            .ToArray();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void WriteSelectedSheets(ExcelSheet[] classSheets, ExcelSheet[] studentSheets)
+    {
+        WriteLineIfVerbose(
+            VERBOSE_DETAILS,
+            $"Total {classSheets.Length} class sheets are selected."
+        );
+        for (int i = 0; i < classSheets.Length; i++)
+        {
+            WriteLineIfVerbose(VERBOSE_DETAILS, $"    - {classSheets[i].Name}");
+        }
+        WriteLineIfVerbose(VERBOSE_DETAILS, "");
+
+        WriteLineIfVerbose(
+            VERBOSE_DETAILS,
+            $"Total {studentSheets.Length} student sheets are selected."
+        );
+        for (int i = 0; i < studentSheets.Length; i++)
+        {
+            WriteLineIfVerbose(VERBOSE_DETAILS, $"    - {studentSheets[i].Name}");
+        }
+        WriteLineIfVerbose(VERBOSE_DETAILS, "");
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool TryExtractDataFromClassSheets(
+        ExcelSheet[] classSheets,
+        out (DataTable Table, CultureInfo Culture)?[] classSheetResults
+    )
+    {
+        classSheetResults = new (DataTable Table, CultureInfo Culture)?[classSheets.Length];
+        WriteIfVerbose(VERBOSE_PROGRESS, "Extracting data from class sheets... ");
+        WriteLineIfVerbose(VERBOSE_DETAILS, "");
+        for (int i = 0; i < classSheets.Length; i++)
+        {
+            WriteIfVerbose(VERBOSE_DETAILS, "    {0}... ", classSheets[i].Name);
+
+            if (
+                DataExtractor.TryExtractAsClassSheet(
+                    classSheets[i],
+                    out DataTable? table,
+                    out CultureInfo? culture
+                )
+            )
+            {
+                classSheetResults[i] = (table, culture);
+            }
+
+            /* Check if extraction was successful. */
+            if (classSheetResults[i] is null || classSheetResults[i]!.Value.Table.Rows.Count == 0)
+            {
+                WriteError(ExtractionFailedMessage, classSheets[i].Name);
+                return false;
+            }
+
+            /* Check if `classSheetResults` has unique `CultureInfo`s. */
+            for (int j = 0; j < i; j++)
+            {
+                CultureInfo culture1 = classSheetResults[i]!.Value.Culture;
+                CultureInfo culture2 = classSheetResults[j]!.Value.Culture;
+                if (culture1 == culture2)
+                {
+                    WriteError(CultureOverlapMessage, classSheets[j].Name, classSheets[i].Name);
+                    return false;
+                }
+            }
+            PrintDoneDetails();
+        }
+        PrintDoneProgress();
+        return true;
+    }
+
+    private static DataTable GetPrimitiveTable(
+        Options options,
+        (DataTable Table, CultureInfo Culture)?[] classSheetResults,
+        out TableBuildReport report
+    )
+    {
+        WriteIfVerbose(VERBOSE_PROGRESS, "Building primitive table... ");
+        PrimitiveTableBuilder classTableBuilder = new();
+        foreach (var tuple in classSheetResults)
+        {
+            classTableBuilder.Add(tuple!.Value.Table, tuple!.Value.Culture);
+        }
+        CultureInfo primaryCulture = CultureInfo.GetCultureInfo(options.PrimaryCulture);
+        DataTable primitiveTable = classTableBuilder.Build(primaryCulture, true, out report);
+        PrintDoneProgress();
+        return primitiveTable;
     }
 
     /// <summary>
