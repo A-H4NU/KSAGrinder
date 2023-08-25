@@ -132,22 +132,18 @@ internal class Program
         {
             Column.Initialize();
         }
+        catch (Exception ex)
+        {
 #if DEBUG
-        catch (Exception ex)
-        {
             ConsoleUtil.WriteException(ex);
-            return EXIT_ERROR;
-        }
 #else
-        catch (Exception ex)
-        {
             if (ex is ColumnConstraintException)
                 ConsoleUtil.WriteException(ex);
             else
                 ConsoleUtil.WriteError(FailedToInitializeMessage);
+#endif
             return EXIT_ERROR;
         }
-#endif
         return result.MapResult(
             options => RunAndGetExitCode(options, args),
             errors => WriteHelpAndGetExitCode(result)
