@@ -111,6 +111,8 @@ internal class Program
 
     #endregion
 
+    public static bool NoConcurrency { get; private set; }
+
     static Program()
     {
         Debug.Assert(String.Equals(VERBOSE_MAX.ToString(), VERBOSE_MAX_AS_STRING));
@@ -127,6 +129,7 @@ internal class Program
         {
             ConsoleUtil.Verbose = options.Verbose;
             ConsoleUtil.NoErrorMessage = options.NoErrorMessage;
+            NoConcurrency = options.NoCuncurrency;
         });
         try
         {
@@ -338,7 +341,14 @@ internal class Program
         var mth = new MultipleTaskHandler()
             .SetInitializeAction(WriteHeader)
             .AddIndexedActions(EvaluateSheet, sheetNames.Length);
-        mth.InvokeActionsAsync().Wait();
+        if (NoConcurrency)
+        {
+            mth.InvokeActions();
+        }
+        else
+        {
+            mth.InvokeActionsAsync().Wait();
+        }
 
         PrintDoneProgress();
     }
@@ -436,7 +446,11 @@ internal class Program
                 CultureInfo culture2 = classSheetResults[j]!.Value.Culture;
                 if (culture1 == culture2)
                 {
-                    ConsoleUtil.WriteError(CultureOverlapMessage, classSheets[j].Name, classSheets[i].Name);
+                    ConsoleUtil.WriteError(
+                        CultureOverlapMessage,
+                        classSheets[j].Name,
+                        classSheets[i].Name
+                    );
                     return false;
                 }
             }
@@ -647,7 +661,11 @@ internal class Program
                 tuple.StudentSheetScore * 100
             );
             ConsoleColor oldColor = Console.ForegroundColor;
-            ConsoleUtil.WriteLineColoredIfVerbose(-1, hidden ? ConsoleColor.DarkGray : null, sheetNames[i]);
+            ConsoleUtil.WriteLineColoredIfVerbose(
+                -1,
+                hidden ? ConsoleColor.DarkGray : null,
+                sheetNames[i]
+            );
         }
         Console.WriteLine(
             GetTableLowerBorder(

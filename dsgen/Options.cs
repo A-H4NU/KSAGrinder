@@ -31,9 +31,17 @@ public record Options
     [Option(
         's',
         "no-error-msg",
+        Default = false,
         HelpText = "Suppress error messages as long as the commandline argument is parsed correctly."
     )]
     public bool NoErrorMessage { get; init; } = false;
+
+    [Option(
+        "no-concurrency",
+        Default = false,
+        HelpText = "Suppress exploiting concurrency."
+    )]
+    public bool NoCuncurrency { get; init; } = false;
 
     [Option(
         'l',
