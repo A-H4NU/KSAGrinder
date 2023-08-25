@@ -263,27 +263,7 @@ internal class Program
                 out TableBuildReport report
             );
 
-            const int WriteRowsThreshold = 5;
-            if (!report.IsClear)
-            {
-                int length = Math.Min(report.EmptyLocalizableColumns.Length, WriteRowsThreshold);
-                for (int i = 0; i < length; i++)
-                {
-                    DataRow row = report.Table.Rows[report.EmptyLocalizableColumns[i]];
-                    int nullIdx = Array.FindIndex(row.ItemArray, item => item is DBNull);
-                    ConsoleUtil.WriteWarning(
-                        EmptyLocalizableMessage,
-                        row["Code"],
-                        row["Grade"],
-                        row["Class"],
-                        report.Table.Columns[nullIdx].ColumnName
-                    );
-                }
-                if (report.EmptyLocalizableColumns.Length > WriteRowsThreshold)
-                {
-                    ConsoleUtil.WriteWarning(ManyRowsLackingMessage, WriteRowsThreshold);
-                }
-            }
+            WriteWarningWithReport(report);
 
             ConsoleUtil.WriteIfVerbose(VERBOSE_PROGRESS, "Building lecture table... ");
             LectureTableBuilder ltBuilder = new(primitiveTable);
@@ -460,6 +440,7 @@ internal class Program
         return true;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static DataTable GetPrimitiveTable(
         Options options,
         (DataTable Table, CultureInfo Culture)?[] classSheetResults,
@@ -476,6 +457,32 @@ internal class Program
         DataTable primitiveTable = classTableBuilder.Build(primaryCulture, true, out report);
         PrintDoneProgress();
         return primitiveTable;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void WriteWarningWithReport(TableBuildReport report)
+    {
+        const int WriteRowsThreshold = 5;
+        if (!report.IsClear)
+        {
+            int length = Math.Min(report.EmptyLocalizableColumns.Length, WriteRowsThreshold);
+            for (int i = 0; i < length; i++)
+            {
+                DataRow row = report.Table.Rows[report.EmptyLocalizableColumns[i]];
+                int nullIdx = Array.FindIndex(row.ItemArray, item => item is DBNull);
+                ConsoleUtil.WriteWarning(
+                    EmptyLocalizableMessage,
+                    row["Code"],
+                    row["Grade"],
+                    row["Class"],
+                    report.Table.Columns[nullIdx].ColumnName
+                );
+            }
+            if (report.EmptyLocalizableColumns.Length > WriteRowsThreshold)
+            {
+                ConsoleUtil.WriteWarning(ManyRowsLackingMessage, WriteRowsThreshold);
+            }
+        }
     }
 
     /// <summary>
