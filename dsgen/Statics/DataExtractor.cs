@@ -93,8 +93,6 @@ public static class DataExtractor
             Column.ClassSheetTitles!.All(tuple => tuple.HeaderTitles.ContainsKey(culture))
         );
 
-        result = null;
-        skippedRows = -1;
         var reference = (
             from tuple in Column.ClassSheetTitles
             select tuple.HeaderTitles[culture]
@@ -107,21 +105,29 @@ public static class DataExtractor
                 out _
             )
         )
+        {
+            result = null;
+            skippedRows = -1;
             return false;
+        }
 
-        result = new();
-        skippedRows = 0;
+        DataTable _result = new();
+        int _skippedRows = 0;
         for (int j = 0; j < matchResult.Length; j++)
         {
             string name = Column.ClassSheetTitles![j].ColumnName;
             Type type = Column.ClassSheetTitles[j].DataTableType;
-            result.Columns.Add(new DataColumn(name, type));
+            _result.Columns.Add(new DataColumn(name, type));
         }
 
-        for (int i = headerRow + 1; i < sheet.RowCount; i++)
+        int nColumns = matchResult.Length;
+
+        using SemaphoreSlim tableInUse = new(1, 1);
+
+        void LoopBody(int i)
         {
             /* First check if their type matches! */
-            for (int j = 0; j < matchResult.Length; j++)
+            for (int j = 0; j < matchResult!.Length; j++)
             {
                 bool typeMatch = false;
                 foreach (Type? type in Column.ClassSheetTitles![j].Types)
@@ -140,7 +146,7 @@ public static class DataExtractor
             }
 
             /* Now that types are matching, we may process those cells. */
-            DataRow row = result.NewRow();
+            object[] row = new object[nColumns];
             for (int j = 0; j < matchResult.Length; j++)
             {
                 if (
@@ -152,19 +158,45 @@ public static class DataExtractor
                     )
                 )
                 {
-                    row.SetField(result.Columns[j], obj);
+                    row[j] = obj;
                 }
                 else
                 {
                     goto skip_this_row;
                 }
             }
-            result.Rows.Add(row);
-            continue;
+            try
+            {
+                tableInUse.Wait();
+                _result.Rows.Add(row);
+            }
+            finally
+            {
+                tableInUse.Release();
+            }
+            return;
 
             skip_this_row:
-            skippedRows++;
+            Interlocked.Increment(ref _skippedRows);
         }
+
+        if (Program.NoConcurrency)
+        {
+            for (int i = headerRow + 1; i < sheet.RowCount; i++)
+            {
+                LoopBody(i);
+            }
+        }
+        else
+        {
+            Parallel.For(headerRow + 1, sheet.RowCount, LoopBody);
+        }
+
+        Debug.Assert(_skippedRows + _result.Rows.Count == sheet.RowCount - headerRow - 1);
+
+        result = _result;
+        skippedRows = _skippedRows;
+
         return true;
     }
 
@@ -240,17 +272,19 @@ public static class DataExtractor
     private static readonly DayOfWeek[] s_daysInAWeek = (DayOfWeek[])
         typeof(DayOfWeek).GetEnumValues();
 
-    private static readonly ReadOnlyDictionary<DayOfWeek, string> s_daysToStr =
-        new Dictionary<DayOfWeek, string>()
-        {
-            { DayOfWeek.Sunday, "SU" },
-            { DayOfWeek.Monday, "MO" },
-            { DayOfWeek.Tuesday, "TU" },
-            { DayOfWeek.Wednesday, "WE" },
-            { DayOfWeek.Thursday, "TH" },
-            { DayOfWeek.Friday, "FR" },
-            { DayOfWeek.Saturday, "SA" },
-        }.AsReadOnly();
+    private static readonly ReadOnlyDictionary<DayOfWeek, string> s_daysToStr = new Dictionary<
+        DayOfWeek,
+        string
+    >()
+    {
+        { DayOfWeek.Sunday, "SU" },
+        { DayOfWeek.Monday, "MO" },
+        { DayOfWeek.Tuesday, "TU" },
+        { DayOfWeek.Wednesday, "WE" },
+        { DayOfWeek.Thursday, "TH" },
+        { DayOfWeek.Friday, "FR" },
+        { DayOfWeek.Saturday, "SA" },
+    }.AsReadOnly();
 
     private static bool TryResolveTimeCell(
         object? cellContent,
