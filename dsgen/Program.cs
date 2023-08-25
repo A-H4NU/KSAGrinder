@@ -93,8 +93,6 @@ internal class Program
     private const string NoProperStudentSheetMessage =
         "No sheet proper for being a student sheet was found. "
         + "Verify if the file is valid, or specify the class sheets via '--student-sheets' option.";
-    private const string SheetsOverlappingMessage =
-        "'--class-sheets' and '-student-sheets' may not contain a common index.";
     private const string IndicesOutOfRangeMessage =
         "'--class-sheets' or '-student-sheets' contains an invalid index.";
     private const string SelectedLowScoreSheetMessage =
@@ -195,12 +193,6 @@ internal class Program
             {
                 WriteSheetNames(options.FilePath);
                 return EXIT_SUCCESS;
-            }
-            /* It is not allowed for user-selected class sheets and student sheets to overlap. */
-            if (Enumerable.Intersect(options.ClassSheets, options.StudentSheets).Any())
-            {
-                ConsoleUtil.WriteError(SheetsOverlappingMessage);
-                return EXIT_ERROR;
             }
 
             ConsoleUtil.WriteIfVerbose(VERBOSE_PROGRESS, "Loading file... ");
