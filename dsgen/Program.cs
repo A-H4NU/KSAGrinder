@@ -116,9 +116,8 @@ internal class Program
         Debug.Assert(String.Equals(VERBOSE_MAX.ToString(), VERBOSE_MAX_AS_STRING));
     }
 
-    private static async Task<int> Main(string[] args)
+    private static int Main(string[] args)
     {
-        var columnInitializeTask = Task.Run(Column.Initialize);
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
         var parser = new Parser(config => config.HelpWriter = null);
@@ -131,7 +130,7 @@ internal class Program
         });
         try
         {
-            await columnInitializeTask;
+            Column.Initialize();
         }
 #if DEBUG
         catch (Exception ex)
