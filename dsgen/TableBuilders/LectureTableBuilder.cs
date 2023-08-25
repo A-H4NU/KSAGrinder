@@ -32,20 +32,42 @@ internal sealed class LectureTableBuilder
 
         DataTable res = GetEmptyTable(out List<int> columnIndices);
 
-        conflicts = new();
+        List<(string, int)> _conflicts = new();
 
         var groupsByLecture = _primitiveTable.Rows
             .Cast<DataRow>()
             .GroupBy(row => (row.Field<string>("Code")!, row.Field<int>("Grade")));
-        foreach (var group in groupsByLecture)
+
+        void LoopBody(IGrouping<(string, int), DataRow> group)
         {
             (string code, int grade) = group.Key;
             var row = GetRowFromGroup(res, code, grade, group, columnIndices, out bool hasConflict);
-            res.Rows.Add(row);
+            lock (res)
+            {
+                res.Rows.Add(row);
+            }
             if (hasConflict)
-                conflicts.Add(group.Key);
+            {
+                lock (_conflicts)
+                {
+                    _conflicts.Add(group.Key);
+                }
+            }
         }
 
+        if (Program.NoConcurrency)
+        {
+            foreach (var group in groupsByLecture)
+            {
+                LoopBody(group);
+            }
+        }
+        else
+        {
+            Parallel.ForEach(groupsByLecture, LoopBody);
+        }
+
+        conflicts = _conflicts;
         return res;
     }
 
@@ -107,9 +129,13 @@ internal sealed class LectureTableBuilder
         out bool hasConflict
     )
     {
-        DataRow newRow = table.NewRow();
-        newRow.SetField("Code", code);
-        newRow.SetField("Grade", grade);
+        DataRow rowToFill;
+        lock (table)
+        {
+            rowToFill = table.NewRow();
+        }
+        rowToFill.SetField("Code", code);
+        rowToFill.SetField("Grade", grade);
 
         using IEnumerator<DataRow> e = rows.GetEnumerator();
 
@@ -120,7 +146,7 @@ internal sealed class LectureTableBuilder
                 continue;
 
             int k = columnIndices[i];
-            newRow[i] = e.Current[k];
+            rowToFill[i] = e.Current[k];
         }
 
         hasConflict = false;
@@ -132,10 +158,10 @@ internal sealed class LectureTableBuilder
                     continue;
 
                 int k = columnIndices[i];
-                hasConflict |= !Equals(newRow[i], e.Current[k]);
+                hasConflict |= !Equals(rowToFill[i], e.Current[k]);
             }
         }
 
-        return newRow;
+        return rowToFill;
     }
 }
