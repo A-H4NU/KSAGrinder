@@ -72,7 +72,7 @@ internal sealed class LectureTableBuilder
 
     private DataTable GetEmptyTable(out List<int> columnIndices)
     {
-        DataTable res = new();
+        DataTable res = new("Lecture");
 
         HashSet<string> ClassNoIndependentColumns = (
             from column in Column.ClassSheetTitles
