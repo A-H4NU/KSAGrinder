@@ -1,6 +1,5 @@
 using System.Data;
 using System.Diagnostics;
-using CommunityToolkit.Diagnostics;
 using dsgen.ColumnInfo;
 
 #if !DEBUG
@@ -86,7 +85,7 @@ internal sealed class LectureTableBuilder
         for (int i = 0; i < _primitiveTable.Columns.Count; i++)
         {
             DataColumn dataColumn = _primitiveTable.Columns[i];
-            string columnName = GetNonlocalizedColumnName(dataColumn.ColumnName);
+            var columnName = Column.SeparatorUtil.GetNonlocalizedColumnName(dataColumn.ColumnName);
 
             if (ClassNoIndependentColumns.Contains(columnName))
             {
@@ -100,24 +99,6 @@ internal sealed class LectureTableBuilder
         res.PrimaryKey = new DataColumn[] { res.Columns["Code"]!, res.Columns["Grade"]! };
 
         return res;
-    }
-
-#if !DEBUG
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    private static string GetNonlocalizedColumnName(string columnName)
-    {
-        Guard.IsNotNullOrWhiteSpace(columnName);
-        ReadOnlySpan<char> span = columnName;
-        for (int i = 0; i < span.Length; i++)
-        {
-            // TODO: make this part non-hardcoded.
-            if (span[i] == '_')
-            {
-                return span[..i].ToString();
-            }
-        }
-        return columnName;
     }
 
 #if !DEBUG
