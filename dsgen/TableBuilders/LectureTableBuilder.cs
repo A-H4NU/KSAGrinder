@@ -96,6 +96,9 @@ internal sealed class LectureTableBuilder
         }
 
         Debug.Assert(columnIndices.Count == res.Columns.Count);
+
+        res.PrimaryKey = new DataColumn[] { res.Columns["Code"]!, res.Columns["Grade"]! };
+
         return res;
     }
 
@@ -120,7 +123,7 @@ internal sealed class LectureTableBuilder
 #if !DEBUG
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    private static DataRow GetRowFromGroup(
+    private static object[] GetRowFromGroup(
         DataTable table,
         string code,
         int grade,
@@ -129,22 +132,13 @@ internal sealed class LectureTableBuilder
         out bool hasConflict
     )
     {
-        DataRow rowToFill;
-        lock (table)
-        {
-            rowToFill = table.NewRow();
-        }
-        rowToFill.SetField("Code", code);
-        rowToFill.SetField("Grade", grade);
+        object[] rowToFill = new object[table.Columns.Count];
 
         using IEnumerator<DataRow> e = rows.GetEnumerator();
 
         e.MoveNext();
         for (int i = 0; i < columnIndices.Count; i++)
         {
-            if (table.Columns[i].ColumnName is "Code" or "Grade")
-                continue;
-
             int k = columnIndices[i];
             rowToFill[i] = e.Current[k];
         }
