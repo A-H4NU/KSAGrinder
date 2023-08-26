@@ -12,7 +12,8 @@ namespace dsgen.TableBuilders;
 internal sealed class PrimitiveTableBuilder
 {
     private const string ListEmptyMessage = "There are no data tables to build from.";
-    private const string ConflictMessage = "Had a conflict building the table.";
+    private const string ConflictMessage =
+        "Had a conflict on some field between two or more tables.";
     private const string BuildFailedMessage = "Building class table failed.";
     private const string OverlappingCultureMessage =
         "The builder already contains a table from '{0}'.";

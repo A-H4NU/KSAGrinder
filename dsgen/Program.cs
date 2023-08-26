@@ -105,7 +105,11 @@ internal class Program
     private const string EmptyLocalizableMessage =
         "Class {{ Code = {0}, Grade = {1}, Class No. = {2} }} has an empty field '{3}'.";
     private const string ManyRowsLackingMessage =
-        "More than {0} rows lack one or more field(s) to be filled in.";
+        "More than {0} rows (total {1}) lack one or more field(s) to be filled in.";
+    private const string LectureTableConflictMessage =
+        "Lecture {{ Code = {0}, Grade = {1} }} has one or more conflicts on class-independent field.";
+    private const string ManyLectureTableConflictsMessage =
+        "More than {0} lectures (total {1}) have one or more conflicts on class-independent field.";
 
     #endregion
 
@@ -254,8 +258,10 @@ internal class Program
 
             ConsoleUtil.WriteIfVerbose(VERBOSE_PROGRESS, "Building lecture table... ");
             LectureTableBuilder ltBuilder = new(primitiveTable);
-            DataTable lectureTable = ltBuilder.Build(out _);
+            DataTable lectureTable = ltBuilder.Build(out var lectureTableConflicts);
             PrintDoneProgress();
+
+            WriteWarningWithLectureTableConflicts(lectureTableConflicts);
 
             ConsoleUtil.WriteIfVerbose(VERBOSE_PROGRESS, "Building class table... ");
             ClassTableBuilder clBuilder = new(primitiveTable);
@@ -455,25 +461,54 @@ internal class Program
     private static void WriteWarningWithReport(TableBuildReport report)
     {
         const int WriteRowsThreshold = 5;
-        if (!report.IsClear)
+        if (report.IsClear)
+            return;
+        int length = Math.Min(report.EmptyLocalizableColumns.Length, WriteRowsThreshold);
+        for (int i = 0; i < length; i++)
         {
-            int length = Math.Min(report.EmptyLocalizableColumns.Length, WriteRowsThreshold);
-            for (int i = 0; i < length; i++)
-            {
-                DataRow row = report.Table.Rows[report.EmptyLocalizableColumns[i]];
-                int nullIdx = Array.FindIndex(row.ItemArray, item => item is DBNull);
-                ConsoleUtil.WriteWarning(
-                    EmptyLocalizableMessage,
-                    row["Code"],
-                    row["Grade"],
-                    row["Class"],
-                    report.Table.Columns[nullIdx].ColumnName
-                );
-            }
-            if (report.EmptyLocalizableColumns.Length > WriteRowsThreshold)
-            {
-                ConsoleUtil.WriteWarning(ManyRowsLackingMessage, WriteRowsThreshold);
-            }
+            DataRow row = report.Table.Rows[report.EmptyLocalizableColumns[i]];
+            int nullIdx = Array.FindIndex(row.ItemArray, item => item is DBNull);
+            ConsoleUtil.WriteWarning(
+                EmptyLocalizableMessage,
+                row["Code"],
+                row["Grade"],
+                row["Class"],
+                report.Table.Columns[nullIdx].ColumnName
+            );
+        }
+        if (length < report.EmptyLocalizableColumns.Length)
+        {
+            ConsoleUtil.WriteWarning(
+                ManyRowsLackingMessage,
+                WriteRowsThreshold,
+                report.EmptyLocalizableColumns.Length
+            );
+        }
+    }
+
+    private static void WriteWarningWithLectureTableConflicts(
+        List<(string Code, int Grade)> conflicts
+    )
+    {
+        const int WriteRowsThreshold = 5;
+        if (conflicts.Count == 0)
+            return;
+        int length = Math.Min(conflicts.Count, WriteRowsThreshold);
+        for (int i = 0; i < length; i++)
+        {
+            ConsoleUtil.WriteWarning(
+                LectureTableConflictMessage,
+                conflicts[i].Code,
+                conflicts[i].Grade
+            );
+        }
+        if (length < conflicts.Count)
+        {
+            ConsoleUtil.WriteWarning(
+                ManyLectureTableConflictsMessage,
+                WriteRowsThreshold,
+                conflicts.Count
+            );
         }
     }
 
