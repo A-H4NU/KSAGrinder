@@ -256,6 +256,11 @@ internal class Program
             LectureTableBuilder ltBuilder = new(primitiveTable);
             DataTable lectureTable = ltBuilder.Build(out _);
             PrintDoneProgress();
+
+            ConsoleUtil.WriteIfVerbose(VERBOSE_PROGRESS, "Building class table... ");
+            ClassTableBuilder clBuilder = new(primitiveTable);
+            DataTable classTable = clBuilder.Build();
+            PrintDoneProgress();
         }
         catch (Exception e)
         {
