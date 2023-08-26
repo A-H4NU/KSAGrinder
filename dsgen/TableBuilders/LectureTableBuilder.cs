@@ -41,16 +41,22 @@ internal sealed class LectureTableBuilder
         {
             (string code, int grade) = group.Key;
             var row = GetRowFromGroup(res, code, grade, group, columnIndices, out bool hasConflict);
-            lock (res)
-            {
+            if (Program.NoConcurrency)
                 res.Rows.Add(row);
-            }
+            else
+                lock (res)
+                {
+                    res.Rows.Add(row);
+                }
             if (hasConflict)
             {
-                lock (_conflicts)
-                {
+                if (Program.NoConcurrency)
                     _conflicts.Add(group.Key);
-                }
+                else
+                    lock (_conflicts)
+                    {
+                        _conflicts.Add(group.Key);
+                    }
             }
         }
 

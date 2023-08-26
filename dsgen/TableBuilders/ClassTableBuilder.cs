@@ -26,10 +26,13 @@ internal sealed class ClassTableBuilder
                 row[k] = _primitiveTable.Rows[i][columnIndices[k]];
             }
 
-            lock (res)
-            {
+            if (Program.NoConcurrency)
                 res.Rows.Add(row);
-            }
+            else
+                lock (res)
+                {
+                    res.Rows.Add(row);
+                }
         }
 
         if (Program.NoConcurrency)
