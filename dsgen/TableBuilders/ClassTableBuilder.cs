@@ -44,7 +44,8 @@ internal sealed class ClassTableBuilder
             Parallel.For(0, _primitiveTable.Rows.Count, LoopBody);
         }
 
-        return res;
+        res.DefaultView.Sort = "Code,Grade,Class";
+        return res.DefaultView.ToTable();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -67,7 +67,9 @@ internal sealed class LectureTableBuilder
         }
 
         conflicts = _conflicts;
-        return res;
+
+        res.DefaultView.Sort = "Code,Grade";
+        return res.DefaultView.ToTable();
     }
 
     private DataTable GetEmptyTable(out List<int> columnIndices)
