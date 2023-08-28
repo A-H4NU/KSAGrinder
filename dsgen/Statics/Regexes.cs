@@ -20,6 +20,18 @@ internal static partial class Regexes
     )]
     private static partial Regex StudentIdRegex();
 
+    [GeneratedRegex(
+        pattern: @"\A(?<name>.+)\((?<grade>[1-3])\)_(?<class>[1-9]|1[0-9])\z",
+        options: RegexOptions.NonBacktracking
+    )]
+    private static partial Regex ClassRegex();
+    
+    [GeneratedRegex(
+        pattern: @"\A(?<name>.+)\((?<grade>[1-3])\)",
+        options: RegexOptions.NonBacktracking
+    )]
+    private static partial Regex LectureRegex();
+
     /// <summary>
     /// The format for time regexes.
     /// <p>
@@ -71,6 +83,10 @@ internal static partial class Regexes
     public static Regex LectureCode => LectureCodeRegex();
 
     public static Regex StudentId => StudentIdRegex();
+
+    public static Regex Class => ClassRegex();
+
+    public static Regex Lecture => LectureRegex();
 
     /// <summary>
     /// Initializes static members and performs some assertions.

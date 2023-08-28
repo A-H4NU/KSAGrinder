@@ -134,7 +134,14 @@ public static partial class SheetTypeEvaluator
             obj => DoesMatchRegex(Regexes.StudentId, obj),
             out _
         );
-        return (float)GetMax(idMatches, out _) / sheet.RowCount;
+        float idScore = (float)GetMax(idMatches, out _) / sheet.RowCount;
+        int[] classMatches = CountForEachRow(
+            sheet,
+            obj => DoesMatchRegex(Regexes.Lecture, obj) || DoesMatchRegex(Regexes.Class, obj),
+            out _
+        );
+        float classScore = (float)GetMax(classMatches, out _) / sheet.ColumnCount;
+        return Math.Min(idScore, classScore);
     }
 
     /// <summary>
@@ -176,7 +183,7 @@ public static partial class SheetTypeEvaluator
     /// The result of evaluating <paramref name="predicate"/> for each cell.
     /// <c>results[j][i] := predicate(sheet[i, j])</c>
     /// </param>
-    /// <returns>Return</returns>
+    /// <returns>Returns the count for each column.</returns>
     private static int[] CountForEachColumn(
         ExcelSheet sheet,
         Predicate<object?> predicate,
@@ -199,5 +206,38 @@ public static partial class SheetTypeEvaluator
             }
         }
         return ret;
+    }
+
+    /// <summary>
+    /// For each row, count the number of cells that matches <paramref name="predicate"/>.
+    /// </summary>
+    /// <param name="sheet">The sheet to target and count.</param>
+    /// <param name="results">
+    /// The result of evaluating <paramref name="predicate"/> for each cell.
+    /// <c>results[i][j] := predicate(sheet[i, j])</c>
+    /// </param>
+    /// <returns>Returns the count for each row.</returns>
+    private static int[] CountForEachRow(
+        ExcelSheet sheet,
+        Predicate<object?> predicate,
+        out BitArray[] results
+    )
+    {
+        results = new BitArray[sheet.RowCount];
+        for (int i = 0; i < sheet.RowCount; i++)
+            results[i] = new BitArray(sheet.ColumnCount);
+        int[] res = new int[sheet.RowCount];
+        for (int i = 0; i < sheet.RowCount; i++)
+        {
+            for (int j = 0; j < sheet.ColumnCount; j++)
+            {
+                if (predicate(sheet[i, j]))
+                {
+                    results[i].Set(j, true);
+                    res[i]++;
+                }
+            }
+        }
+        return res;
     }
 }
