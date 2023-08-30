@@ -202,7 +202,7 @@ internal class Program
             PrintDoneProgress();
             if (
                 options.ClassSheets.Any(i => i >= book.Count)
-                || options.ClassSheets.Any(i => i >= book.Count)
+                || options.StudentSheets.Any(i => i >= book.Count)
             )
             {
                 ConsoleUtil.WriteError(IndicesOutOfRangeMessage);
