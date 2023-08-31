@@ -137,7 +137,7 @@ public static partial class SheetTypeEvaluator
         float idScore = (float)GetMax(idMatches, out _) / sheet.RowCount;
         int[] classMatches = CountForEachRow(
             sheet,
-            obj => DoesMatchRegex(Regexes.Lecture, obj) || DoesMatchRegex(Regexes.Class, obj),
+            obj => DoesMatchRegex(Regexes.LectureOrClass, obj),
             out _
         );
         float classScore = (float)GetMax(classMatches, out _) / sheet.ColumnCount;
