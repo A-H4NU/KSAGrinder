@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using CommunityToolkit.Diagnostics;
 using dsgen.ColumnInfo;
 using dsgen.Excel;
+using dsgen.Extensions;
 
 namespace dsgen.Statics;
 
@@ -304,8 +305,8 @@ public static class DataExtractor
         if (
             !match.Success
             || match.Groups.Count != 3
-            || !TryFindGroupWithName(match.Groups, "day", out Group? dayGroup)
-            || !TryFindGroupWithName(match.Groups, "hr", out Group? hrGroup)
+            || !match.Groups.TryFindGroupWithName("day", out Group? dayGroup)
+            || !match.Groups.TryFindGroupWithName("hr", out Group? hrGroup)
         )
             return false;
 
@@ -336,23 +337,5 @@ public static class DataExtractor
         Array.Sort(res);
         result = String.Join(TimeDelimiter, res.Select(t => $"{s_daysToStr[t.Day]}{t.Hour}"));
         return true;
-    }
-
-    private static bool TryFindGroupWithName(
-        GroupCollection groups,
-        string name,
-        [NotNullWhen(true)] out Group? group
-    )
-    {
-        foreach (Group g in groups)
-        {
-            if (g.Name == name)
-            {
-                group = g;
-                return true;
-            }
-        }
-        group = null;
-        return false;
     }
 }
