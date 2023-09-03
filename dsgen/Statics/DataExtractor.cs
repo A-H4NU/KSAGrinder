@@ -302,13 +302,17 @@ public static class DataExtractor
         if (!Regexes.Time.TryGetValue(cultureInfo, out Regex? regex))
             return false;
         var match = regex.Match(str);
+
+        string[] groupNames = new string[] { "day", "hr" };
         if (
             !match.Success
             || match.Groups.Count != 3
-            || !match.Groups.TryFindGroupWithName("day", out Group? dayGroup)
-            || !match.Groups.TryFindGroupWithName("hr", out Group? hrGroup)
+            || !match.Groups.TryFindGroupsWithName(groupNames, out Group[]? groups)
         )
             return false;
+
+        Group dayGroup = groups[0];
+        Group hrGroup = groups[1];
 
         Capture[] dayCaptures = dayGroup.Captures.ToArray();
         Capture[] hrCaptures = hrGroup.Captures.ToArray();
